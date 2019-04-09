@@ -1,2 +1,5 @@
 def joint_state_define(x):
-    return None
+   js = JointState()
+   js.name = joint_ordering
+   js.position = tuple(x)
+   return js

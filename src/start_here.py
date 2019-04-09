@@ -36,7 +36,7 @@ or negative experiences in using it.
 
 
 ######################################################################################################
-# Step 1a: Please add your robot urdf to the directory "urdfs", found in the project root directory.
+# Step 1a: Please add your robot urdf to the directory "urdfs", found in `lively_ik/src/RelaxedIK`.
 #   Make sure that the robot corresponding to the urdf links to some visible robot description ros package,
 #   otherwise the references described in the urdf will be meaningless.  For instance, if you are
 #   setting up the ur5 robot with a urdf ur5.urdf, there should be some associated ros package such as
@@ -48,27 +48,27 @@ or negative experiences in using it.
 # Step 1b: Please set the following variable to the file name of your robot urdf.  For example, for the
 #   ur5 robot urdf already in the urdfs folder, this variable would read 'ur5.urdf'
 #   ex: urdf_file_name = 'ur5.urdf'
-urdf_file_name = ''
+urdf_file_name = 'ur5.urdf'
 ######################################################################################################
 
 
 ######################################################################################################
 # Step 1c: Please provide the fixed frame name.  This will be the root link name in the urdf
 #   ex: fixed_frame  = 'base_link'
-fixed_frame = ''
+fixed_frame = 'base_link'
 ######################################################################################################
 
 ######################################################################################################
 # Step 1d: At the end of this walk-through, there will be a central yaml file automatically generated that
 #   will contain information about your robot setup.  Please provide a name for that file.
 #   ex: info_file_name = 'ur5_info.yaml'
-info_file_name = ''
+info_file_name = 'ur5_info.yaml'
 ######################################################################################################
 
 
 ######################################################################################################
 # Step 2b: To test that your urdf is being read correctly, run the following command:
-#   roslaunch relaxed_ik urdf_viewer.launch
+#   roslaunch lively_ik urdf_viewer.launch
 #
 #   you should see rviz start up, and your robot platform should be visible.  You can rotate the joints
 #       in rviz by using the GUI pop-up
@@ -89,7 +89,7 @@ info_file_name = ''
 #                'LEFT_WRIST_PITCH', 'LEFT_WRIST_YAW_2'] ]
 #   example 2 shows what this would be for a single end-effector robot, specifically using the UR5 robot
 #   ex2: [ ['shoulder_pan_joint', 'shoulder_lift_joint', 'elbow_joint', 'wrist_1_joint', 'wrist_2_joint', 'wrist_3_joint'] ]
-joint_names = [ ]
+joint_names = [ ['shoulder_pan_joint', 'shoulder_lift_joint', 'elbow_joint', 'wrist_1_joint', 'wrist_2_joint', 'wrist_3_joint'] ]
 ######################################################################################################
 
 
@@ -109,7 +109,7 @@ joint_names = [ ]
 #   ex1: [ 'WAIST', 'RIGHT_SHOULDER_PITCH', 'RIGHT_SHOULDER_ROLL', 'RIGHT_SHOULDER_YAW', 'RIGHT_ELBOW', 'RIGHT_WRIST_YAW',
 #               'RIGHT_WRIST_PITCH', 'RIGHT_WRIST_YAW_2','LEFT_SHOULDER_PITCH', 'LEFT_SHOULDER_ROLL', 'LEFT_SHOULDER_YAW',
 #               'LEFT_ELBOW', 'LEFT_WRIST_YAW', 'LEFT_WRIST_PITCH', 'LEFT_WRIST_YAW_2' ]
-joint_ordering =  [  ]
+joint_ordering =  ['shoulder_pan_joint', 'shoulder_lift_joint', 'elbow_joint', 'wrist_1_joint', 'wrist_2_joint', 'wrist_3_joint']
 ######################################################################################################
 
 
@@ -124,7 +124,7 @@ joint_ordering =  [  ]
 #   ex1: ee_fixed_joints = ['RIGHT_HAND', 'LEFT_HAND']
 #   For example 2, using the UR5, this is a single chain robot, so it will only have a single end-effector joint
 #   ex2: ee_fixed_joints = ['ee_fixed_joint']
-ee_fixed_joints = [ ]
+ee_fixed_joints = ['ee_fixed_joint']
 ######################################################################################################
 
 
@@ -134,7 +134,7 @@ ee_fixed_joints = [ ]
 #   The configuration should be a single list of values for each joint's rotation (in radians) adhering
 #   to the joint order you specified in Step 3b
 #   ex: starting_config = [ 3.12769839, -0.03987385, -2.07729916, -1.03981438, -1.58652782, -1.5710159 ]
-starting_config = [ ]
+starting_config = [ 3.12769839, -0.03987385, -2.07729916, -1.03981438, -1.58652782, -1.5710159 ]
 ######################################################################################################
 
 
@@ -201,7 +201,10 @@ starting_config = [ ]
 # TODO: fill out this function, or leave it how it is for the default option
 from sensor_msgs.msg import JointState
 def joint_state_define(x):
-    return None
+   js = JointState()
+   js.name = joint_ordering
+   js.position = tuple(x)
+   return js
 
 ######################################################################################################
 
@@ -232,12 +235,12 @@ def joint_state_define(x):
 #   collision states without colliding.
 #
 #   Add these collision-free sample states as lists next to the samples_states field in your yaml file, as seen in
-#   the collision_example.yaml file.  Feel free to use the urdf_viewer tool provided in the relaxed_ik package to pick out
+#   the collision_example.yaml file.  Feel free to use the urdf_viewer tool provided in the lively_ik package to pick out
 #   collision-free sample states.  Joint states are displayed in the console window when using this tool to make
 #   them easier to copy and paste into the collision yaml file.
 #
 #   To start this tool, use the command:
-#       roslaunch relaxed_ik urdf_viewer.launch
+#       roslaunch lively_ik urdf_viewer.launch
 #
 #   The next (optional) fields in the collision file are the following:
 #      training_states: [ ]
@@ -256,7 +259,7 @@ def joint_state_define(x):
 #   Both the training_states and problem_states lists are optional parameters.  If you do not want to include states in these lists, leave them as
 #   empty lists (i.e., do NOT delete the [ ] characters in the yaml file).
 #
-#   Again, feel free to use the urdf_viewer tool provided in the relaxed_ik package to select training_states and problem_states
+#   Again, feel free to use the urdf_viewer tool provided in the lively_ik package to select training_states and problem_states
 #
 #   The next fields in the yaml file (boxes, spheres, ellipsoids, capsules, cylinders) are used to specify additional
 #   objects around the environment that the robot should avoid.
@@ -283,14 +286,14 @@ def joint_state_define(x):
 #
 #   Please provide the name of the collision file that you have been filling out in the RelaxedIK/Config directory:
 #   ex: collision_file_name = 'collision.yaml'
-collision_file_name = ''
+collision_file_name = 'collision_ur5.yaml'
 ###########################################################################################################
 
 
 
 ######################################################################################################
 # Step 5b: To see that your collision file was put together accurately, use the following command:
-#   roslaunch relaxed_ik collision_viewer.launch
+#   roslaunch lively_ik collision_viewer.launch
 #
 #   You will see an rviz scene with collision objects in their specified locations, including the
 #   collision capsules on the robot's links.
@@ -307,7 +310,7 @@ collision_file_name = ''
 ######################################################################################################
 # Step 6a: Generate a robot info file using the following command:
 #
-#   roslaunch relaxed_ik generate_info_file.launch
+#   roslaunch lively_ik generate_info_file.launch
 ######################################################################################################
 
 
@@ -322,7 +325,7 @@ collision_file_name = ''
 # Step 7: load the newly created info file by changing the info_file_name argument in the load_info_file
 #   launch file and running the following command:
 #
-#   roslaunch relaxed_ik load_info_file.launch
+#   roslaunch lively_ik load_info_file.launch
 #######################################################################################################
 
 
@@ -335,7 +338,7 @@ collision_file_name = ''
 #   to avoid kinematic singularities.
 #   To start this process, run the following command:
 #
-#   roslaunch relaxed_ik preprocessing_julia.launch
+#   roslaunch lively_ik preprocessing_julia.launch
 #
 #   The system will immediately start producing input-output pairs for the neural network
 #   This process will take about 5 - 15 minutes, depending on the robot and number of degrees of freedom
@@ -350,7 +353,7 @@ collision_file_name = ''
 #   we still want to support the Python version going forward in case people would still like to use it.
 #   To start this process, run the following command:
 #
-#   roslaunch relaxed_ik preprocessing_python.launch
+#   roslaunch lively_ik preprocessing_python.launch
 #
 #   The system will immediately start producing input-output pairs for the neural network
 #   This process will take about 5 - 15 minutes, depending on the robot and number of degrees of freedom
@@ -366,22 +369,22 @@ collision_file_name = ''
 #   Next, start the node with one of the following commands:
 #
 #   For the Julia version of the solver, run:
-#       roslaunch relaxed_ik relaxed_ik_julia.launch
+#       roslaunch lively_ik relaxed_ik_julia.launch
 #   (NOTE: The julia version takes a little while to do its JIT compilation, ~20-40 seconds in testing)
 #
 #
 #   For the Python version of the solver, run:
-#       roslaunch relaxed_ik relaxed_ik_python.launch
+#       roslaunch lively_ik relaxed_ik_python.launch
 #
-#   Using one of these commands, your relaxed_ik solver will initialize in its own node and will await
+#   Using one of these commands, your lively_ik solver will initialize in its own node and will await
 #   end-effector pose goal commands.  Refer to step 9b for instructions on publishing end-effector
 #   pose goals and receiving solutions.
 ######################################################################################################
 
 
 ######################################################################################################
-# Step 9b: To receive solutions from the relaxed_ik node launched in Step 9a, you first have to publish
-#   end effector pose goals for each of the end effectors in the kinematic chain.  The relaxed_ik package
+# Step 9b: To receive solutions from the lively_ik node launched in Step 7a, you first have to publish
+#   end effector pose goals for each of the end effectors in the kinematic chain.  The lively_ik package
 #   provides a custom message called EEPoseGoals which encapsulates all necessary pose goal information.
 #
 #   The EEPoseGoals message has the following fields:
@@ -398,11 +401,11 @@ collision_file_name = ''
 #       < pose1: Point:[0,0,0],Orientation:[1,0,0,0], pose2: Point:[0,0,0],Orientation:[1,0,0,0] >
 #       will just return the initial configuration specified in Step 3d.
 #
-#   To get a solution from relaxed_ik, publish EEPoseGoals messages on the topic '/relaxed_ik/ee_pose_goals'
+#   To get a solution from lively_ik, publish EEPoseGoals messages on the topic '/relaxed_ik/ee_pose_goals'
 #   A solution (i.e., a vector of joint angles) will be published on the topic '/relaxed_ik/joint_angle_solutions'
 #
 #   Solutions will be of a message type called JointAngles, which is another custom message type
-#   in the relaxed_ik package.
+#   in the lively_ik package.
 #
 #   The JointAngles message has the following fields:
 #       std_msgs/Header header
@@ -421,7 +424,7 @@ collision_file_name = ''
 #   using keyboard inputs.  To start, ensure that a version of relaxedIK has been initialized, following
 #   Steps 7 and 9a.  Next, start up the rviz viewer by running the following command:
 #
-#   roslaunch relaxed_ik rviz_viewer.launch
+#   roslaunch lively_ik rviz_viewer.launch
 #
 #   Once this command is run, you should see an rviz window come up, and your robot platform should be
 #   stationary in the initial configuation you specified for the info file in step 3d.
@@ -432,14 +435,13 @@ collision_file_name = ''
 #   This keyboard interface has been designed just for testing.  To start up the keyboard controller, use
 #   the following command:
 #
-#   rosrun relaxed_ik keyboard_ikgoal_driver.py
+#   rosrun lively_ik keyboard_ikgoal_driver.py
 #
 #   The keyboard controller handles up to two chains in the robot platform (if you only have a single chain in your
 #   system, the solver will know not to listen to the single end-effector goal).  To use the keyboard controller,
 #   first ensure that the termainal window where the keyboard_ikgoal_driver script was run from has focus (i.e.,
 #   make sure it's clicked), then use the following keystrokes:
 #
-#   c - kill the controller controller script
 #   w - move chain 1 along +X
 #   x - move chain 1 along -X
 #   a - move chain 1 along +Y
@@ -457,14 +459,14 @@ collision_file_name = ''
 #   m - move chain 2 along -X
 #   j - move chain 2 along +Y
 #   l - move chain 2 along -Y
-#   u - move chain 2 along +Z
-#   n - move chain 2 along -Z
-#   = - rotate chain 2 around +X
-#   - - rotate chain 2 around -X
-#   0 - rotate chain 2 around +Y
-#   9 - rotate chain 2 around -Y
-#   8 - rotate chain 2 around +Z
-#   7 - rotate chain 2 around -Z
+#   u - move chain 1 along +Z
+#   n - move chain 1 along -Z
+#   = - rotate chain 1 around +X
+#   - - rotate chain 1 around -X
+#   0 - rotate chain 1 around +Y
+#   9 - rotate chain 1 around -Y
+#   8 - rotate chain 1 around +Z
+#   7 - rotate chain 1 around -Z
 ######################################################################################################
 
 

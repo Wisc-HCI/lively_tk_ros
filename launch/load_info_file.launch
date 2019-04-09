@@ -7,5 +7,5 @@
 <!-- ##################################################################################### -->
 
    <param name="info_file_name" value="$(arg info_file_name)"/>
-   <node pkg="relaxed_ik" type="load_info_file.py" name="load_info_file" output="screen"/>
+   <node pkg="lively_ik" type="load_info_file.py" name="load_info_file" output="screen"/>
 </launch>
