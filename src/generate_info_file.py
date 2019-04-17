@@ -14,8 +14,9 @@ import os
 import rospy
 from RelaxedIK.Utils.colors import bcolors
 from RelaxedIK.GROOVE_RelaxedIK.relaxedIK_vars import RelaxedIK_vars
-from start_here import info_file_name, urdf_file_name, fixed_frame, joint_names, joint_ordering, ee_fixed_joints, starting_config, \
-    collision_file_name, joint_state_define
+from start_here import info_file_name, urdf_file_name, fixed_frame, joint_names, joint_ordering, \
+                       ee_fixed_joints, noise_joints, noise_scaling, starting_config, \
+                       collision_file_name, joint_state_define
 import inspect
 
 rospy.init_node('generate_info_file')
@@ -81,6 +82,18 @@ else:
             ee_str += ', '
     ee_str += ' ]'
     out_file.write('ee_fixed_joints: {}\n'.format(ee_str))
+
+# Lively features
+noise_str = '[ {0} ]'.format(" , ".join(['"{0}"'.format(n) for n in noise_joints]))
+out_file.write('noise_joints: {0}\n'.format(noise_str))
+
+if len(noise_joints) != len(noise_scaling):
+    print bcolors.FAIL + 'Noise Joints and Noise Scaling must have the same length in start_here.py.  Please fill that in and run again.' + bcolors.ENDC
+    exit(-1)
+else:
+    noise_str = '[ {0} ]'.format(" , ".join(['{0}'.format(n) for n in noise_scaling]))
+    out_file.write('noise_scaling: {0}\n'.format(noise_str))
+
 
 
 if len(starting_config) == 0:
@@ -240,4 +253,3 @@ import yaml
 
 y = yaml.load(in_file)
 '''
-

@@ -138,6 +138,22 @@ starting_config = [ 3.12769839, -0.03987385, -2.07729916, -1.03981438, -1.586527
 ######################################################################################################
 
 
+######################################################################################################
+# Step 3e: Please provide the noise joints.  If you leave this blank, noise will not
+#   be added to any joints.
+#   Joints should be either base links, or ee_fixed_joints.
+noise_joints = [ "ee_fixed_joint" ]
+# starting_config = [ "base_link", "ee_fixed_joint" ]
+######################################################################################################
+
+######################################################################################################
+# Step 3f: Please provide the noise scaling for each joint in 3e. If you leave this blank,
+#   noise will be zero for all joints.
+noise_scaling = [ 5.0 ]
+# starting_config = [ "base_link", "ee_fixed_joint" ]
+######################################################################################################
+
+
 
 
 ######################################################################################################
