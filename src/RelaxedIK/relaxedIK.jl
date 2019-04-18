@@ -20,6 +20,25 @@ function RelaxedIK(path_to_src, info_file_name, objectives, grad_types, weight_p
     return RelaxedIK(relaxedIK_vars, groove, ema_filter)
 end
 
+function get_nchain(path_to_src, info_file_name, chains, solver_name = "slsqp", preconfigured=false)
+    objectives = [min_jt_vel_obj, min_jt_accel_obj, min_jt_jerk_obj, joint_limit_obj, collision_nn_obj]
+    grad_types = ["forward_ad", "forward_ad", "forward_ad", "forward_ad",  "forward_ad"]
+    weight_priors = [5.0 ,4.0, 0.1, 1.0, 2.0]
+    for chain_idx in 1:chains
+        push!(objectives, (x, vars) -> position_obj(x, vars, idx=chain_idx))
+        push!(grad_types, "forward_ad")
+        push!(weight_priors, 50)
+        push!(objectives, (x, vars) -> rotation_obj(x, vars, idx=chain_idx))
+        push!(grad_types, "forward_ad")
+        push!(weight_priors, 49)
+    end
+    inequality_constraints = []
+    ineq_grad_types = []
+    equality_constraints = []
+    eq_grad_types = []
+    return RelaxedIK(path_to_src, info_file_name, objectives, grad_types, weight_priors, inequality_constraints, ineq_grad_types, equality_constraints, eq_grad_types, solver_name = solver_name, preconfigured=preconfigured)
+end
+
 # path_to_src = Base.source_dir()
 function get_standard(path_to_src, info_file_name; solver_name = "slsqp", preconfigured=false)
     objectives = [position_obj_1, rotation_obj_1, min_jt_vel_obj, min_jt_accel_obj, min_jt_jerk_obj, collision_nn_obj]

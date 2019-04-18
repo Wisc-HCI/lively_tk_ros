@@ -12,6 +12,14 @@ function groove_loss(x_val, t, d, c, f, g)
     return (-2.718281828459^((-(x_val - t)^d) / (2.0 * c^2.0)) ) + f * (x_val - t)^g
 end
 
+function position_obj(x, vars, idx)
+    vars.robot.arms[idx].getFrames(x[vars.robot.subchain_indices[idx]])
+    x_val = norm(vars.robot.arms[idx].out_pts[end] - vars.goal_positions[idx])
+
+    # return groove_loss(x_val, 0.,2.,.1,10.,2.)
+    return groove_loss(x_val, 0., 2.0, 0.1647525572455652, 0.4, 2.0)
+end
+
 function position_obj_1(x, vars)
     vars.robot.arms[1].getFrames(x[vars.robot.subchain_indices[1]])
     x_val = norm(vars.robot.arms[1].out_pts[end] - vars.goal_positions[1])
