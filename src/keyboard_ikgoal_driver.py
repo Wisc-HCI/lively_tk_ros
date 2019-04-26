@@ -11,8 +11,8 @@ rospy.init_node('keyboard_ikgoal_driver')
 
 ik_goal_r_pub = rospy.Publisher('/ik_goal_r',PoseStamped,queue_size=5)
 ik_goal_l_pub = rospy.Publisher('/ik_goal_l',PoseStamped,queue_size=5)
-goal_pos_pub = rospy.Publisher('vive_position', Vector3Stamped)
-goal_quat_pub = rospy.Publisher('vive_quaternion', QuaternionStamped)
+goal_pos_pub = rospy.Publisher('vive_position', Vector3Stamped,queue_size=5)
+goal_quat_pub = rospy.Publisher('vive_quaternion', QuaternionStamped,queue_size=5)
 ee_pose_goals_pub = rospy.Publisher('/relaxed_ik/ee_pose_goals', EEPoseGoals, queue_size=5)
 quit_pub = rospy.Publisher('/relaxed_ik/quit',Bool,queue_size=5)
 

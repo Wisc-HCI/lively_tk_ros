@@ -33,9 +33,12 @@ function reset_cb(data::BoolMsg)
 end
 
 eepg = Nothing
+wait = 0.0
 function eePoseGoals_cb(data::EEPoseGoals)
     global eepg
+    global wait
     eepg = data
+    wait = 0.0
 end
 
 path_to_src = Base.source_dir()
@@ -48,15 +51,6 @@ relaxedIK = get_standard(path_to_src, loaded_robot)
 num_chains = relaxedIK.relaxedIK_vars.robot.num_chains
 
 relaxedIK = get_nchain(path_to_src, loaded_robot, num_chains)
-# if num_chains == 2
-#     relaxedIK = get_bimanual(path_to_src, loaded_robot)
-# elseif num_chains == 3
-#     relaxedIK = get_3chain(path_to_src, loaded_robot)
-# elseif num_chains == 4
-#     relaxedIK = get_4chain(path_to_src, loaded_robot)
-# elseif num_chains == 5
-#     relaxedIK = get_5chain(path_to_src, loaded_robot)
-# end
 
 println("loaded robot: $loaded_robot")
 
@@ -98,24 +92,12 @@ while ! is_shutdown()
     global reset_solver
     global eepg
     global relaxedIK
+    global wait
     if reset_solver == true
         println("resetting")
         reset_solver = false
-        # relaxedIK.relaxedIK_vars.vars.xopt = relaxedIK.relaxedIK_vars.vars.init_state
-        # relaxedIK.relaxedIK_vars.vars.prev_state = relaxedIK.relaxedIK_vars.vars.init_state
-        # relaxedIK.relaxedIK_vars.vars.prev_state2 = relaxedIK.relaxedIK_vars.vars.init_state
-        # relaxedIK.relaxedIK_vars.vars.prev_state3 = relaxedIK.relaxedIK_vars.vars.init_state
         relaxedIK = get_standard(path_to_src, loaded_robot)
         relaxedIK = get_nchain(path_to_src, loaded_robot, relaxedIK.relaxedIK_vars.robot.num_chains)
-        # if relaxedIK.relaxedIK_vars.robot.num_chains == 2
-        #     relaxedIK = get_bimanual(path_to_src, loaded_robot)
-        # elseif relaxedIK.relaxedIK_vars.robot.num_chains == 3
-        #     relaxedIK = get_3chain(path_to_src, loaded_robot)
-        # elseif relaxedIK.relaxedIK_vars.robot.num_chains == 4
-        #     relaxedIK = get_4chain(path_to_src, loaded_robot)
-        # elseif relaxedIK.relaxedIK_vars.robot.num_chains == 5
-        #     relaxedIK = get_5chain(path_to_src, loaded_robot)
-        # end
         eepg = empty_eepg
     end
 
@@ -140,7 +122,8 @@ while ! is_shutdown()
         push!(quat_goals, Quat(quat_w, quat_x, quat_y, quat_z))
     end
 
-    xopt = solve(relaxedIK, pos_goals, quat_goals)
+    xopt = solve(relaxedIK, pos_goals, quat_goals, wait)
+    wait = wait + 0.01
     # println(relaxedIK.relaxedIK_vars.vars.objective_closures[end](xopt))
     ja = JointAngles()
     for i = 1:length(xopt)

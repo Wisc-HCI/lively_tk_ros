@@ -29,18 +29,18 @@ function Vars(init_state, objectives, grad_types, weight_priors, inequality_cons
     prev_state2 = copy(init_state) + 0.0000000001*ones(length(init_state))
     prev_state3 = copy(init_state) + 0.0000000001*ones(length(init_state))
 
-    length_checek = length(objectives) == length(grad_types) == length(weight_priors)
-    if length_checek == false
+    length_check = length(objectives) == length(grad_types) == length(weight_priors)
+    if length_check == false
         throw(ArgumentError("ERROR: length of objectives, grad_types, and weight_priors must be equal in Vars"))
     end
 
-    length_checek = length(inequality_constraints) == length(ineq_grad_types)
-    if length_checek == false
+    length_check = length(inequality_constraints) == length(ineq_grad_types)
+    if length_check == false
         throw(ArgumentError("ERROR: length of inequality_constraints and ineq_grad_types must be equal in Vars"))
     end
 
-    length_checek = length(equality_constraints) == length(eq_grad_types)
-    if length_checek == false
+    length_check = length(equality_constraints) == length(eq_grad_types)
+    if length_check == false
         throw(ArgumentError("ERROR: length of equality_constraints and eq_grad_types must be equal in Vars"))
     end
 
