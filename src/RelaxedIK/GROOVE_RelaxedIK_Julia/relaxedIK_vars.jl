@@ -12,6 +12,7 @@ using BSON
 mutable struct RelaxedIK_vars
     vars
     robot
+    noise
     position_mode
     rotation_mode
     goal_positions
@@ -39,6 +40,8 @@ function RelaxedIK_vars(path_to_src, info_file_name, objectives, grad_types, wei
     num_chains = robot.num_chains
 
     goal_positions = []
+    noise_scale = []
+    noise_mask = []
     goal_quats = []
     goal_positions_relative = []
     goal_quats_relative = []
@@ -69,7 +72,7 @@ function RelaxedIK_vars(path_to_src, info_file_name, objectives, grad_types, wei
         # collision_nn = (x)-> model_nn(x, model, state_to_joint_pts_closure)
         # rv.collision_nn = collision_nn
     else
-        rv = RelaxedIK_vars(vars, robot, position_mode, rotation_mode, goal_positions, goal_quats, goal_positions_relative, goal_quats_relative, init_ee_positions, init_ee_quats, 0, 0, 0, 0)
+        rv = RelaxedIK_vars(vars, robot, noise, position_mode, rotation_mode, goal_positions, goal_quats, goal_positions_relative, goal_quats_relative, init_ee_positions, init_ee_quats, 0, 0, 0, 0)
     end
 
     populate_vars!(vars, rv)
