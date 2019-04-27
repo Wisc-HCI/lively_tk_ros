@@ -2,6 +2,7 @@ include("../GROOVE_Julia/vars.jl")
 include("../Spacetime_Julia/arm.jl")
 include("../Spacetime_Julia/robot.jl")
 include("../Utils_Julia/nn_utils.jl")
+include("../Utils_Julia/noise.jl")
 
 using YAML
 using Rotations
@@ -40,8 +41,6 @@ function RelaxedIK_vars(path_to_src, info_file_name, objectives, grad_types, wei
     num_chains = robot.num_chains
 
     goal_positions = []
-    noise_scale = []
-    noise_mask = []
     goal_quats = []
     goal_positions_relative = []
     goal_quats_relative = []
@@ -57,6 +56,8 @@ function RelaxedIK_vars(path_to_src, info_file_name, objectives, grad_types, wei
         push!(goal_quats_relative, Quat(1.,0.,0.,0.))
     end
 
+    noise = NoiseGenerator(y["ee_joint_noise"],y["base_link_noise"])
+
     if preconfigured == false
         collision_nn_file_name = y["collision_nn_file"]
         w = BSON.load(path_to_src * "/RelaxedIK/Config/collision_nn/" * collision_nn_file_name)[:w]
@@ -64,7 +65,7 @@ function RelaxedIK_vars(path_to_src, info_file_name, objectives, grad_types, wei
         #function model_nn(x, model, state_to_joint_pts_closure)
         #    return model(state_to_joint_pts_closure(x))
         #end
-        rv = RelaxedIK_vars(vars, robot, position_mode, rotation_mode, goal_positions, goal_quats, goal_positions_relative, goal_quats_relative, init_ee_positions, init_ee_quats, 0, model, w, 0)
+        rv = RelaxedIK_vars(vars, robot, noise, position_mode, rotation_mode, goal_positions, goal_quats, goal_positions_relative, goal_quats_relative, init_ee_positions, init_ee_quats, 0, model, w, 0)
         initial_joint_points = state_to_joint_pts_withreturn(rand(length(vars.init_state)), rv)
         rv.joint_pts = initial_joint_points
 
@@ -80,8 +81,9 @@ function RelaxedIK_vars(path_to_src, info_file_name, objectives, grad_types, wei
     return rv
 end
 
-function update_relaxedIK_vars!(relaxedIK_vars, xopt)
+function update_relaxedIK_vars!(relaxedIK_vars, xopt, wait, time)
     update!(relaxedIK_vars.vars, xopt)
+    update!(relaxedIK_vars.noise, wait, time)
 end
 
 function info_file_name_to_yaml_block(path_to_src, info_file_name)

@@ -40,7 +40,7 @@ end
 
 function positional_noise_obj(x, vars, idx):
     vars.robot.arms[idx].getFrames(x[vars.robot.subchain_indices[idx]])
-    x_val = norm(vars.robot.arms[idx].out_pts[end] - (vars.goal_positions[idx] + vars.noise.arms[idx].position[end] ))
+    x_val = norm(vars.robot.arms[idx].out_pts[end] - (vars.goal_positions[idx] + vars.noise.arms[idx].position ))
 
     # return groove_loss(x_val, 0.,2.,.1,10.,2.)
     return groove_loss(x_val, 0., 2.0, 0.1647525572455652, 0.4, 2.0)
@@ -50,7 +50,7 @@ function rotational_noise_obj(x, vars, idx)
     vars.robot.arms[idx].getFrames(x[vars.robot.subchain_indices[idx]])
     eeMat = vars.robot.arms[idx].out_frames[end]
 
-    goal_quat = vars.goal_quats[idx] + vars.noise.arms[idx].rotation[end]
+    goal_quat = vars.goal_quats[idx] + vars.noise.arms[idx].rotation
     ee_quat = Quat(eeMat)
 
     ee_quat2 = Quat(-ee_quat.w, -ee_quat.x, -ee_quat.y, -ee_quat.z)

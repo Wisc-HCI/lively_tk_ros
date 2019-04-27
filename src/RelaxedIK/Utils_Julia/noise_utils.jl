@@ -146,9 +146,7 @@ function simplexnoise(x, y)
     return clamp((res + 1) / 2, 0.0, 1.0)
 end
 
-function _octaves(x;
-    octaves::Int = 1,
-    persistence=1.0)
+function _octaves(x; octaves::Int = 1, persistence=1.0)
     total     = 0.0
     frequency = 1.0
     amplitude = 1.0
@@ -162,16 +160,16 @@ function _octaves(x;
     return total / maxval
 end
 
-noise(x; detail::T = 1, persistence = 1.0) where T <: Integer =
-    _octaves(x, octaves=detail, persistence=persistence)
+noise(x, seed; detail::T = 1, persistence = 1.0) where T <: Integer =
+    _octaves(x+seed, octaves=detail, persistence=persistence)
 
-noise3D(x; detail::T = 1, persistence = 1.0) where T <: Integer =
-    (noise(x,detail=detail,persistence=persistence) * 2 - 1,
-     noise(x+20,detail=detail,persistence=persistence) * 2 - 1,
-     noise(x+40,detail=detail,persistence=persistence) * 2 - 1)
+noise3D(x, seedvec; detail::T = 1, persistence = 1.0) where T <: Integer =
+    (noise(x, seedvec[1],detail=detail,persistence=persistence) * 2 - 1,
+     noise(x, seedvec[2],detail=detail,persistence=persistence) * 2 - 1,
+     noise(x, seedvec[3],detail=detail,persistence=persistence) * 2 - 1)
 
-noiseQuat(x; detail::T = 1, persistence = 1.0) where T <: Integer =
- (noise(x+10,detail=detail,persistence=persistence),
-  noise(x+30,detail=detail,persistence=persistence),
-  noise(x+50,detail=detail,persistence=persistence),
-  noise(x+70,detail=detail,persistence=persistence))
+noise4D(x, seedvec; detail::T = 1, persistence = 1.0) where T <: Integer =
+ (noise(x, seedvec[1],detail=detail,persistence=persistence),
+  noise(x, seedvec[2],detail=detail,persistence=persistence),
+  noise(x, seedvec[3],detail=detail,persistence=persistence),
+  noise(x, seedvec[4],detail=detail,persistence=persistence))
