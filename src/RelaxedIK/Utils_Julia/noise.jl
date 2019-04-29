@@ -18,14 +18,14 @@ function NoiseGenerator(scale, base_link_noise)
     arms = []
     seeds = []
 
-    for i=1:len(scale)
+    for i=1:length(scale)
         push!(arms, posrot(zeros(3),zeros(4)))
         push!(seeds, posrot(rand(3),rand(4)))
     end
 
     n = NoiseGenerator(arms, scale, seeds, 0.0)
 
-    update!(n, 0.0)
+    update!(n, 0.0, 0.0)
 
     return n
 end
@@ -38,9 +38,9 @@ function update!(noisegen, wait, time)
     temp_scale = 2 ^ (0.03 * wait - 10) / (2 ^ (0.03 * wait - 10) + 1)
     noisegen.time = time
     for i=1:length(noisegen.scale)
-        if noisegen.scale[i] > 0.0:
+        if noisegen.scale[i] > 0.0
             noisegen.arms[i].position = noise3D(noisegen.time,noisegen.seeds[i].position) * noisegen.scale[i] * temp_scale
-            noisegen.arms[i].rotation = noise3D(noisegen.time,noisegen.seeds[i].rotation) * noisegen.scale[i] * .5 * temp_scale
+            noisegen.arms[i].rotation = noise4D(noisegen.time,noisegen.seeds[i].rotation) * noisegen.scale[i] * 0.5 * temp_scale
         end
     end
 end

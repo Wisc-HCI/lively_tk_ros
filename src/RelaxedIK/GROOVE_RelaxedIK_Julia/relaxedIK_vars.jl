@@ -56,7 +56,7 @@ function RelaxedIK_vars(path_to_src, info_file_name, objectives, grad_types, wei
         push!(goal_quats_relative, Quat(1.,0.,0.,0.))
     end
 
-    noise = NoiseGenerator(y["ee_joint_noise"],y["base_link_noise"])
+    noise = NoiseGenerator(y["ee_joint_noise"],y["fixed_frame_noise"])
 
     if preconfigured == false
         collision_nn_file_name = y["collision_nn_file"]

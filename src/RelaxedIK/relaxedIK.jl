@@ -24,7 +24,17 @@ function get_nchain(path_to_src, info_file_name, chains, solver_name = "slsqp", 
     objectives = [min_jt_vel_obj, min_jt_accel_obj, min_jt_jerk_obj, joint_limit_obj, collision_nn_obj]
     grad_types = ["forward_ad", "forward_ad", "forward_ad", "forward_ad",  "forward_ad"]
     weight_priors = [5.0 ,4.0, 0.1, 1.0, 2.0]
+    y = info_file_name_to_yaml_block(path_to_src, info_file_name)
     for chain_idx in 1:chains
+        if y["ee_joint_noise"][chain_idx] > 0.0
+            push!(objectives, (x, vars) -> positional_noise_obj(x, vars, idx=chain_idx))
+            push!(grad_types, "forward_ad")
+            push!(weight_priors, 50)
+            push!(objectives, (x, vars) -> rotational_noise_obj(x, vars, idx=chain_idx))
+            push!(grad_types, "forward_ad")
+            push!(weight_priors, 49)
+        end
+        # TODO: Handle fixed_frame Movement
         push!(objectives, (x, vars) -> position_obj(x, vars, idx=chain_idx))
         push!(grad_types, "forward_ad")
         push!(weight_priors, 50)
@@ -41,7 +51,7 @@ end
 
 # path_to_src = Base.source_dir()
 function get_standard(path_to_src, info_file_name; solver_name = "slsqp", preconfigured=false)
-    objectives = [position_obj_1, rotation_obj_1, min_jt_vel_obj, min_jt_accel_obj, min_jt_jerk_obj, collision_nn_obj]
+    objectives = [(x, vars) -> position_obj(x, vars, idx=1), (x, vars) -> rotation_obj(x, vars, idx=1), min_jt_vel_obj, min_jt_accel_obj, min_jt_jerk_obj, collision_nn_obj]
     grad_types = ["forward_ad", "forward_ad", "forward_ad", "forward_ad", "forward_ad",  "forward_ad"]
     weight_priors = [50.0, 49.0, 1.0 ,0.5, 0.2, 1.0]
     inequality_constraints = []
@@ -53,7 +63,7 @@ end
 
 
 function get_finite_diff_version(path_to_src, info_file_name; solver_name = "slsqp", preconfigured=false)
-    objectives = [position_obj_1, rotation_obj_1, min_jt_vel_obj, min_jt_accel_obj, min_jt_jerk_obj, collision_nn_obj]
+    objectives = [(x, vars) -> position_obj(x, vars, idx=1), (x, vars) -> rotation_obj(x, vars, idx=1), min_jt_vel_obj, min_jt_accel_obj, min_jt_jerk_obj, collision_nn_obj]
     grad_types = ["finite_diff", "finite_diff", "finite_diff", "finite_diff", "finite_diff", "finite_diff"]
     weight_priors = [50., 40.0, 1.0 ,1.0, 1.0, 0.4]
     inequality_constraints = []

@@ -38,7 +38,7 @@ function rotation_obj(x, vars, idx)
     return groove_loss(x_val, 0., 2.0, 0.1647525572455652, 0.4, 2.0)
 end
 
-function positional_noise_obj(x, vars, idx):
+function positional_noise_obj(x, vars, idx)
     vars.robot.arms[idx].getFrames(x[vars.robot.subchain_indices[idx]])
     x_val = norm(vars.robot.arms[idx].out_pts[end] - (vars.goal_positions[idx] + vars.noise.arms[idx].position ))
 
