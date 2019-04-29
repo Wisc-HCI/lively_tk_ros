@@ -35,7 +35,7 @@ function update!(noisegen, wait, time)
     # based on the amount of time that has elapsed since the last true
     # solve request to lively_ik. This causes the amount of noise to
     # slowly ramp up.
-    temp_scale = 2 ^ (0.03 * wait - 10) / (2 ^ (0.03 * wait - 10) + 1)
+    temp_scale = 2 ^ (0.05 * wait - 10) / (2 ^ (0.05 * wait - 10) + 1)
     noisegen.time = time
     for i=1:length(noisegen.scale)
         if noisegen.scale[i] > 0.0
@@ -43,4 +43,5 @@ function update!(noisegen, wait, time)
             noisegen.arms[i].rotation = noise4D(noisegen.time,noisegen.seeds[i].rotation) * noisegen.scale[i] * 0.5 * temp_scale
         end
     end
+    println(temp_scale,": ",noisegen.arms[1])
 end

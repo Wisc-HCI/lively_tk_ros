@@ -27,6 +27,7 @@ function get_nchain(path_to_src, info_file_name, chains, solver_name = "slsqp", 
     y = info_file_name_to_yaml_block(path_to_src, info_file_name)
     for chain_idx in 1:chains
         if y["ee_joint_noise"][chain_idx] > 0.0
+            println("Adding joint noise with magnitude ",y["ee_joint_noise"][chain_idx]," to ee_fixed_joint ",chain_idx)
             push!(objectives, (x, vars) -> positional_noise_obj(x, vars, idx=chain_idx))
             push!(grad_types, "forward_ad")
             push!(weight_priors, 50)
@@ -98,7 +99,6 @@ function get_rot_mats(relaxedIK, x)
 end
 
 function solve(relaxedIK, goal_positions, goal_quats, wait, time; prev_state = [])
-    println(wait)
     vars = relaxedIK.relaxedIK_vars
 
     if vars.position_mode == "relative"
