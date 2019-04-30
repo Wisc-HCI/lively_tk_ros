@@ -39,23 +39,27 @@ function rotation_obj(x, vars, idx)
 end
 
 function positional_noise_obj(x, vars, idx)
+    #println("Positional_noise: ",vars.noise.arms[idx].position)
     vars.robot.arms[idx].getFrames(x[vars.robot.subchain_indices[idx]])
-    println("Noise: ",vars.noise.arms[idx].position)
-    goal = (vars.goal_positions[idx] + vars.noise.arms[idx].position )
-    println("Goal: ",goal)
-    diff = vars.robot.arms[idx].out_pts[end] - goal
-    println("Diff: ",diff)
+    #println("Noise: ",vars.noise.arms[idx].position)
+    goal = vars.goal_positions[idx] + vars.noise.arms[idx].position
+    #println("Goal: ",goal)
+    #println("Diff: ",diff)
     x_val = norm(vars.robot.arms[idx].out_pts[end] - goal)
+    #println("Norm: ",x_val)
 
     # return groove_loss(x_val, 0.,2.,.1,10.,2.)
     return groove_loss(x_val, 0., 2.0, 0.1647525572455652, 0.4, 2.0)
 end
 
 function rotational_noise_obj(x, vars, idx)
+    println("Rotational Noise")
     vars.robot.arms[idx].getFrames(x[vars.robot.subchain_indices[idx]])
     eeMat = vars.robot.arms[idx].out_frames[end]
-
+    println("Orig: ",vars.goal_quats[idx])
+    println("Noise: ",vars.noise.arms[idx].rotation)
     goal_quat = vars.goal_quats[idx] + vars.noise.arms[idx].rotation
+    println("Goal Quat: ",goal_quat)
     ee_quat = Quat(eeMat)
 
     ee_quat2 = Quat(-ee_quat.w, -ee_quat.x, -ee_quat.y, -ee_quat.z)
@@ -67,6 +71,22 @@ function rotational_noise_obj(x, vars, idx)
 
     # return groove_loss(x_val, 0.,2.,.1,10.,2.)
     return groove_loss(x_val, 0., 2.0, 0.1647525572455652, 0.4, 2.0)
+end
+
+function position_obj_1(x, vars)
+    return position_obj(x, vars, 1)
+end
+
+function rotation_obj_1(x, vars)
+    return rotation_obj(x, vars, 1)
+end
+
+function positional_noise_obj_1(x, vars)
+    return positional_noise_obj(x, vars, 1)
+end
+
+function rotational_noise_obj_1(x, vars)
+    return rotational_noise_obj(x, vars, 1)
 end
 
 function min_jt_vel_obj(x, vars)

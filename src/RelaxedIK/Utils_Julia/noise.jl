@@ -40,8 +40,8 @@ function update!(noisegen, wait, time)
     for i=1:length(noisegen.scale)
         if noisegen.scale[i] > 0.0
             noisegen.arms[i].position = noise3D(noisegen.time,noisegen.seeds[i].position) * noisegen.scale[i] * temp_scale
-            noisegen.arms[i].rotation = noise4D(noisegen.time,noisegen.seeds[i].rotation) * noisegen.scale[i] * 0.5 * temp_scale
+            noisegen.arms[i].rotation = noise4D(noisegen.time,noisegen.seeds[i].rotation) * noisegen.scale[i] * 0.01 * temp_scale
         end
     end
-    println(temp_scale,": ",noisegen.arms[1])
+    # println(temp_scale,": ",noisegen.arms[1])
 end

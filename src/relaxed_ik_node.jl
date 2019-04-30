@@ -52,6 +52,8 @@ num_chains = relaxedIK.relaxedIK_vars.robot.num_chains
 
 relaxedIK = get_nchain(path_to_src, loaded_robot, num_chains)
 
+xopt = []
+
 println("loaded robot: $loaded_robot")
 
 init_node("relaxed_ik_node_jl")
@@ -93,6 +95,8 @@ while ! is_shutdown()
     global eepg
     global relaxedIK
     global wait
+    global xopt
+
     if reset_solver == true
         println("resetting")
         reset_solver = false
@@ -121,8 +125,8 @@ while ! is_shutdown()
         push!(pos_goals, [pos_x, pos_y, pos_z])
         push!(quat_goals, Quat(quat_w, quat_x, quat_y, quat_z))
     end
-    time = to_sec(get_rostime())
-    xopt = solve(relaxedIK, pos_goals, quat_goals, wait, time)
+    time = to_sec(get_rostime())/3
+    xopt = solve(relaxedIK, pos_goals, quat_goals, wait, time, prev_state=xopt)
     wait = wait + 0.01
     # println(relaxedIK.relaxedIK_vars.vars.objective_closures[end](xopt))
     ja = JointAngles()
@@ -131,6 +135,6 @@ while ! is_shutdown()
     end
     publish(angles_pub, ja)
 
-    println(xopt)
+    println(wait," ",xopt)
     rossleep(loop_rate)
 end

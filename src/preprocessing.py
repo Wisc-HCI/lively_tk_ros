@@ -46,4 +46,3 @@ if __name__ == '__main__':
 
 
     vars = RelaxedIK_vars('relaxedIK',os.path.dirname(__file__) + '/RelaxedIK/urdfs/' + urdf_file_name,joint_names,ee_fixed_joints, joint_ordering,init_state=starting_config, collision_file=collision_file_name, config_override=True, path_to_src=path_to_src, collision_nn_file=collision_nn_file)
-

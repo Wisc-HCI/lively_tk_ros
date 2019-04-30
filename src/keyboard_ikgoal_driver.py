@@ -26,6 +26,7 @@ position_l = [0,0,0]
 rotation_l = [1,0,0,0]
 
 rate = rospy.Rate(1000)
+print("Listening for keyboard input...")
 while not rospy.is_shutdown():
     pose = PoseStamped()
     pose.pose.position.x = position_r[0]
@@ -50,6 +51,7 @@ while not rospy.is_shutdown():
     ik_goal_l_pub.publish(pose)
 
     key = readchar.readkey()
+    print(key)
     if key == 'w':
         position_r[0] += pos_stride
     elif key == 'x':
@@ -128,7 +130,7 @@ while not rospy.is_shutdown():
         q.data = True
         quit_pub.publish(q)
     elif key == 'c':
-        rospy.signal_shutdown()
+        rospy.signal_shutdown("Exit Requested")
 
 
     pose = PoseStamped()
