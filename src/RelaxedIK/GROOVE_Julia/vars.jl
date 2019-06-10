@@ -23,6 +23,7 @@ mutable struct Vars
     dummy_val
 end
 
+
 function Vars(init_state, objectives, grad_types, weight_priors, inequality_constraints, ineq_grad_types, equality_constraints, eq_grad_types, bounds)
     xopt = copy(init_state) + 0.0000000001*ones(length(init_state))
     prev_state = copy(init_state) + 0.0000000001*ones(length(init_state))
@@ -84,7 +85,6 @@ function populate_constraint_closures!(vars, target_vars)
     for i=1:length(vars.equality_constraints)
         push!(vars.eq_constraint_closures, get_constraint_closure(vars.equality_constraints[i], vars.eq_grad_types[i], target_vars))
     end
-
 end
 
 function update!(vars, xopt)

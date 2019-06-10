@@ -6,7 +6,7 @@ mutable struct Groove
     opt
 end
 
-function get_groove(vars, solver_name; max_iter=11)
+function get_groove(vars, solver_name; max_iter=12, max_time = 0.0)
     #=
     solver name options:
     "slsqp", "mma", "ccsaq", "bobyqa", "cobyla"
@@ -70,16 +70,18 @@ function get_groove(vars, solver_name; max_iter=11)
     end
 
     xtol_abs!(opt, 0.0001)
-    # xtol_rel!(opt, 1.1)
+    xtol_rel!(opt, 0.0001)
     maxeval!(opt, max_iter)
-    # maxtime!(opt, 0.005)
+    if max_time > 0.0
+        maxtime!(opt, max_time)
+    end
 
     return Groove(vars, opt)
 
 end
 
-function groove_solve(groove; prev_state =[], ftol_abs=0.001, max_time=0.0)
-    if length(prev_state) == 0
+function groove_solve(groove; prev_state = nothing, ftol_abs=0.0, max_time=0.0, max_iter = 0)
+    if prev_state == nothing
         initSol = groove.vars.xopt
     else
         initSol = prev_state
@@ -90,8 +92,12 @@ function groove_solve(groove; prev_state =[], ftol_abs=0.001, max_time=0.0)
         maxtime!(groove.opt, max_time)
     end
 
-    if ftol_abs != 0.001
+    if ftol_abs > 0.0
         ftol_abs!(groove.opt, ftol_abs)
+    end
+
+    if max_iter > 0
+        maxeval!(groove.opt, max_iter)
     end
     =#
 
@@ -102,5 +108,6 @@ function groove_solve(groove; prev_state =[], ftol_abs=0.001, max_time=0.0)
     # println(groove.opt.numevals)
     # println(ret)
     # return minx, minf, groove.opt.numevals
+    # println(groove.opt.numevals)
     return minx
 end

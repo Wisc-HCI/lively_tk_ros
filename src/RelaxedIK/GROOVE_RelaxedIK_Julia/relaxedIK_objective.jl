@@ -9,15 +9,17 @@ include("../Utils_Julia/geometry_utils.jl")
 include("../Utils_Julia/nn_utils.jl")
 
 function groove_loss(x_val, t, d, c, f, g)
-    return (-2.718281828459^((-(x_val - t)^d) / (2.0 * c^2.0)) ) + f * (x_val - t)^g
+    return (-2.718281828459^((-(x_val - t)^d) / (2.0 * c^2)) ) + f * (x_val - t)^g
+end
+
+function groove_loss_derivative(x_val, t, d, c, f, g)
+    return -2.718281828459^((-(x_val - t)^d) / (2.0 * c^2)) * ( (-d*(x_val-t) ) / (2. * c^2) ) + g*f*(x_val-t)
 end
 
 function position_obj(x, vars, idx)
     vars.robot.arms[idx].getFrames(x[vars.robot.subchain_indices[idx]])
     x_val = norm(vars.robot.arms[idx].out_pts[end] - vars.goal_positions[idx])
-
-    # return groove_loss(x_val, 0.,2.,.1,10.,2.)
-    return groove_loss(x_val, 0., 2.0, 0.1647525572455652, 0.4, 2.0)
+    return groove_loss(x_val, 0., 2, 0.23065358014379128, 0.10204081632653063, 2)
 end
 
 function rotation_obj(x, vars, idx)
@@ -34,22 +36,14 @@ function rotation_obj(x, vars, idx)
 
     x_val = min(disp, disp2)
 
-    # return groove_loss(x_val, 0.,2.,.1,10.,2.)
-    return groove_loss(x_val, 0., 2.0, 0.1647525572455652, 0.4, 2.0)
+    return groove_loss(x_val, 0., 2, 0.23065358014379128, 0.10204081632653063, 2)
 end
 
 function positional_noise_obj(x, vars, idx)
-    #println("Positional_noise: ",vars.noise.arms[idx].position)
     vars.robot.arms[idx].getFrames(x[vars.robot.subchain_indices[idx]])
-    #println("Noise: ",vars.noise.arms[idx].position)
     goal = vars.goal_positions[idx] + vars.noise.arms[idx].position
-    #println("Goal: ",goal)
-    #println("Diff: ",diff)
     x_val = norm(vars.robot.arms[idx].out_pts[end] - goal)
-    #println("Norm: ",x_val)
-
-    # return groove_loss(x_val, 0.,2.,.1,10.,2.)
-    return groove_loss(x_val, 0., 2.0, 0.1647525572455652, 0.4, 2.0)
+    return groove_loss(x_val, 0., 2, 0.23065358014379128, 0.10204081632653063, 2)
 end
 
 function rotational_noise_obj(x, vars, idx)
@@ -91,43 +85,51 @@ end
 
 function min_jt_vel_obj(x, vars)
     # return groove_loss(norm(x - vars.vars.xopt), 0.0, 2.0, 0.1, 10.0, 2.0)
-    return groove_loss(norm(x - vars.vars.xopt), 0.0, 2.0, 0.1318020457964522, 0.625, 2.0)
+    return groove_loss(norm(x - vars.vars.xopt), 0.0, 2, 0.1, 10.0, 2)
 end
 
 function min_jt_accel_obj(x, vars)
     # return groove_loss(norm((vars.vars.xopt - vars.vars.prev_state) - (x - vars.vars.xopt)), 0.0, 2.0, 0.1, 10.0, 2.0)
-    return groove_loss(norm((vars.vars.xopt - vars.vars.prev_state) - (x - vars.vars.xopt)),  0.0, 2.0, 0.1318020457964522, 0.625, 2.0)
+    return groove_loss(norm((vars.vars.xopt - vars.vars.prev_state) - (x - vars.vars.xopt)),  0.0, 2, .1, 10.0, 2)
 end
 
 function min_jt_jerk_obj(x, vars)
     # return groove_loss( norm( ( (x - vars.vars.xopt) - (vars.vars.xopt - vars.vars.prev_state) ) - ( (vars.vars.xopt - vars.vars.prev_state) - (vars.vars.prev_state - vars.vars.prev_state2) ) ),  0.0, 2.0, 0.1, 10.0, 2.0   )
-    return groove_loss( norm( ( (x - vars.vars.xopt) - (vars.vars.xopt - vars.vars.prev_state) ) - ( (vars.vars.xopt - vars.vars.prev_state) - (vars.vars.prev_state - vars.vars.prev_state2) ) ),  0.0, 2.0, 0.1318020457964522, 0.625, 2.0  )
+    return groove_loss( norm( ( (x - vars.vars.xopt) - (vars.vars.xopt - vars.vars.prev_state) ) - ( (vars.vars.xopt - vars.vars.prev_state) - (vars.vars.prev_state - vars.vars.prev_state2) ) ),  0.0, 2, .1, 10.0, 2  )
 end
 
 
 function joint_limit_obj(x, vars)
     sum = 0.0
-    penalty = 1.0
-    d = 8
+    penalty_cutoff = 0.85
+    a = 0.05 / (penalty_cutoff^50.)
+    # penalty = 1.0
+    # d = 8
     joint_limits = vars.vars.bounds
     for i = 1:vars.robot.num_dof
         l = joint_limits[i][1]
         u = joint_limits[i][2]
-        mid = (u + l) / 2.0
-        a = penalty / (u - mid)^d
-        sum += a*(x[i] - mid)^d
+        # mid = (u + l) / 2.0
+        # a = penalty / (u - mid)^d
+        # sum += a*(x[i] - mid)^d
+        r = (x[i] - l) / (u - l)
+        n = 2.0 * (r - 0.5)
+        sum += a*n^50.
     end
 
     x_val = sum
     # return groove_loss(  x_val, 0.0, 2.0, 2.3, 0.003, 2.0 )
-    return groove_loss(  x_val, 0.0, 2.0, 0.3295051144911304, 0.1, 2.0 )
+    return groove_loss(  x_val, 0.0, 2, 0.3295051144911304, 0.1, 2)
 end
 
 function collision_nn_obj(x, vars)
     state_to_joint_pts_inplace(x, vars)
     # state = state_to_joint_pts_withreturn(x, vars)
     # return groove_loss(  vars.nn_model( vars.joint_pts ) , 0.0, 2.0, 0.07, 100.0, 2.0 )
-    return groove_loss(  vars.nn_model( vars.joint_pts ) , 0.0, 2.0, 0.03295051144911305, 10.0, 2.0 )
+    # 0.2010929597597385, 0.5241930016229932, 1.1853951273805203
+    # 0.2010929597597385, 0.5241930016229932, 1.1853951273805203
+    # return groove_loss(  vars.nn_model( vars.joint_pts ) , 0.2010929597597385, 2, 0.52419, 1.1853951273805203, 2 )
+    return groove_loss(  vars.nn_model3( vars.joint_pts ), vars.nn_t3, 2, vars.nn_c3, vars.nn_f3, 2 )
 end
 
 

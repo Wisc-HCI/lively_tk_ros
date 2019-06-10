@@ -1,0 +1,6 @@
+lively_ik/EEPoseGoals ee_pose_goals
+lively_ik/JointAngles init
+float64 ee_pos_precision
+float64 ee_rot_precision
+---
+lively_ik/JointAngles joint_angles

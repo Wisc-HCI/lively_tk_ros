@@ -213,10 +213,7 @@ fixed_frame_noise = 0
 # TODO: fill out this function, or leave it how it is for the default option
 from sensor_msgs.msg import JointState
 def joint_state_define(x):
-   js = JointState()
-   js.name = joint_ordering
-   js.position = tuple(x)
-   return js
+	return None
 
 ######################################################################################################
 
@@ -309,12 +306,12 @@ collision_file_name = 'collision_ur5.yaml'
 #
 #   You will see an rviz scene with collision objects in their specified locations, including the
 #   collision capsules on the robot's links.
-#   The robot in this scene will be cycling through the sample states you provided in the yaml file
-#
-#   TIP: if any geometry that has been specified in the collision yaml file filled out in Step 5a is not being
-#     displayed, just copy and paste that geometry again in the collision yaml file.
-#     This appears to be a mysterious rviz bug, but listing it twice in the yaml file appears to fix
-#     the problem in all cases.  Listing the geometry twice will not affect the learning process.
+#   Text will appear above the robot that will either say "No Collision" (in green) or "Collision" (in red)
+#   Using the provided GUI pop-up, use the sliders to change the robot's configuration.  Verfiy that
+#   the "No Collision" and "Collision" match up with your interpretation of what a collision
+#   and non-collision state means for your robot platform.  If it does NOT align with what you have
+#   in mind for collision and non-collision states, go back to step 5a and adjust your collision file.
+#   This will usually consist of changing the states in the sample_states list.
 ######################################################################################################
 
 
@@ -348,6 +345,9 @@ collision_file_name = 'collision_ur5.yaml'
 #   trains a neural network so that the robot can learn about its own geometry so that it avoids
 #   collisions with itself and other items defined in your collision yaml file, as well as learns
 #   to avoid kinematic singularities.
+#
+#   IMPORTANT: Make sure you are happy with the results in Step 5b before training the neural network!
+#
 #   To start this process, run the following command:
 #
 #   roslaunch lively_ik preprocessing_julia.launch
