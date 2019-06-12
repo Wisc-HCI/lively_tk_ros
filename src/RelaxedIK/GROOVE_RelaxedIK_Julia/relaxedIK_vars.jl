@@ -122,7 +122,7 @@ function RelaxedIK_vars(path_to_src, info_file_name, objectives, grad_types, wei
         f_val3 = parse(Float64, split_arr[3])
         close(fp)
 
-        rv = RelaxedIK_vars(vars, robot, position_mode, rotation_mode, goal_positions,
+        rv = RelaxedIK_vars(vars, robot, noise, position_mode, rotation_mode, goal_positions,
             goal_quats, goal_positions_relative, goal_quats_relative, init_ee_positions,
             init_ee_quats, 0, model, model2, model3, w_, t_val, c_val, f_val, w2_, t_val2, c_val2, f_val2, w3_, t_val3, c_val3, f_val3, 0, 0, 0)
         initial_joint_points = state_to_joint_pts_withreturn(rand(length(vars.init_state)), rv)
@@ -132,7 +132,7 @@ function RelaxedIK_vars(path_to_src, info_file_name, objectives, grad_types, wei
         # collision_nn = (x)-> model_nn(x, model, state_to_joint_pts_closure)
         # rv.collision_nn = collision_nn
     else
-        rv = RelaxedIK_vars(vars, robot, position_mode, rotation_mode, goal_positions,
+        rv = RelaxedIK_vars(vars, robot, noise, position_mode, rotation_mode, goal_positions,
         goal_quats, goal_positions_relative, goal_quats_relative, init_ee_positions, init_ee_quats, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
     end
 
@@ -180,9 +180,9 @@ function RelaxedIK_vars(path_to_src, info_file_name, objectives, grad_types, wei
     return rv
 end
 
-function update_relaxedIK_vars!(relaxedIK_vars, xopt, wait, time)
+function update_relaxedIK_vars!(relaxedIK_vars, xopt, time, priority)
     update!(relaxedIK_vars.vars, xopt)
-    update!(relaxedIK_vars.noise, wait, time)
+    update!(relaxedIK_vars.noise, time, priority)
 end
 
 function info_file_name_to_yaml_block(path_to_src, info_file_name)

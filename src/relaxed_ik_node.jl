@@ -39,6 +39,8 @@ function eePoseGoals_cb(data::EEPoseGoals)
     wait = 0.0
 end
 
+init_node("relaxed_ik_node_jl")
+
 path_to_src = Base.source_dir()
 println(path_to_src)
 loaded_robot_file = open(path_to_src * "/RelaxedIK/Config/loaded_robot")
@@ -48,13 +50,9 @@ close(loaded_robot_file)
 relaxedIK = get_standard(path_to_src, loaded_robot)
 num_chains = relaxedIK.relaxedIK_vars.robot.num_chains
 
-relaxedIK = get_nchain(path_to_src, loaded_robot, num_chains)
-
-xopt = []
-
 println("loaded robot: $loaded_robot")
 
-init_node("relaxed_ik_node_jl")
+
 
 Subscriber{EEPoseGoals}("/relaxed_ik/ee_pose_goals", eePoseGoals_cb)
 Subscriber{BoolMsg}("/relaxed_ik/quit", quit_cb, queue_size=1)
@@ -80,9 +78,9 @@ for i = 1:num_chains
 end
 empty_eepg = eepg
 
-loop_rate = Rate(1000)
+loop_rate = Rate(700)
 quit = false
-while true
+while !is_shutdown()
     global quit
     if quit == true
         println("quitting")
@@ -100,7 +98,6 @@ while true
         println("resetting")
         reset_solver = false
         relaxedIK = get_standard(path_to_src, loaded_robot)
-        relaxedIK = get_nchain(path_to_src, loaded_robot, relaxedIK.relaxedIK_vars.robot.num_chains)
         eepg = empty_eepg
     end
 
@@ -125,8 +122,8 @@ while true
         push!(quat_goals, Quat(quat_w, quat_x, quat_y, quat_z))
     end
     time = to_sec(get_rostime())/3
-    xopt = solve(relaxedIK, pos_goals, quat_goals, wait, time, prev_state=xopt)
-    wait = wait + 0.01
+    xopt = solve(relaxedIK, pos_goals, quat_goals, time, 0)
+    # wait = wait + 0.01
     # println(relaxedIK.relaxedIK_vars.vars.objective_closures[end](xopt))
     ja = JointAngles()
     for i = 1:length(xopt)

@@ -22,11 +22,18 @@ function RelaxedIK(path_to_src, info_file_name, objectives, grad_types, weight_p
     return RelaxedIK(relaxedIK_vars, groove, ema_filter)
 end
 
-function get_standard(path_to_src, info_file_name, chains, solver_name = "slsqp", preconfigured=false)
+function get_standard(path_to_src, info_file_name; solver_name = "slsqp", preconfigured=false)
     objectives = [position_obj_1, positional_noise_obj_1, rotation_obj_1, rotational_noise_obj_1, min_jt_vel_obj, min_jt_accel_obj, min_jt_jerk_obj, joint_limit_obj, collision_nn_obj]
     grad_types = ["forward_ad",   "forward_ad",           "forward_ad",   "forward_ad",           "forward_ad",   "forward_ad",     "forward_ad",    "forward_ad",    "nn"]
     weight_priors = [50, 49, 49, 48, 5.0 ,4.0, 0.1, 1.0, 1.0]
+
+    objectives = [position_obj_1, positional_noise_obj_1, rotation_obj_1, min_jt_vel_obj, min_jt_accel_obj, min_jt_jerk_obj, joint_limit_obj, collision_nn_obj]
+    grad_types = ["forward_ad",   "forward_ad",           "forward_ad",   "forward_ad",   "forward_ad",     "forward_ad",    "forward_ad",    "nn"]
+    weight_priors = [50, 49, 49, 5.0 ,4.0, 0.1, 1.0, 1.0]
+
+
     y = info_file_name_to_yaml_block(path_to_src, info_file_name)
+    # TODO: Add objectives as lambda functions
     # for chain_idx in 1:chains
     #     if y["ee_joint_noise"][chain_idx] > 0.0
     #         println("Adding joint noise with magnitude ",y["ee_joint_noise"][chain_idx]," to ee_fixed_joint ",chain_idx)
@@ -63,6 +70,7 @@ function get_standard(path_to_src, info_file_name, chains, solver_name = "slsqp"
     end
     return relaxedIK
 end
+
 
 function get_base_ik(path_to_src, info_file_name; solver_name = "slsqp", preconfigured=false)
     objectives = [position_obj_1, rotation_obj_1]
@@ -210,7 +218,7 @@ function get_rot_mats(relaxedIK, x)
     return rot_mats
 end
 
-function solve(relaxedIK, goal_positions, goal_quats; prev_state = nothing, filter=true, max_iter = 0, max_time = 0.0)
+function solve(relaxedIK, goal_positions, goal_quats, time, priority; prev_state = nothing, filter=true, max_iter = 0, max_time = 0.0)
     vars = relaxedIK.relaxedIK_vars
 
     if vars.position_mode == "relative"
@@ -232,7 +240,7 @@ function solve(relaxedIK, goal_positions, goal_quats; prev_state = nothing, filt
     end
 
     xopt = groove_solve(relaxedIK.groove, prev_state=prev_state, max_iter=max_iter, max_time = max_time)
-    update_relaxedIK_vars!(relaxedIK.relaxedIK_vars, xopt)
+    update_relaxedIK_vars!(relaxedIK.relaxedIK_vars, xopt, time, priority)
     if filter
         xopt = filter_signal(relaxedIK.ema_filter, xopt)
     end

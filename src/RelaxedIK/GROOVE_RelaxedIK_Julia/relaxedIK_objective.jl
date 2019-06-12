@@ -12,6 +12,11 @@ function groove_loss(x_val, t, d, c, f, g)
     return (-2.718281828459^((-(x_val - t)^d) / (2.0 * c^2)) ) + f * (x_val - t)^g
 end
 
+mutable struct idx_obj
+    obj
+    idx
+end
+
 function groove_loss_derivative(x_val, t, d, c, f, g)
     return -2.718281828459^((-(x_val - t)^d) / (2.0 * c^2)) * ( (-d*(x_val-t) ) / (2. * c^2) ) + g*f*(x_val-t)
 end
