@@ -6,6 +6,12 @@ mutable struct Groove
     opt
 end
 
+struct idx_obj
+    obj
+    idx
+end
+
+
 function get_groove(vars, solver_name; max_iter=12, max_time = 0.0)
     #=
     solver name options:

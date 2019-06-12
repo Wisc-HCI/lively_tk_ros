@@ -1,8 +1,3 @@
-struct idx_obj
-    obj
-    idx
-end
-
 function obj_master(x, grad, vars)
     if length(grad) > 0
         g = zeros(length(grad))
