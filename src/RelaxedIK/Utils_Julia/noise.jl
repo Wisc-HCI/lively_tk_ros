@@ -14,6 +14,7 @@ mutable struct NoiseGenerator
     scale
     seeds
     time
+    global_seed
     # Remove in final
     pub
 end
@@ -28,17 +29,23 @@ function NoiseGenerator(scale, base_link_noise)
         push!(arms, posenoise(zeros(3),zeros(3)))
         push!(seeds, posenoise(10*rand(3),10*rand(3)))
     end
-
+    global_seed = rand()*10
     pub = Publisher("/lively_ik/noise", Pose, queue_size = 3)
 
     # n = NoiseGenerator(arms, scale, seeds, 0.0)
 
     # Remove in final
-    n = NoiseGenerator(arms, scale, seeds, 0.0, pub)
+    n = NoiseGenerator(arms, scale, seeds, 0.0, global_seed, pub)
 
     update!(n, 0.0, 0.0)
 
     return n
+end
+
+function limit(time,seed)
+    raw = noise(time,seed)
+    limit = 1/(1+exp(5-10*abs(raw)))
+    return limit
 end
 
 function update!(noisegen, time, priority)
@@ -48,7 +55,7 @@ function update!(noisegen, time, priority)
     noisegen.time = time
     for i=1:length(noisegen.scale)
         if noisegen.scale[i] > 0.0
-            noisegen.arms[i].position = noise3D(noisegen.time,noisegen.seeds[i].position) * noisegen.scale[i] * scale
+            noisegen.arms[i].position = noise3D(noisegen.time,noisegen.seeds[i].position) * noisegen.scale[i] * scale * limit(time,noisegen.global_seed)
             noisegen.arms[i].rotation = noise3D(noisegen.time,noisegen.seeds[i].rotation) * noisegen.scale[i] * 0.3 * scale
         end
     end

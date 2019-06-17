@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <launch>
-  <arg name="noise" default="true" />
+  <rosparam param="lively_ik/freq">1</rosparam>
+  <rosparam param="lively_ik/bias">[1,1,1]</rosparam>
    <!-- ##################################################################################### -->
 
    <node pkg="lively_ik" type="relaxed_ik_node.jl" name="lively_ik_node" output="screen"/>
