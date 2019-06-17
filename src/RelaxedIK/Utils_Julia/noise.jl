@@ -25,8 +25,8 @@ function NoiseGenerator(scale, base_link_noise)
     seeds = []
 
     for i=1:length(scale)
-        push!(arms, posenoise(zeros(3),zeros(4)))
-        push!(seeds, posenoise(10*rand(3),10*rand(4)))
+        push!(arms, posenoise(zeros(3),zeros(3)))
+        push!(seeds, posenoise(10*rand(3),10*rand(3)))
     end
 
     pub = Publisher("/lively_ik/noise", Pose, queue_size = 3)
@@ -49,7 +49,7 @@ function update!(noisegen, time, priority)
     for i=1:length(noisegen.scale)
         if noisegen.scale[i] > 0.0
             noisegen.arms[i].position = noise3D(noisegen.time,noisegen.seeds[i].position) * noisegen.scale[i] * scale
-            noisegen.arms[i].rotation = noise4D(noisegen.time,noisegen.seeds[i].rotation) * noisegen.scale[i] * 0.01 * scale
+            noisegen.arms[i].rotation = noise3D(noisegen.time,noisegen.seeds[i].rotation) * noisegen.scale[i] * 0.3 * scale
         end
     end
 
@@ -57,10 +57,10 @@ function update!(noisegen, time, priority)
     pose.position.x = noisegen.arms[1].position[1]
     pose.position.y = noisegen.arms[1].position[2]
     pose.position.z = noisegen.arms[1].position[3]
-    pose.orientation.w = noisegen.arms[1].rotation[1]
-    pose.orientation.x = noisegen.arms[1].rotation[2]
-    pose.orientation.y = noisegen.arms[1].rotation[3]
-    pose.orientation.z = noisegen.arms[1].rotation[4]
+    # pose.orientation.w = noisegen.arms[1].rotation[1]
+    pose.orientation.x = noisegen.arms[1].rotation[1]
+    pose.orientation.y = noisegen.arms[1].rotation[2]
+    pose.orientation.z = noisegen.arms[1].rotation[3]
     publish(noisegen.pub,pose)
 
     # println(temp_scale,": ",noisegen.arms[1])

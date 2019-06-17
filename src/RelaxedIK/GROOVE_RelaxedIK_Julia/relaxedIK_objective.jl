@@ -47,13 +47,11 @@ function positional_noise_obj(x, vars, idx)
 end
 
 function rotational_noise_obj(x, vars, idx)
-    println("Rotational Noise")
     vars.robot.arms[idx].getFrames(x[vars.robot.subchain_indices[idx]])
     eeMat = vars.robot.arms[idx].out_frames[end]
-    println("Orig: ",vars.goal_quats[idx])
-    println("Noise: ",vars.noise.arms[idx].rotation)
-    goal_quat = vars.goal_quats[idx] + vars.noise.arms[idx].rotation
-    println("Goal Quat: ",goal_quat)
+    orilog = quaternion_log(vars.goal_quats[idx])
+    goal_ori = orilog + vars.noise.arms[idx].rotation
+    goal_quat = quaternion_exp(goal_ori)
     ee_quat = Quat(eeMat)
 
     ee_quat2 = Quat(-ee_quat.w, -ee_quat.x, -ee_quat.y, -ee_quat.z)

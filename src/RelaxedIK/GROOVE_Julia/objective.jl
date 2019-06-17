@@ -23,8 +23,8 @@ function get_obj_closure(func, vars)
     return x -> func(x, vars)
 end
 
-function get_obj_closure(idx_func, vars)
-    # takes in an idx objective function (struct) that is dependent on x, a vars object, and index,
-    # and returns a function that is only dependent on x
-    return x -> idx_func.obj(x, vars, idx_func.idx)
-end
+# function get_obj_closure(idx_func, vars)
+#     # takes in an idx objective function (struct) that is dependent on x, a vars object, and index,
+#     # and returns a function that is only dependent on x
+#     return x -> idx_func.obj(x, vars, idx_func.idx)
+# end

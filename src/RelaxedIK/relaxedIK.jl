@@ -23,14 +23,13 @@ function RelaxedIK(path_to_src, info_file_name, objectives, grad_types, weight_p
 end
 
 function get_standard(path_to_src, info_file_name; solver_name = "slsqp", preconfigured=false)
-    objectives = [idx_obj(position_obj,1), positional_noise_obj_1, rotation_obj_1, rotational_noise_obj_1, min_jt_vel_obj, min_jt_accel_obj, min_jt_jerk_obj, joint_limit_obj, collision_nn_obj]
+    objectives = [position_obj_1, positional_noise_obj_1, rotation_obj_1, rotational_noise_obj_1, min_jt_vel_obj, min_jt_accel_obj, min_jt_jerk_obj, joint_limit_obj, collision_nn_obj]
     grad_types = ["forward_ad",   "forward_ad",           "forward_ad",   "forward_ad",           "forward_ad",   "forward_ad",     "forward_ad",    "forward_ad",    "nn"]
-    weight_priors = [50, 49, 49, 48, 5.0 ,4.0, 0.1, 1.0, 1.0]
+    weight_priors = [50, 49, 49, 49, 5.0 ,4.0, 0.1, 1.0, 1.0]
 
-    objectives = [position_obj_1, positional_noise_obj_1, rotation_obj_1, min_jt_vel_obj, min_jt_accel_obj, min_jt_jerk_obj, joint_limit_obj, collision_nn_obj]
-    grad_types = ["forward_ad",   "forward_ad",           "forward_ad",   "forward_ad",   "forward_ad",     "forward_ad",    "forward_ad",    "nn"]
-    weight_priors = [50, 49, 49, 5.0 ,4.0, 0.1, 1.0, 1.0]
-
+    # objectives = [position_obj_1, rotation_obj_1, rotational_noise_obj_1, min_jt_vel_obj, min_jt_accel_obj, min_jt_jerk_obj, joint_limit_obj, collision_nn_obj]
+    # grad_types = ["forward_ad",   "forward_ad",   "forward_ad",           "forward_ad",   "forward_ad",     "forward_ad",    "forward_ad",    "nn"]
+    # weight_priors = [50, 49, 49, 5.0 ,4.0, 0.1, 1.0, 1.0]
 
     y = info_file_name_to_yaml_block(path_to_src, info_file_name)
     # TODO: Add objectives as lambda functions

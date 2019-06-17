@@ -121,7 +121,7 @@ while !is_shutdown()
         push!(pos_goals, [pos_x, pos_y, pos_z])
         push!(quat_goals, Quat(quat_w, quat_x, quat_y, quat_z))
     end
-    time = to_sec(get_rostime())/3
+    time = to_sec(get_rostime())/4
     xopt = solve(relaxedIK, pos_goals, quat_goals, time, 0)
     # wait = wait + 0.01
     # println(relaxedIK.relaxedIK_vars.vars.objective_closures[end](xopt))
