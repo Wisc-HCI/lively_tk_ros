@@ -81,6 +81,39 @@ function rotational_noise_obj_1(x, vars)
     return rotational_noise_obj(x, vars, 1)
 end
 
+function positional_noise_obj_2(x, vars)
+    return positional_noise_obj(x, vars, 2)
+end
+
+function rotational_noise_obj_2(x, vars)
+    return rotational_noise_obj(x, vars, 2)
+end
+
+
+function positional_noise_obj_3(x, vars)
+    return positional_noise_obj(x, vars, 3)
+end
+
+function rotational_noise_obj_3(x, vars)
+    return rotational_noise_obj(x, vars, 3)
+end
+
+function positional_noise_obj_4(x, vars)
+    return positional_noise_obj(x, vars, 4)
+end
+
+function rotational_noise_obj_4(x, vars)
+    return rotational_noise_obj(x, vars, 4)
+end
+
+function positional_noise_obj_5(x, vars)
+    return positional_noise_obj(x, vars, 5)
+end
+
+function rotational_noise_obj_5(x, vars)
+    return rotational_noise_obj(x, vars, 5)
+end
+
 function min_jt_vel_obj(x, vars)
     # return groove_loss(norm(x - vars.vars.xopt), 0.0, 2.0, 0.1, 10.0, 2.0)
     return groove_loss(norm(x - vars.vars.xopt), 0.0, 2, 0.1, 10.0, 2)

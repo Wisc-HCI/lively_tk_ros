@@ -27,30 +27,9 @@ function get_standard(path_to_src, info_file_name; solver_name = "slsqp", precon
     grad_types = ["forward_ad",   "forward_ad",           "forward_ad",   "forward_ad",           "forward_ad",   "forward_ad",     "forward_ad",    "forward_ad",    "nn"]
     weight_priors = [50, 49, 49, 49, 5.0 ,4.0, 0.1, 1.0, 1.0]
 
-    # objectives = [position_obj_1, rotation_obj_1, rotational_noise_obj_1, min_jt_vel_obj, min_jt_accel_obj, min_jt_jerk_obj, joint_limit_obj, collision_nn_obj]
-    # grad_types = ["forward_ad",   "forward_ad",   "forward_ad",           "forward_ad",   "forward_ad",     "forward_ad",    "forward_ad",    "nn"]
-    # weight_priors = [50, 49, 49, 5.0 ,4.0, 0.1, 1.0, 1.0]
-
     y = info_file_name_to_yaml_block(path_to_src, info_file_name)
-    # TODO: Add objectives as lambda functions
-    # for chain_idx in 1:chains
-    #     if y["ee_joint_noise"][chain_idx] > 0.0
-    #         println("Adding joint noise with magnitude ",y["ee_joint_noise"][chain_idx]," to ee_fixed_joint ",chain_idx)
-    #         push!(objectives, (x, vars) -> positional_noise_obj(x, vars, idx=chain_idx))
-    #         push!(grad_types, "forward_ad")
-    #         push!(weight_priors, 50)
-    #         push!(objectives, (x, vars) -> rotational_noise_obj(x, vars, idx=chain_idx))
-    #         push!(grad_types, "forward_ad")
-    #         push!(weight_priors, 49)
-    #     end
-    #     # TODO: Handle fixed_frame Movement
-    #     push!(objectives, (x, vars) -> position_obj(x, vars, idx=chain_idx))
-    #     push!(grad_types, "forward_ad")
-    #     push!(weight_priors, 50)
-    #     push!(objectives, (x, vars) -> rotation_obj(x, vars, idx=chain_idx))
-    #     push!(grad_types, "forward_ad")
-    #     push!(weight_priors, 49)
-    # end
+    # TODO: Figure out how to add noise through a generic method
+
     inequality_constraints = []
     ineq_grad_types = []
     equality_constraints = []
@@ -58,16 +37,92 @@ function get_standard(path_to_src, info_file_name; solver_name = "slsqp", precon
     relaxedIK = RelaxedIK(path_to_src, info_file_name, objectives, grad_types, weight_priors, inequality_constraints, ineq_grad_types, equality_constraints, eq_grad_types, solver_name = solver_name, preconfigured=preconfigured)
     num_chains = relaxedIK.relaxedIK_vars.robot.num_chains
 
-    if num_chains == 2
-        relaxedIK = get_bimanual(path_to_src, info_file_name, preconfigured=preconfigured)
-    elseif num_chains == 3
-        relaxedIK = get_3chain(path_to_src, info_file_name, preconfigured=preconfigured)
-    elseif num_chains == 4
-        relaxedIK = get_4chain(path_to_src, info_file_name, preconfigured=preconfigured)
-    elseif num_chains == 5
-        relaxedIK = get_5chain(path_to_src, info_file_name, preconfigured=preconfigured)
+    if num_chains > 1
+        relaxedIK = get_nchain(num_chains, path_to_src, info_file_name, preconfigured=preconfigured)
     end
     return relaxedIK
+end
+
+function get_nchain(n, path_to_src, info_file_name; solver_name = "slsqp", preconfigured=false)
+    objectives = [min_jt_vel_obj, min_jt_accel_obj, min_jt_jerk_obj, joint_limit_obj, collision_nn_obj]
+    grad_types = ["forward_ad",   "forward_ad",     "forward_ad",    "forward_ad",    "nn"]
+    weight_priors = [4.0 ,0.5, 0.2, 1.0, 1.0]
+    for i in 1:n
+        if i == 1
+            push!(objectives,position_obj_1)
+            push!(objectives,positional_noise_obj_1)
+            push!(objectives,rotation_obj_1)
+            push!(objectives,rotational_noise_obj_1)
+        elseif i == 2
+            push!(objectives,position_obj_2)
+            push!(objectives,positional_noise_obj_2)
+            push!(objectives,rotation_obj_2)
+            push!(objectives,rotational_noise_obj_2)
+        elseif i == 3
+            push!(objectives,position_obj_3)
+            push!(objectives,positional_noise_obj_3)
+            push!(objectives,rotation_obj_3)
+            push!(objectives,rotational_noise_obj_3)
+        elseif i == 4
+            push!(objectives,position_obj_4)
+            push!(objectives,positional_noise_obj_4)
+            push!(objectives,rotation_obj_4)
+            push!(objectives,rotational_noise_obj_4)
+        elseif i == 5
+            push!(objectives,position_obj_5)
+            push!(objectives,positional_noise_obj_5)
+            push!(objectives,rotation_obj_5)
+            push!(objectives,rotational_noise_obj_5)
+        end
+        push!(grad_types,"forward_ad")
+        push!(grad_types,"forward_ad")
+        push!(grad_types,"forward_ad")
+        push!(grad_types,"forward_ad")
+        push!(weight_priors,50)
+        push!(weight_priors,49)
+        push!(weight_priors,49)
+        push!(weight_priors,48)
+
+    end
+    inequality_constraints = []
+    ineq_grad_types = []
+    equality_constraints = []
+    eq_grad_types = []
+    return RelaxedIK(path_to_src, info_file_name, objectives, grad_types, weight_priors, inequality_constraints, ineq_grad_types, equality_constraints, eq_grad_types, solver_name = solver_name, preconfigured=preconfigured)
+end
+
+function get_nchain_base_ik(n, path_to_src, info_file_name; solver_name = "slsqp", preconfigured=false)
+    objectives = []
+    grad_types = []
+    weight_priors = []
+    for i in 1:n
+        if i == 1
+            push!(objectives,position_obj_1)
+            push!(objectives,positional_noise_obj_1)
+        elseif i == 2
+            push!(objectives,position_obj_2)
+            push!(objectives,positional_noise_obj_2)
+        elseif i == 3
+            push!(objectives,position_obj_3)
+            push!(objectives,positional_noise_obj_3)
+        elseif i == 4
+            push!(objectives,position_obj_4)
+            push!(objectives,positional_noise_obj_4)
+        elseif i == 5
+            push!(objectives,position_obj_5)
+            push!(objectives,positional_noise_obj_5)
+        end
+        push!(grad_types,"forward_ad")
+        push!(grad_types,"forward_ad")
+        push!(weight_priors,50)
+        push!(weight_priors,49)
+
+    end
+    inequality_constraints = []
+    ineq_grad_types = []
+    equality_constraints = []
+    eq_grad_types = []
+    return RelaxedIK(path_to_src, info_file_name, objectives, grad_types, weight_priors, inequality_constraints, ineq_grad_types, equality_constraints, eq_grad_types, solver_name = solver_name, preconfigured=preconfigured)
 end
 
 
@@ -81,105 +136,10 @@ function get_base_ik(path_to_src, info_file_name; solver_name = "slsqp", preconf
     eq_grad_types = []
     relaxedIK = RelaxedIK(path_to_src, info_file_name, objectives, grad_types, weight_priors, inequality_constraints, ineq_grad_types, equality_constraints, eq_grad_types, solver_name = solver_name, preconfigured=preconfigured, groove_iter=60, max_time = 0.0023)
     num_chains = relaxedIK.relaxedIK_vars.robot.num_chains
-    if num_chains == 2
-        relaxedIK = get_bimanual_base_ik(path_to_src, info_file_name)
-    elseif num_chains == 3
-        relaxedIK = get_3chain_base_ik(path_to_src, info_file_name)
-    elseif num_chains == 4
-        relaxedIK = get_4chain_base_ik(path_to_src, info_file_name)
-    elseif num_chains == 5
-        relaxedIK = get_5chain_base_ik(path_to_src, info_file_name)
+    if num_chains > 1
+        relaxedIK = get_nchain_base_ik(num_chains, path_to_src, info_file_name)
     end
     return relaxedIK
-end
-
-# path_to_src = Base.source_dir()
-function get_bimanual(path_to_src, info_file_name; solver_name = "slsqp", preconfigured=false)
-    objectives = [position_obj_1, rotation_obj_1, position_obj_2, rotation_obj_2, min_jt_vel_obj, min_jt_accel_obj, min_jt_jerk_obj, joint_limit_obj, collision_nn_obj]
-    grad_types = ["forward_ad", "forward_ad", "forward_ad", "forward_ad", "forward_ad", "forward_ad", "forward_ad", "forward_ad", "nn"]
-    weight_priors = [50.0, 49.0, 50.0, 49.0, 4.0 ,0.5, 0.2, 1.0, 1.0]
-    inequality_constraints = []
-    ineq_grad_types = []
-    equality_constraints = []
-    eq_grad_types = []
-    return RelaxedIK(path_to_src, info_file_name, objectives, grad_types, weight_priors, inequality_constraints, ineq_grad_types, equality_constraints, eq_grad_types, solver_name = solver_name, preconfigured=preconfigured)
-end
-
-function get_bimanual_base_ik(path_to_src, info_file_name; solver_name = "slsqp", preconfigured=false)
-    objectives = [position_obj_1, rotation_obj_1, position_obj_2, rotation_obj_2]
-    grad_types = ["forward_ad", "forward_ad", "forward_ad", "forward_ad"]
-    weight_priors = [50.0, 49.0, 50.0, 49.0]
-    inequality_constraints = []
-    ineq_grad_types = []
-    equality_constraints = []
-    eq_grad_types = []
-    return RelaxedIK(path_to_src, info_file_name, objectives, grad_types, weight_priors, inequality_constraints, ineq_grad_types, equality_constraints, eq_grad_types, solver_name = solver_name, preconfigured=preconfigured, groove_iter=100)
-end
-
-function get_3chain(path_to_src, info_file_name; solver_name = "slsqp", preconfigured=false)
-    objectives = [position_obj_1, rotation_obj_1, position_obj_2, rotation_obj_2, position_obj_3, rotation_obj_3, min_jt_vel_obj, min_jt_accel_obj, min_jt_jerk_obj, joint_limit_obj, collision_nn_obj]
-    grad_types = ["forward_ad", "forward_ad", "forward_ad", "forward_ad", "forward_ad", "forward_ad", "forward_ad", "forward_ad", "forward_ad", "forward_ad", "nn"]
-    weight_priors = [50.0, 49.0, 50.0, 49.0, 50.0, 49.0, 5.0 ,4.0, 0.1, 1.0, 2.0]
-    inequality_constraints = []
-    ineq_grad_types = []
-    equality_constraints = []
-    eq_grad_types = []
-    return RelaxedIK(path_to_src, info_file_name, objectives, grad_types, weight_priors, inequality_constraints, ineq_grad_types, equality_constraints, eq_grad_types, solver_name = solver_name, preconfigured=preconfigured)
-end
-
-function get_3chain_base_ik(path_to_src, info_file_name; solver_name = "slsqp", preconfigured=false)
-    objectives = [position_obj_1, rotation_obj_1, position_obj_2, rotation_obj_2, position_obj_3, rotation_obj_3]
-    grad_types = ["forward_ad", "forward_ad", "forward_ad", "forward_ad", "forward_ad", "forward_ad"]
-    weight_priors = [50.0, 49.0, 50.0, 49.0, 50.0, 49.0]
-    inequality_constraints = []
-    ineq_grad_types = []
-    equality_constraints = []
-    eq_grad_types = []
-    return RelaxedIK(path_to_src, info_file_name, objectives, grad_types, weight_priors, inequality_constraints, ineq_grad_types, equality_constraints, eq_grad_types, solver_name = solver_name, preconfigured=preconfigured, groove_iter=100)
-end
-
-function get_4chain(path_to_src, info_file_name; solver_name = "slsqp", preconfigured=false)
-    objectives = [position_obj_1, rotation_obj_1, position_obj_2, rotation_obj_2, position_obj_3, rotation_obj_3, position_obj_4, rotation_obj_4, min_jt_vel_obj, min_jt_accel_obj, min_jt_jerk_obj, joint_limit_obj, collision_nn_obj]
-    grad_types = ["forward_ad", "forward_ad", "forward_ad", "forward_ad", "forward_ad", "forward_ad", "forward_ad", "forward_ad", "forward_ad", "forward_ad", "forward_ad", "forward_ad", "nn"]
-    weight_priors = [50.0, 49.0, 50.0, 49.0, 50.0, 49.0, 50.0, 49.0, 5.0 ,4.0, 0.1, 1.0, 2.0]
-    inequality_constraints = []
-    ineq_grad_types = []
-    equality_constraints = []
-    eq_grad_types = []
-    return RelaxedIK(path_to_src, info_file_name, objectives, grad_types, weight_priors, inequality_constraints, ineq_grad_types, equality_constraints, eq_grad_types, solver_name = solver_name, preconfigured=preconfigured)
-end
-
-function get_4chain_base_ik(path_to_src, info_file_name; solver_name = "slsqp", preconfigured=false)
-    objectives = [position_obj_1, rotation_obj_1, position_obj_2, rotation_obj_2, position_obj_3, rotation_obj_3,  position_obj_4, rotation_obj_4]
-    grad_types = ["forward_ad", "forward_ad", "forward_ad", "forward_ad", "forward_ad", "forward_ad", "forward_ad", "forward_ad"]
-    weight_priors = [50.0, 49.0, 50.0, 49.0, 50.0, 49.0, 50.0, 49.0]
-    inequality_constraints = []
-    ineq_grad_types = []
-    equality_constraints = []
-    eq_grad_types = []
-    return RelaxedIK(path_to_src, info_file_name, objectives, grad_types, weight_priors, inequality_constraints, ineq_grad_types, equality_constraints, eq_grad_types, solver_name = solver_name, preconfigured=preconfigured, groove_iter=100)
-end
-
-function get_5chain(path_to_src, info_file_name; solver_name = "slsqp", preconfigured=false)
-    objectives = [position_obj_1, rotation_obj_1, position_obj_2, rotation_obj_2, position_obj_3, rotation_obj_3, position_obj_4, rotation_obj_4, position_obj_5, rotation_obj_5, min_jt_vel_obj, min_jt_accel_obj, min_jt_jerk_obj, joint_limit_obj, collision_nn_obj]
-    grad_types = ["forward_ad", "forward_ad", "forward_ad", "forward_ad", "forward_ad", "forward_ad", "forward_ad", "forward_ad", "forward_ad", "forward_ad", "forward_ad", "forward_ad", "forward_ad", "forward_ad", "nn"]
-    weight_priors = [50.0, 49.0, 50.0, 49.0, 50.0, 49.0, 50.0, 49.0, 50.0, 49.0, 5.0 ,4.0, 0.1, 1.0, 2.0]
-    inequality_constraints = []
-    ineq_grad_types = []
-    equality_constraints = []
-    eq_grad_types = []
-    return RelaxedIK(path_to_src, info_file_name, objectives, grad_types, weight_priors, inequality_constraints, ineq_grad_types, equality_constraints, eq_grad_types, solver_name = solver_name, preconfigured=preconfigured)
-end
-
-function get_5chain_base_ik(path_to_src, info_file_name; solver_name = "slsqp", preconfigured=false)
-    objectives = [position_obj_1, rotation_obj_1, position_obj_2, rotation_obj_2, position_obj_3, rotation_obj_3,  position_obj_4, rotation_obj_4, position_obj_5, rotation_obj_5]
-    grad_types = ["forward_ad", "forward_ad", "forward_ad", "forward_ad", "forward_ad", "forward_ad", "forward_ad", "forward_ad", "forward_ad", "forward_ad"]
-    weight_priors = [50.0, 49.0, 50.0, 49.0, 50.0, 49.0, 50.0, 49.0,  50.0, 49.0]
-    inequality_constraints = []
-    ineq_grad_types = []
-    equality_constraints = []
-    eq_grad_types = []
-    return RelaxedIK(path_to_src, info_file_name, objectives, grad_types, weight_priors, inequality_constraints, ineq_grad_types, equality_constraints, eq_grad_types, solver_name = solver_name, preconfigured=preconfigured, groove_iter=100)
 end
 
 function get_finite_diff_version(path_to_src, info_file_name; solver_name = "slsqp", preconfigured=false)
