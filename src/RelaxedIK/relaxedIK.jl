@@ -207,7 +207,7 @@ function solve(relaxedIK, goal_positions, goal_quats, time, priority; prev_state
     return xopt
 end
 
-function solve_precise(relaxedIK, goal_positions, goal_quats; prev_state = nothing, pos_tol = 0.000001, rot_tol = 0.000001, max_tries = 2, max_iter = 0, max_time = 0.0)
+function solve_precise(relaxedIK, goal_positions, goal_quats; prev_state = nothing, pos_tol = 0.00001, rot_tol = 0.00001, max_tries = 2, max_iter = 0, max_time = 0.0)
     xopt = solve(relaxedIK, goal_positions, goal_quats, prev_state = prev_state, filter = false, max_iter = max_iter, max_time = 0.0)
     valid_sol = true
     pos_error = 0.0
@@ -259,7 +259,6 @@ function get_ee_error(relaxedIK, xopt, goal_pos, goal_quat, armidx)
 
     return pos_error, rot_error
 end
-
 
 function in_collision(relaxedIK, x)
     return relaxedIK.relaxedIK_vars.in_collision(x)

@@ -139,8 +139,7 @@ ee_fixed_joints = ['gaze_joint',"LHand","RHand","LLeg_effector_fixedjoint","RLeg
 
 
 ######################################################################################################
-# Step 3d: Please provide a starting configuration for the robot.  If you leave this blank, the starting
-#   configuration will be considered zeros for all joints
+# Step 3d: Please provide a starting configuration for the robot.
 #   The configuration should be a single list of values for each joint's rotation (in radians) adhering
 #   to the joint order you specified in Step 3b
 #   ex: starting_config = [ 3.12769839, -0.03987385, -2.07729916, -1.03981438, -1.58652782, -1.5710159 ]
@@ -280,8 +279,8 @@ def joint_state_define(x):
 #   that appear to have been learned incorrectly on previous runs of the neural network learning, and you want to try to fix it on another run
 #   of the learning process.
 #
-#   Both the training_states and problem_states lists are optional parameters.  If you do not want to include states in these lists, leave them as
-#   empty lists (i.e., do NOT delete the [ ] characters in the yaml file).
+#   Both the training_states and problem_states lists are optional parameters.  If you do not want to include states in these lists, leave them as they are in the
+#	example file.
 #
 #   Again, feel free to use the urdf_viewer tool provided in the lively_ik package to select training_states and problem_states
 #
@@ -319,14 +318,7 @@ collision_file_name = 'collision_nao_v4.yaml'
 # Step 5b: To see that your collision file was put together accurately, use the following command:
 #   roslaunch lively_ik collision_viewer.launch
 #
-#   You will see an rviz scene with collision objects in their specified locations, including the
-#   collision capsules on the robot's links.
-#   Text will appear above the robot that will either say "No Collision" (in green) or "Collision" (in red)
-#   Using the provided GUI pop-up, use the sliders to change the robot's configuration.  Verfiy that
-#   the "No Collision" and "Collision" match up with your interpretation of what a collision
-#   and non-collision state means for your robot platform.  If it does NOT align with what you have
-#   in mind for collision and non-collision states, go back to step 5a and adjust your collision file.
-#   This will usually consist of changing the states in the sample_states list.
+#   roslaunch relaxed_ik generate_info_file.launch
 ######################################################################################################
 
 
@@ -339,18 +331,38 @@ collision_file_name = 'collision_nao_v4.yaml'
 
 
 ######################################################################################################
-# Step 6b: There should now be a robot info file corresponding to the robot you are currently setting up
+# Step 5c: There should now be a robot info file corresponding to the robot you are currently setting up
 #   in the RelaxedIK/Config/info_files directory.  From now on, the solver will get all information directly
 #   from this file upon initialization
 ######################################################################################################
 
 
+
+
 ######################################################################################################
-# Step 7: load the newly created info file by changing the info_file_name argument in the load_info_file
+# Step 6: load the newly created info file by changing the info_file_name argument in the load_info_file
 #   launch file and running the following command:
 #
 #   roslaunch lively_ik load_info_file.launch
 #######################################################################################################
+
+
+
+
+######################################################################################################
+# Step 7: To see that your collision file was put together accurately, use the following command:
+#   rosrun relaxed_ik urdf_viewer_with_collision_info.py
+#
+#   You will see an rviz scene with collision objects in their specified locations, including the
+#   collision capsules on the robot's links.
+#   Text will appear above the robot that will either say "No Collision" (in green) or "Collision" (in red)
+#   Using the provided GUI pop-up, use the sliders to change the robot's configuration.  Verfiy that
+#   the "No Collision" and "Collision" match up with your interpretation of what a collision
+#   and non-collision state means for your robot platform.  If it does NOT align with what you have
+#   in mind for collision and non-collision states, go back to step 5a and adjust your collision file.
+#   This will usually consist of changing the states in the sample_states list.
+######################################################################################################
+
 
 
 

@@ -69,7 +69,7 @@ function RelaxedIK_vars(path_to_src, info_file_name, objectives, grad_types, wei
         push!(init_ee_positions, robot.arms[i].out_pts[end])
         push!(init_ee_quats, Quat(robot.arms[i].out_frames[end]))
         push!(goal_positions, SVector(0.0,0.0,0.0))
-        push!(goal_quats, rand(Quat))
+        push!(goal_quats, Quat(1.,0.,0.,0.))
         push!(goal_positions_relative, SVector(0.,0.,0.))
         push!(goal_quats_relative, Quat(1.,0.,0.,0.))
     end
@@ -215,7 +215,7 @@ function get_nn_grad_func(relaxedIK_vars, w, nn_t, nn_c, nn_f)
     function nn_grad_func(x)
         ∇, nn_output = get_gradient_wrt_input(w, relaxedIK_vars.joint_pts)
         get_linear_jacobian(relaxedIK_vars.robot, x)
-        jac = relaxedIK.relaxedIK_vars.robot.linear_jacobian
+        jac = relaxedIK_vars.robot.linear_jacobian
         gld = groove_loss_derivative(nn_output[1], nn_t, 2, nn_c, nn_f, 2)
         ∇ = gld*∇*jac
         ret = Array{Float64, 1}()
