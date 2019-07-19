@@ -48,7 +48,7 @@ or negative experiences in using it.
 # Step 1b: Please set the following variable to the file name of your robot urdf.  For example, for the
 #   ur5 robot urdf already in the urdfs folder, this variable would read 'ur5.urdf'
 #   ex: urdf_file_name = 'ur5.urdf'
-urdf_file_name = 'ur5.urdf'
+urdf_file_name = 'nao_v4.urdf'
 ######################################################################################################
 
 
@@ -62,7 +62,7 @@ fixed_frame = 'base_link'
 # Step 1d: At the end of this walk-through, there will be a central yaml file automatically generated that
 #   will contain information about your robot setup.  Please provide a name for that file.
 #   ex: info_file_name = 'ur5_info.yaml'
-info_file_name = 'ur5_info.yaml'
+info_file_name = 'nao_v4_info.yaml'
 ######################################################################################################
 
 
@@ -89,7 +89,12 @@ info_file_name = 'ur5_info.yaml'
 #                'LEFT_WRIST_PITCH', 'LEFT_WRIST_YAW_2'] ]
 #   example 2 shows what this would be for a single end-effector robot, specifically using the UR5 robot
 #   ex2: [ ['shoulder_pan_joint', 'shoulder_lift_joint', 'elbow_joint', 'wrist_1_joint', 'wrist_2_joint', 'wrist_3_joint'] ]
-joint_names = [ ['shoulder_pan_joint', 'shoulder_lift_joint', 'elbow_joint', 'wrist_1_joint', 'wrist_2_joint', 'wrist_3_joint'] ]
+joint_names = [ ["HeadYaw","HeadPitch"], # Head
+				["LShoulderPitch","LShoulderRoll","LElbowYaw","LElbowRoll","LWristYaw"], # LArm
+				["RShoulderPitch","RShoulderRoll","RElbowYaw","RElbowRoll","RWristYaw"], # RArm
+				["LHipYawPitch","LHipRoll","LHipPitch","LKneePitch","LAnklePitch","LAnkleRoll"], # LLeg
+				["RHipYawPitch","RHipRoll","RHipPitch","RKneePitch","RAnklePitch","RAnkleRoll"]  # RLeg
+			  ]
 ######################################################################################################
 
 
@@ -109,7 +114,12 @@ joint_names = [ ['shoulder_pan_joint', 'shoulder_lift_joint', 'elbow_joint', 'wr
 #   ex1: [ 'WAIST', 'RIGHT_SHOULDER_PITCH', 'RIGHT_SHOULDER_ROLL', 'RIGHT_SHOULDER_YAW', 'RIGHT_ELBOW', 'RIGHT_WRIST_YAW',
 #               'RIGHT_WRIST_PITCH', 'RIGHT_WRIST_YAW_2','LEFT_SHOULDER_PITCH', 'LEFT_SHOULDER_ROLL', 'LEFT_SHOULDER_YAW',
 #               'LEFT_ELBOW', 'LEFT_WRIST_YAW', 'LEFT_WRIST_PITCH', 'LEFT_WRIST_YAW_2' ]
-joint_ordering =  ['shoulder_pan_joint', 'shoulder_lift_joint', 'elbow_joint', 'wrist_1_joint', 'wrist_2_joint', 'wrist_3_joint']
+joint_ordering =  [ "HeadYaw","HeadPitch", # Head
+					"LShoulderPitch","LShoulderRoll","LElbowYaw","LElbowRoll","LWristYaw", # LArm
+					"RShoulderPitch","RShoulderRoll","RElbowYaw","RElbowRoll","RWristYaw", # RArm
+					"LHipYawPitch","LHipRoll","LHipPitch","LKneePitch","LAnklePitch","LAnkleRoll", # LLeg
+					"RHipYawPitch","RHipRoll","RHipPitch","RKneePitch","RAnklePitch","RAnkleRoll"  # RLeg
+			      ]
 ######################################################################################################
 
 
@@ -124,7 +134,7 @@ joint_ordering =  ['shoulder_pan_joint', 'shoulder_lift_joint', 'elbow_joint', '
 #   ex1: ee_fixed_joints = ['RIGHT_HAND', 'LEFT_HAND']
 #   For example 2, using the UR5, this is a single chain robot, so it will only have a single end-effector joint
 #   ex2: ee_fixed_joints = ['ee_fixed_joint']
-ee_fixed_joints = ['ee_fixed_joint']
+ee_fixed_joints = ['gaze_joint',"LHand","RHand","LLeg_effector_fixedjoint","RLeg_effector_fixedjoint"]
 ######################################################################################################
 
 
@@ -134,14 +144,19 @@ ee_fixed_joints = ['ee_fixed_joint']
 #   The configuration should be a single list of values for each joint's rotation (in radians) adhering
 #   to the joint order you specified in Step 3b
 #   ex: starting_config = [ 3.12769839, -0.03987385, -2.07729916, -1.03981438, -1.58652782, -1.5710159 ]
-starting_config = [ 3.12769839, -0.03987385, -2.07729916, -1.03981438, -1.58652782, -1.5710159 ]
+starting_config = [ 0.00, 0.00, # Head
+					1.15, 0.40, 0.00,-0.79, 0.00, # LArm
+					1.15,-0.40, 0.00, 0.79, 0.00, # RArm
+					0.00, 0.15, 0.00, 0.00, 0.00,-0.15, # LLeg
+					0.00,-0.15, 0.00, 0.00, 0.00, 0.15  # RLeg
+			      ]
 ######################################################################################################
 
 
 ######################################################################################################
 # Step 3e: Please provide the noise for each join in ee_fixed_joints.
 #   Specifying zeros results in no noise.
-ee_joint_noise = [ 5.0 ]
+ee_joint_noise = [ 0.001, 0.001, 0.001, 0.0, 0.0 ]
 ######################################################################################################
 
 ######################################################################################################
@@ -295,7 +310,7 @@ def joint_state_define(x):
 #
 #   Please provide the name of the collision file that you have been filling out in the RelaxedIK/Config directory:
 #   ex: collision_file_name = 'collision.yaml'
-collision_file_name = 'collision_ur5.yaml'
+collision_file_name = 'collision_nao_v4.yaml'
 ###########################################################################################################
 
 

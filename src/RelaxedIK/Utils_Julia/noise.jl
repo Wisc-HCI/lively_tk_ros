@@ -15,12 +15,13 @@ mutable struct NoiseGenerator
     seeds
     time
     global_seed
+    base_idx
     # Remove in final
     pub
 end
 
 function NoiseGenerator(scale, base_link_noise)
-
+    # Add base link noise as the last entry
     push!(scale,base_link_noise)
     arms = []
     seeds = []
@@ -35,7 +36,7 @@ function NoiseGenerator(scale, base_link_noise)
     # n = NoiseGenerator(arms, scale, seeds, 0.0)
 
     # Remove in final
-    n = NoiseGenerator(arms, scale, seeds, 0.0, global_seed, pub)
+    n = NoiseGenerator(arms, scale, seeds, 0.0, global_seed, length(scale), pub)
 
     update!(n, 0.0, 0.0)
 
