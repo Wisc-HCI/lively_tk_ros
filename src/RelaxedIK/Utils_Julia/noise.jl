@@ -17,7 +17,7 @@ mutable struct NoiseGenerator
     global_seed
     base_idx
     # Remove in final
-    pub
+    #pub
 end
 
 function NoiseGenerator(scale, base_link_noise)
@@ -31,12 +31,12 @@ function NoiseGenerator(scale, base_link_noise)
         push!(seeds, posenoise(10*rand(3),10*rand(3)))
     end
     global_seed = rand()*10
-    pub = Publisher("/lively_ik/noise", Pose, queue_size = 3)
+    #pub = Publisher("/lively_ik/noise", Pose, queue_size = 3)
 
     # n = NoiseGenerator(arms, scale, seeds, 0.0)
 
     # Remove in final
-    n = NoiseGenerator(arms, scale, seeds, 0.0, global_seed, length(scale), pub)
+    n = NoiseGenerator(arms, scale, seeds, 0.0, global_seed, length(scale))
 
     update!(n, 0.0, 0.0)
 
@@ -61,15 +61,15 @@ function update!(noisegen, time, priority)
         end
     end
 
-    pose = Pose()
-    pose.position.x = noisegen.arms[1].position[1]
-    pose.position.y = noisegen.arms[1].position[2]
-    pose.position.z = noisegen.arms[1].position[3]
-    # pose.orientation.w = noisegen.arms[1].rotation[1]
-    pose.orientation.x = noisegen.arms[1].rotation[1]
-    pose.orientation.y = noisegen.arms[1].rotation[2]
-    pose.orientation.z = noisegen.arms[1].rotation[3]
-    publish(noisegen.pub,pose)
+    # pose = Pose()
+    # pose.position.x = noisegen.arms[1].position[1]
+    # pose.position.y = noisegen.arms[1].position[2]
+    # pose.position.z = noisegen.arms[1].position[3]
+    # # pose.orientation.w = noisegen.arms[1].rotation[1]
+    # pose.orientation.x = noisegen.arms[1].rotation[1]
+    # pose.orientation.y = noisegen.arms[1].rotation[2]
+    # pose.orientation.z = noisegen.arms[1].rotation[3]
+    # publish(noisegen.pub,pose)
 
     # println(temp_scale,": ",noisegen.arms[1])
 end
