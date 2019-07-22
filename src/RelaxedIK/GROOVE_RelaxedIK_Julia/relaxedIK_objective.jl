@@ -73,6 +73,38 @@ function rotation_obj_1(x, vars)
     return rotation_obj(x, vars, 1)
 end
 
+function position_obj_2(x, vars)
+    return position_obj(x, vars, 2)
+end
+
+function rotation_obj_2(x, vars)
+    return rotation_obj(x, vars, 2)
+end
+
+function position_obj_3(x, vars)
+    return position_obj(x, vars, 3)
+end
+
+function rotation_obj_3(x, vars)
+    return rotation_obj(x, vars, 3)
+end
+
+function position_obj_4(x, vars)
+    return position_obj(x, vars, 4)
+end
+
+function rotation_obj_4(x, vars)
+    return rotation_obj(x, vars, 4)
+end
+
+function position_obj_5(x, vars)
+    return position_obj(x, vars, 5)
+end
+
+function rotation_obj_5(x, vars)
+    return rotation_obj(x, vars, 5)
+end
+
 function positional_noise_obj_1(x, vars)
     return positional_noise_obj(x, vars, 1)
 end
