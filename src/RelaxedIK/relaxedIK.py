@@ -3,10 +3,14 @@ import Utils.transformations as T
 import math as M
 import numpy as np
 import numpy.random as r
-from RelaxedIK.Utils.filter import EMA_filter
-from RelaxedIK.Utils.yaml_utils import get_relaxedIK_yaml_obj, get_relaxedIK_yaml_obj_from_info_file_name
-from RelaxedIK.GROOVE_RelaxedIK.relaxedIK_vars import RelaxedIK_vars
-
+try:
+    from RelaxedIK.Utils.filter import EMA_filter
+    from RelaxedIK.Utils.yaml_utils import get_relaxedIK_yaml_obj, get_relaxedIK_yaml_obj_from_info_file_name
+    from RelaxedIK.GROOVE_RelaxedIK.relaxedIK_vars import RelaxedIK_vars
+except:
+    from .Utils.filter import EMA_filter
+    from .Utils.yaml_utils import get_relaxedIK_yaml_obj, get_relaxedIK_yaml_obj_from_info_file_name
+    from .GROOVE_RelaxedIK.relaxedIK_vars import RelaxedIK_vars
 
 def rand_vec(bounds):
     vec = []

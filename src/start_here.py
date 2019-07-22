@@ -315,15 +315,6 @@ collision_file_name = 'collision_nao_v4.yaml'
 
 
 ######################################################################################################
-# Step 5b: To see that your collision file was put together accurately, use the following command:
-#   roslaunch lively_ik collision_viewer.launch
-#
-#   roslaunch relaxed_ik generate_info_file.launch
-######################################################################################################
-
-
-
-######################################################################################################
 # Step 6a: Generate a robot info file using the following command:
 #
 #   roslaunch lively_ik generate_info_file.launch

@@ -134,3 +134,4 @@ planner_keyboard.py
 planner_tester*.jl
 
 src/RelaxedIK/MP/*
+.DS_Store
