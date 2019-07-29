@@ -17,7 +17,7 @@ rostypegen()
 using .relaxed_ik.msg
 using .std_msgs.msg
 using .geometry_msgs.msg
-
+println("starting process")
 quit = false
 function quit_cb(data::BoolMsg)
     global quit
@@ -38,7 +38,7 @@ function eePoseGoals_cb(data::EEPoseGoals)
     eepg = data
     wait = 0.0
 end
-
+println("instantiating node")
 init_node("relaxed_ik_node_jl")
 
 path_to_src = Base.source_dir()
@@ -46,7 +46,7 @@ println(path_to_src)
 loaded_robot_file = open(path_to_src * "/RelaxedIK/Config/loaded_robot")
 loaded_robot = readline(loaded_robot_file)
 close(loaded_robot_file)
-
+println("instantiating robot")
 relaxedIK = get_standard(path_to_src, loaded_robot)
 num_chains = relaxedIK.relaxedIK_vars.robot.num_chains
 
@@ -80,6 +80,7 @@ empty_eepg = eepg
 
 loop_rate = Rate(700)
 quit = false
+println("Starting")
 while !is_shutdown()
     global quit
     if quit == true
