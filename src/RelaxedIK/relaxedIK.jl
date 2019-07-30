@@ -45,7 +45,7 @@ end
 
 function get_nchain(n, path_to_src, info_file_name; solver_name = "slsqp", preconfigured=false)
     objectives = [min_jt_vel_obj, min_jt_accel_obj, min_jt_jerk_obj, joint_limit_obj, collision_nn_obj]
-    grad_types = ["forward_ad",   "forward_ad",     "forward_ad",    "forward_ad",    "nn"]
+    grad_types = ["forward_ad",   "forward_ad",     "forward_ad",    "forward_ad",    "finite_diff"]
     weight_priors = [4.0 ,0.5, 0.2, 1.0, 1.0]
     for i in 1:n
         if i == 1
