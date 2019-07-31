@@ -97,9 +97,14 @@ joint_names = [ ["HeadYaw","HeadPitch"], # Head
 			  ]
 ######################################################################################################
 
+######################################################################################################
+# Step 3b: Specify non-kinematic joints that have noise
+dc_joint_names = ["LHand","RHand"]
+######################################################################################################
+
 
 ######################################################################################################
-# Step 3b: Please provide the order that you want joints to appear in the final returned joint configurations,
+# Step 3c: Please provide the order that you want joints to appear in the final returned joint configurations,
 #   using the names specified in step 3a.  ALL ACTUATED JOINTS specified in step 3a should appear somewhere in
 #   this list.  In other words, every prismatic or revolute joint appearing in step 3a MUST be in the
 #   joint_ordering list below.  However, NONE of the fixed joints listed in step 3a should appear in
@@ -118,13 +123,14 @@ joint_ordering =  [ "HeadYaw","HeadPitch", # Head
 					"LShoulderPitch","LShoulderRoll","LElbowYaw","LElbowRoll","LWristYaw", # LArm
 					"RShoulderPitch","RShoulderRoll","RElbowYaw","RElbowRoll","RWristYaw", # RArm
 					"LHipYawPitch","LHipRoll","LHipPitch","LKneePitch","LAnklePitch","LAnkleRoll", # LLeg
-					"RHipYawPitch","RHipRoll","RHipPitch","RKneePitch","RAnklePitch","RAnkleRoll"  # RLeg
+					"RHipYawPitch","RHipRoll","RHipPitch","RKneePitch","RAnklePitch","RAnkleRoll",  # RLeg
+					# "LHand","RHand" # Direct-control joints
 			      ]
 ######################################################################################################
 
 
 ######################################################################################################
-# Step 3c: Please provide the name(s) of all end-effector fixed joints.  These joints are usually labeled as
+# Step 3d: Please provide the name(s) of all end-effector fixed joints.  These joints are usually labeled as
 #   "fixed" in the urdf, and specify the exact "grasping point" of the robot's hand.  If it appears
 #   that your urdf does not specify this ahead of time, please add it to the urdf.  Make sure to provide
 #   one end-effector joint name per chain (i.e., each chain will have its own end-effector).  The order of
@@ -134,12 +140,17 @@ joint_ordering =  [ "HeadYaw","HeadPitch", # Head
 #   ex1: ee_fixed_joints = ['RIGHT_HAND', 'LEFT_HAND']
 #   For example 2, using the UR5, this is a single chain robot, so it will only have a single end-effector joint
 #   ex2: ee_fixed_joints = ['ee_fixed_joint']
-ee_fixed_joints = ['gaze_joint',"LHand","RHand","LLeg_effector_fixedjoint","RLeg_effector_fixedjoint"]
+ee_fixed_joints = ['gaze_joint',
+				   "LArm_effector_fixedjoint",
+				   "RArm_effector_fixedjoint",
+				   "LLeg_effector_fixedjoint",
+				   "RLeg_effector_fixedjoint"]
+dc_joints = ["LHand","RHand"] # Direct-control joints
 ######################################################################################################
 
 
 ######################################################################################################
-# Step 3d: Please provide a starting configuration for the robot.
+# Step 3e: Please provide a starting configuration for the robot.
 #   The configuration should be a single list of values for each joint's rotation (in radians) adhering
 #   to the joint order you specified in Step 3b
 #   ex: starting_config = [ 3.12769839, -0.03987385, -2.07729916, -1.03981438, -1.58652782, -1.5710159 ]
@@ -147,15 +158,19 @@ starting_config = [ 0.00, 0.00, # Head
 					1.15, 0.40, 0.00,-0.79, 0.00, # LArm
 					1.15,-0.40, 0.00, 0.79, 0.00, # RArm
 					0.00, 0.15, 0.00, 0.00, 0.00,-0.15, # LLeg
-					0.00,-0.15, 0.00, 0.00, 0.00, 0.15  # RLeg
+					0.00,-0.15, 0.00, 0.00, 0.00, 0.15,  # RLeg
+					# 0.0,  0.0 # Direct-control joints
 			      ]
+
 ######################################################################################################
 
 
 ######################################################################################################
-# Step 3e: Please provide the noise for each join in ee_fixed_joints.
+# Step 3f: Please provide the noise for each join in ee_fixed_joints and dc_joints.
 #   Specifying zeros results in no noise.
-ee_joint_noise = [ 0.001, 0.001, 0.001, 0.0, 0.0 ]
+ee_joint_noise = [ 0.005, 0.005, 0.005, 0.0, 0.0 ]
+dc_joint_noise = [ 0.05,  0.05]
+
 ######################################################################################################
 
 ######################################################################################################
@@ -163,7 +178,10 @@ ee_joint_noise = [ 0.001, 0.001, 0.001, 0.0, 0.0 ]
 fixed_frame_noise = 0
 ######################################################################################################
 
+######################################################################################################
+# Step 3g: Specify non-kinematic joints that have noise
 
+######################################################################################################
 
 
 ######################################################################################################

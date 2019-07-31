@@ -536,6 +536,13 @@
       <origin rpy="0 0 0" xyz="0 0 0"/>
     </collision>
   </link>
+  <joint name="LArm_effector_fixedjoint" type="fixed">
+    <parent link="l_wrist"/>
+    <child link="l_palm"/>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <axis xyz="-0.4017 -0.2659 -0.1617"/>
+  </joint>
+  <link name="l_palm"/>
   <joint name="LHand" type="revolute">
     <parent link="l_wrist"/>
     <child link="l_gripper"/>
@@ -667,6 +674,13 @@
       <origin rpy="0 0 0" xyz="0 0 0"/>
     </collision>
   </link>
+  <joint name="RArm_effector_fixedjoint" type="fixed">
+    <parent link="r_wrist"/>
+    <child link="r_palm"/>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <axis xyz="0.4017 -0.2659 0.1617"/>
+  </joint>
+  <link name="r_palm"/>
   <joint name="RHand" type="revolute">
     <parent link="r_wrist"/>
     <child link="r_gripper"/>

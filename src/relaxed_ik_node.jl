@@ -40,7 +40,7 @@ end
 init_node("relaxed_ik_node_jl")
 
 path_to_src = Base.source_dir()
-println(path_to_src)
+# println(path_to_src)
 loaded_robot_file = open(path_to_src * "/RelaxedIK/Config/loaded_robot")
 loaded_robot = readline(loaded_robot_file)
 close(loaded_robot_file)
@@ -75,7 +75,7 @@ empty_eepg = eepg
 
 loop_rate = Rate(700)
 quit = false
-println("Starting")
+# println("Starting")
 while !is_shutdown()
     global quit
     if quit == true
