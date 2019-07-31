@@ -10,33 +10,44 @@ mutable struct posenoise
 end
 
 mutable struct NoiseGenerator
+    num_chains
+    num_dc
     arms
     scale
     seeds
     time
     global_seed
     base_idx
+    ndc
+    xdc
     # Remove in final
     #pub
 end
 
-function NoiseGenerator(scale, base_link_noise)
-    # Add base link noise as the last entry
+function NoiseGenerator(scale, base_link_noise, ndc, sdc)
+    num_chains = length(scale)
+    num_dc = length(ndc)
+    # Add base link noise and direct control noise
+    for i=1:num_dc
+        push!(scale, sdc[i])
+    end
     push!(scale,base_link_noise)
-    arms = []
+    arms  = []
+    xdc   = []
     seeds = []
 
-    for i=1:length(scale)
+    for i=1:num_chains
         push!(arms, posenoise(zeros(3),zeros(3)))
         push!(seeds, posenoise(10*rand(3),10*rand(3)))
     end
+    for i=1:num_dc
+        push!(seeds, 10*rand())
+        push!(xdc, 0)
+    end
     global_seed = rand()*10
-    #pub = Publisher("/lively_ik/noise", Pose, queue_size = 3)
-
-    # n = NoiseGenerator(arms, scale, seeds, 0.0)
 
     # Remove in final
-    n = NoiseGenerator(arms, scale, seeds, 0.0, global_seed, length(scale))
+    n = NoiseGenerator(num_chains, num_dc, arms, scale, seeds, 0.0, global_seed, length(scale), ndc, xdc)
 
     update!(n, 0.0, 0.0)
 
@@ -54,22 +65,26 @@ function update!(noisegen, time, priority)
     # Higher priority means less noise
     scale = 1-priority
     noisegen.time = time
-    for i=1:length(noisegen.scale)
-        if noisegen.scale[i] > 0.0
-            noisegen.arms[i].position = noise3D(noisegen.time,noisegen.seeds[i].position) * noisegen.scale[i] * scale * limit(time,noisegen.global_seed)
-            noisegen.arms[i].rotation = noise3D(noisegen.time,noisegen.seeds[i].rotation) * noisegen.scale[i] * 0.3 * scale
+    idx = 1
+    # Handle End Effector Noise
+    for i=1:noisegen.num_chains
+        if noisegen.scale[idx] > 0.0
+            noisegen.arms[idx].position = noise3D(noisegen.time,noisegen.seeds[idx].position) * noisegen.scale[idx] * scale * limit(time,noisegen.global_seed)
+            noisegen.arms[idx].rotation = noise3D(noisegen.time,noisegen.seeds[idx].rotation) * noisegen.scale[idx] * 0.3 * scale
         end
+        idx += 1
+    end
+    # Handle Direct Control
+    for i=1:noisegen.num_dc
+        if noisegen.scale[idx] > 0.0
+            noisegen.xdc[idx] = noise(noisegen.time,noisegen.seeds[idx]) * noisegen.scale[idx]
+        end
+        idx += 1
+    end
+    # Handle fixed frame noise
+    if noisegen.scale[idx] > 0.0
+        noisegen.arms[idx].position = noise3D(noisegen.time,noisegen.seeds[idx].position) * noisegen.scale[idx] * scale * limit(time,noisegen.global_seed)
+        noisegen.arms[idx].rotation = noise3D(noisegen.time,noisegen.seeds[idx].rotation) * noisegen.scale[idx] * 0.3 * scale
     end
 
-    # pose = Pose()
-    # pose.position.x = noisegen.arms[1].position[1]
-    # pose.position.y = noisegen.arms[1].position[2]
-    # pose.position.z = noisegen.arms[1].position[3]
-    # # pose.orientation.w = noisegen.arms[1].rotation[1]
-    # pose.orientation.x = noisegen.arms[1].rotation[1]
-    # pose.orientation.y = noisegen.arms[1].rotation[2]
-    # pose.orientation.z = noisegen.arms[1].rotation[3]
-    # publish(noisegen.pub,pose)
-
-    # println(temp_scale,": ",noisegen.arms[1])
 end

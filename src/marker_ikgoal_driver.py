@@ -40,6 +40,7 @@ server.applyChanges()
 rate = rospy.Rate(40)
 while not rospy.is_shutdown():
     eepg = EEPoseGoals()
+    eepg.dc_values = [.5,.5] # Temp fix for nao
 
     for i in xrange(num_chains):
         if not int_markers[i].feedback_util.active:

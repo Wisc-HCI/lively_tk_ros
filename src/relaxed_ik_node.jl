@@ -98,6 +98,7 @@ while !is_shutdown()
     end
 
     pose_goals = eepg.ee_poses
+    dc_goals = eepg.dc_values
 
     pos_goals = []
     quat_goals = []
@@ -118,7 +119,7 @@ while !is_shutdown()
         push!(quat_goals, Quat(quat_w, quat_x, quat_y, quat_z))
     end
     time = to_sec(get_rostime())/4
-    xopt = solve(relaxedIK, pos_goals, quat_goals, time, 0)
+    xopt = solve(relaxedIK, pos_goals, quat_goals, dc_goals, time, 0)
     # wait = wait + 0.01
     # println(relaxedIK.relaxedIK_vars.vars.objective_closures[end](xopt))
     ja = JointAngles()
