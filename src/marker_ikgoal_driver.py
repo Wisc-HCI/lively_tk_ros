@@ -7,6 +7,7 @@ from visualization_msgs.msg import *
 from RelaxedIK.relaxedIK import get_relaxedIK_from_info_file
 from RelaxedIK.Utils.interactive_marker_utils import InteractiveMarkerFeedbackUtil, InteractiveMarkerUtil, InteractiveMarkerServerUtil
 from lively_ik.msg import EEPoseGoals
+from std_msgs.msg import Float64
 from geometry_msgs.msg import PoseStamped, Vector3Stamped, QuaternionStamped, Pose
 import RelaxedIK.Utils.transformations as T
 
@@ -40,7 +41,7 @@ server.applyChanges()
 rate = rospy.Rate(40)
 while not rospy.is_shutdown():
     eepg = EEPoseGoals()
-    eepg.dc_values = [.5,.5] # Temp fix for nao
+    eepg.dc_values = [Float64(0.5),Float64(0.5)] # Temp fix for nao
 
     for i in xrange(num_chains):
         if not int_markers[i].feedback_util.active:
@@ -66,7 +67,7 @@ while not rospy.is_shutdown():
             pose.orientation.z = int_markers[i].feedback_util.feedback.pose.orientation.z
 
         eepg.ee_poses.append(pose)
-
+    rospy.loginfo(eepg.ee_poses[0].position)
     ee_pose_goal_pub.publish(eepg)
 
     rate.sleep()

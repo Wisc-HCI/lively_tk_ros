@@ -77,7 +77,7 @@ function update!(noisegen, time, priority)
     # Handle Direct Control
     for i=1:noisegen.num_dc
         if noisegen.scale[idx] > 0.0
-            noisegen.xdc[idx] = noise(noisegen.time,noisegen.seeds[idx]) * noisegen.scale[idx]
+            noisegen.xdc[i] = noise(noisegen.time,noisegen.seeds[idx]) * noisegen.scale[idx]
         end
         idx += 1
     end

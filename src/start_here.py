@@ -90,8 +90,8 @@ info_file_name = 'nao_v4_info.yaml'
 #   example 2 shows what this would be for a single end-effector robot, specifically using the UR5 robot
 #   ex2: [ ['shoulder_pan_joint', 'shoulder_lift_joint', 'elbow_joint', 'wrist_1_joint', 'wrist_2_joint', 'wrist_3_joint'] ]
 joint_names = [ ["HeadYaw","HeadPitch"], # Head
-				["LShoulderPitch","LShoulderRoll","LElbowYaw","LElbowRoll","LWristYaw"], # LArm
-				["RShoulderPitch","RShoulderRoll","RElbowYaw","RElbowRoll","RWristYaw"], # RArm
+				["LShoulderPitch","LShoulderRoll","LElbowYaw","LElbowRoll","LWristYaw","LHand"], # LArm
+				["RShoulderPitch","RShoulderRoll","RElbowYaw","RElbowRoll","RWristYaw","RHand"], # RArm
 				["LHipYawPitch","LHipRoll","LHipPitch","LKneePitch","LAnklePitch","LAnkleRoll"], # LLeg
 				["RHipYawPitch","RHipRoll","RHipPitch","RKneePitch","RAnklePitch","RAnkleRoll"]  # RLeg
 			  ]
@@ -124,7 +124,7 @@ joint_ordering =  [ "HeadYaw","HeadPitch", # Head
 					"RShoulderPitch","RShoulderRoll","RElbowYaw","RElbowRoll","RWristYaw", # RArm
 					"LHipYawPitch","LHipRoll","LHipPitch","LKneePitch","LAnklePitch","LAnkleRoll", # LLeg
 					"RHipYawPitch","RHipRoll","RHipPitch","RKneePitch","RAnklePitch","RAnkleRoll",  # RLeg
-					# "LHand","RHand" # Direct-control joints
+					"LHand","RHand" # Direct-control joints
 			      ]
 ######################################################################################################
 
@@ -159,7 +159,7 @@ starting_config = [ 0.00, 0.00, # Head
 					1.15,-0.40, 0.00, 0.79, 0.00, # RArm
 					0.00, 0.15, 0.00, 0.00, 0.00,-0.15, # LLeg
 					0.00,-0.15, 0.00, 0.00, 0.00, 0.15,  # RLeg
-					# 0.0,  0.0 # Direct-control joints
+					0.0,  0.0 # Direct-control joints
 			      ]
 
 ######################################################################################################
@@ -169,7 +169,7 @@ starting_config = [ 0.00, 0.00, # Head
 # Step 3f: Please provide the noise for each join in ee_fixed_joints and dc_joints.
 #   Specifying zeros results in no noise.
 ee_joint_noise = [ 0.005, 0.005, 0.005, 0.0, 0.0 ]
-dc_joint_noise = [ 0.05,  0.05]
+dc_joint_noise = [ 0.10,  0.10]
 
 ######################################################################################################
 

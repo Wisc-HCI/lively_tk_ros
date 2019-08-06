@@ -16,7 +16,7 @@ from RelaxedIK.Utils.colors import bcolors
 from RelaxedIK.GROOVE_RelaxedIK.relaxedIK_vars import RelaxedIK_vars
 from start_here import info_file_name, urdf_file_name, fixed_frame, joint_names, joint_ordering, \
                        ee_fixed_joints, ee_joint_noise, fixed_frame_noise, starting_config, \
-                       collision_file_name, joint_state_define
+                       collision_file_name, joint_state_define, dc_joint_names, dc_joint_noise
 import inspect
 
 rospy.init_node('generate_info_file')
@@ -84,9 +84,14 @@ else:
     out_file.write('ee_fixed_joints: {}\n'.format(ee_str))
 
 # Lively features
-noise_str = '[ {0} ]'.format(" , ".join(['{0}'.format(n) for n in ee_joint_noise]))
-out_file.write('ee_joint_noise: {0}\n'.format(noise_str))
+ee_noise_str = '[ {0} ]'.format(" , ".join(['{0}'.format(n) for n in ee_joint_noise]))
+out_file.write('ee_joint_noise: {0}\n'.format(ee_noise_str))
+dc_noise_str = '[ {0} ]'.format(" , ".join(['{0}'.format(n) for n in dc_joint_noise]))
+out_file.write('dc_joint_noise: {0}\n'.format(dc_noise_str))
+dc_names_str = '[ {0} ]'.format(" , ".join(['{0}'.format(n) for n in dc_joint_names]))
+out_file.write('dc_joint_names: {0}\n'.format(dc_names_str))
 out_file.write('fixed_frame_noise: {0}\n'.format(fixed_frame_noise))
+
 
 
 if len(starting_config) == 0:
@@ -166,13 +171,16 @@ for i in range(len(vels)):
         out_file.write(', ')
 out_file.write(' ]\n')
 
-out_file.write('joint_limits: [ ')
+
 joint_limits = robot.bounds
+limits = []
 for i in range(len(vels)):
-    out_file.write('[{},{}]'.format(joint_limits[i][0], joint_limits[i][1]))
-    if not i == len(vels) - 1:
-        out_file.write(', ')
-out_file.write(' ]\n')
+    # print(joint_limits[i])
+    try:
+        limits.append([joint_limits[i][0], joint_limits[i][1]])
+    except:
+        pass
+out_file.write("joint_limits: {0}\n".format(str(limits)))
 
 
 out_file.write('displacements: [ ')

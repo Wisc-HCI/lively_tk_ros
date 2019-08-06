@@ -199,14 +199,17 @@ function solve(relaxedIK, goal_positions, goal_quats, dc_goals, time, priority; 
     end
 
     xopt = groove_solve(relaxedIK.groove, prev_state=prev_state, max_iter=max_iter, max_time = max_time)
-    update_relaxedIK_vars!(relaxedIK.relaxedIK_vars, xopt, dc_goals, time, priority)
+    update_relaxedIK_vars!(relaxedIK.relaxedIK_vars, xopt, time, priority)
     if filter
         xopt = filter_signal(relaxedIK.ema_filter, xopt)
     end
-
+    
     for dc = 1:length(relaxedIK.relaxedIK_vars.noise.xdc)
         idx = get_index_from_joint_order(relaxedIK.relaxedIK_vars.robot, relaxedIK.relaxedIK_vars.noise.ndc[dc])
-        xopt[idx] = relaxedIK.relaxedIK_vars.noise.xdc[dc]
+        lower_bound = relaxedIK.relaxedIK_vars.robot.bounds[idx][1]
+        upper_bound = relaxedIK.relaxedIK_vars.robot.bounds[idx][2]
+        xopt[idx] = max(min(relaxedIK.relaxedIK_vars.noise.xdc[dc] + dc_goals[dc],upper_bound),lower_bound)
+        # xopt[idx] = relaxedIK.relaxedIK_vars.noise.xdc[dc] + dc_goals[dc]
     end
 
     return xopt
