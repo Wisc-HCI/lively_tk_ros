@@ -130,15 +130,19 @@ while true
     end
 
     xopt, try_idx, valid_sol, pos_error, rot_error = solve_precise(relaxedIK, pos_goals, quat_goals)
+    println(xopt)
     # println(relaxedIK.relaxedIK_vars.vars.objective_closures[end](xopt))
     if valid_sol
         ja = JointAngles()
         for i = 1:length(xopt)
             push!(ja.angles.data, xopt[i])
         end
-        publish(angles_pub, ja)
+        ja.header.seq = eepg.header.seq
+        ja.header.stamp = eepg.header.stamp
+        ja.header.frame_id = eepg.header.frame_id
 
-        println(xopt)
+        publish(angles_pub, ja)
+        println("valid: $xopt")
     else
         prev_state = get_rand_state_with_bounds(relaxedIK.relaxedIK_vars.robot.bounds)
         xopt, try_idx, valid_sol, pos_error, rot_error = solve_precise(relaxedIK, pos_goals, quat_goals, prev_state=prev_state)

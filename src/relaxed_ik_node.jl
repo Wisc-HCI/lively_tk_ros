@@ -52,6 +52,7 @@ relaxedIK = get_standard(path_to_src, loaded_robot)
 num_chains = relaxedIK.relaxedIK_vars.robot.num_chains
 num_dc = relaxedIK.relaxedIK_vars.noise.num_dc
 
+println("loaded robot: $loaded_robot")
 
 
 Subscriber{EEPoseGoals}("/relaxed_ik/ee_pose_goals", eePoseGoals_cb)
@@ -61,8 +62,6 @@ Subscriber{BoolMsg}("relaxed_ik/reset", reset_cb)
 angles_pub = Publisher("/relaxed_ik/joint_angle_solutions", JointAngles, queue_size = 3)
 
 sleep(0.5)
-# d = Dates.format(now(), "yyyy-mm-dd HH:MM:SS")
-# so = Solver_Output(path_to_src, "relaxed_ik", "ur5", d)
 
 eepg = EEPoseGoals()
 pose = Pose()
@@ -105,6 +104,7 @@ while !is_shutdown()
         reset_solver = false
         relaxedIK = get_standard(path_to_src, loaded_robot)
         eepg = empty_eepg
+        dcpg = empty_dcpg
     end
 
     pose_goals = eepg.ee_poses
@@ -135,6 +135,11 @@ while !is_shutdown()
     for i = 1:length(xopt)
         push!(ja.angles.data, xopt[i])
     end
+
+    ja.header.seq = eepg.header.seq
+    ja.header.stamp = eepg.header.stamp
+    ja.header.frame_id = eepg.header.frame_id
+
     publish(angles_pub, ja)
 
     # println(in_collision(relaxedIK, xopt))

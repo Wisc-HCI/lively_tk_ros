@@ -5,6 +5,7 @@ using LinearAlgebra
 using StaticArrays
 using Rotations
 include("../Utils_Julia/transformations.jl")
+include("../Utils_Julia/joint_utils.jl")
 include("../Utils_Julia/geometry_utils.jl")
 include("../Utils_Julia/nn_utils.jl")
 
@@ -19,7 +20,7 @@ end
 function position_obj(x, vars, idx)
     vars.robot.arms[idx].getFrames(x[vars.robot.subchain_indices[idx]])
     x_val = norm(vars.robot.arms[idx].out_pts[end] - vars.goal_positions[idx])
-    return groove_loss(x_val, 0., 2, 0.23065358014379128, 0.10204081632653063, 2)
+    return groove_loss(x_val, 0., 2, .1, 10., 2)
 end
 
 function rotation_obj(x, vars, idx)
@@ -36,14 +37,14 @@ function rotation_obj(x, vars, idx)
 
     x_val = min(disp, disp2)
 
-    return groove_loss(x_val, 0., 2, 0.23065358014379128, 0.10204081632653063, 2)
+    return groove_loss(x_val, 0., 2, .1, 10., 2)
 end
 
 function positional_noise_obj(x, vars, idx)
     vars.robot.arms[idx].getFrames(x[vars.robot.subchain_indices[idx]])
     goal = vars.goal_positions[idx] + vars.noise.arms[idx].position
     x_val = norm(vars.robot.arms[idx].out_pts[end] - goal)
-    return groove_loss(x_val, 0., 2, 0.23065358014379128, 0.10204081632653063, 2)
+    return groove_loss(x_val, 0., 2, .1, 10., 2)
 end
 
 function rotational_noise_obj(x, vars, idx)
@@ -144,6 +145,12 @@ end
 
 function rotational_noise_obj_5(x, vars)
     return rotational_noise_obj(x, vars, 5)
+end
+
+function joint_goal_obj(x, vars)
+    goal, ret_k = interpolate_to_joint_limits(vars.vars.xopt, vars.joint_goal, t=0.033, joint_velocity_limits=vars.robot.velocity_limits)
+    x_val = euclidean(x, goal)
+    return groove_loss(x_val, 0., 2, .1, 10., 2)
 end
 
 function min_jt_vel_obj(x, vars)

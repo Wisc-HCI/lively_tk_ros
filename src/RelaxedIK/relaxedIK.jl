@@ -177,7 +177,7 @@ function get_rot_mats(relaxedIK, x)
     return rot_mats
 end
 
-function solve(relaxedIK, goal_positions, goal_quats, dc_goals, time, priority; prev_state = nothing, filter=true, max_iter = 0, max_time = 0.0)
+function solve(relaxedIK, goal_positions, goal_quats, dc_goals, time, priority; prev_state = nothing, filter=true, max_iter = 0, max_time = 0.05)
     vars = relaxedIK.relaxedIK_vars
 
     if vars.position_mode == "relative"
@@ -203,7 +203,7 @@ function solve(relaxedIK, goal_positions, goal_quats, dc_goals, time, priority; 
     if filter
         xopt = filter_signal(relaxedIK.ema_filter, xopt)
     end
-    
+
     for dc = 1:length(relaxedIK.relaxedIK_vars.noise.xdc)
         idx = get_index_from_joint_order(relaxedIK.relaxedIK_vars.robot, relaxedIK.relaxedIK_vars.noise.ndc[dc])
         lower_bound = relaxedIK.relaxedIK_vars.robot.bounds[idx][1]
@@ -215,7 +215,7 @@ function solve(relaxedIK, goal_positions, goal_quats, dc_goals, time, priority; 
     return xopt
 end
 
-function solve_precise(relaxedIK, goal_positions, goal_quats; prev_state = nothing, pos_tol = 0.00001, rot_tol = 0.00001, max_tries = 2, max_iter = 0, max_time = 0.0)
+function solve_precise(relaxedIK, goal_positions, goal_quats; prev_state = nothing, pos_tol = 0.001, rot_tol = 0.001, max_tries = 3, max_iter = 0, max_time = 0.0)
     xopt = solve(relaxedIK, goal_positions, goal_quats, prev_state = prev_state, filter = false, max_iter = max_iter, max_time = 0.0)
     valid_sol = true
     pos_error = 0.0
