@@ -51,6 +51,7 @@ catkin_python_setup()
 add_message_files(
    FILES
    EEPoseGoals.msg
+   DCPoseGoals.msg
    JointAngles.msg
 )
 

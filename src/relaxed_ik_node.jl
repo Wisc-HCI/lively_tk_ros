@@ -9,8 +9,8 @@ using Rotations
 using ForwardDiff
 # using Knet
 # using Dates
-@rosimport lively_ik.msg : EEPoseGoals, JointAngles
-@rosimport std_msgs.msg: Float64MultiArray, Bool, Float32, Float64, Int8
+@rosimport lively_ik.msg : EEPoseGoals, DCPoseGoals, JointAngles
+@rosimport std_msgs.msg: Float64MultiArray, Bool, Float32, Int8
 @rosimport geometry_msgs.msg: Point, Quaternion, Pose
 
 rostypegen()
@@ -30,11 +30,17 @@ function reset_cb(data::BoolMsg)
 end
 
 eepg = Nothing
+dcpg = Nothing
 function eePoseGoals_cb(data::EEPoseGoals)
     global eepg
-    println("in cb: $data")
     eepg = data
 end
+
+function dcPoseGoals_cb(data::DCPoseGoals)
+    global dcpg
+    dcpg = data
+end
+
 init_node("relaxed_ik_node_jl")
 
 path_to_src = Base.source_dir()
@@ -49,6 +55,7 @@ num_dc = relaxedIK.relaxedIK_vars.noise.num_dc
 
 
 Subscriber{EEPoseGoals}("/relaxed_ik/ee_pose_goals", eePoseGoals_cb)
+Subscriber{DCPoseGoals}("/relaxed_ik/dc_pose_goals", dcPoseGoals_cb)
 Subscriber{BoolMsg}("/relaxed_ik/quit", quit_cb, queue_size=1)
 Subscriber{BoolMsg}("relaxed_ik/reset", reset_cb)
 angles_pub = Publisher("/relaxed_ik/joint_angle_solutions", JointAngles, queue_size = 3)
@@ -69,10 +76,12 @@ pose.orientation.z = 0.0
 for i = 1:num_chains
     push!(eepg.ee_poses, pose)
 end
+dcpg = DCPoseGoals()
 for i = 1:num_dc
-    push!(eepg.dc_values,0.5)
+    push!(dcpg.dc_values,Float32(0.5))
 end
 empty_eepg = eepg
+empty_dcpg = dcpg
 
 loop_rate = Rate(700)
 quit = false
@@ -87,6 +96,7 @@ while !is_shutdown()
 
     global reset_solver
     global eepg
+    global dcpg
     global relaxedIK
     global xopt
 
@@ -98,7 +108,7 @@ while !is_shutdown()
     end
 
     pose_goals = eepg.ee_poses
-    dc_goals = eepg.dc_values
+    dc_goals = dcpg.dc_values
 
     pos_goals = []
     quat_goals = []
@@ -127,7 +137,6 @@ while !is_shutdown()
     end
     publish(angles_pub, ja)
 
-    # println(xopt)
     # println(in_collision(relaxedIK, xopt))
     rossleep(loop_rate)
 end

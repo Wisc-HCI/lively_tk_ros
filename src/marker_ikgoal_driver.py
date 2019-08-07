@@ -6,8 +6,8 @@ from interactive_markers.interactive_marker_server import *
 from visualization_msgs.msg import *
 from RelaxedIK.relaxedIK import get_relaxedIK_from_info_file
 from RelaxedIK.Utils.interactive_marker_utils import InteractiveMarkerFeedbackUtil, InteractiveMarkerUtil, InteractiveMarkerServerUtil
-from lively_ik.msg import EEPoseGoals
-from std_msgs.msg import Float64
+from lively_ik.msg import EEPoseGoals, DCPoseGoals
+from std_msgs.msg import Float32
 from geometry_msgs.msg import PoseStamped, Vector3Stamped, QuaternionStamped, Pose
 import RelaxedIK.Utils.transformations as T
 
@@ -17,12 +17,14 @@ path_to_src = os.path.dirname(__file__)
 
 relaxedIK = get_relaxedIK_from_info_file(path_to_src)
 num_chains = relaxedIK.vars.robot.numChains
+num_dc = 2
 
 init_ee_positions =  relaxedIK.vars.init_ee_positions
 init_ee_quats =  relaxedIK.vars.init_ee_quats
 
 server = InteractiveMarkerServer("simple_marker")
 ee_pose_goal_pub = rospy.Publisher('/relaxed_ik/ee_pose_goals', EEPoseGoals, queue_size=3)
+dc_pose_goal_pub = rospy.Publisher('/relaxed_ik/dc_pose_goals', DCPoseGoals, queue_size=3)
 
 rospy.sleep(0.2)
 
@@ -41,7 +43,9 @@ server.applyChanges()
 rate = rospy.Rate(40)
 while not rospy.is_shutdown():
     eepg = EEPoseGoals()
-    eepg.dc_values = [Float64(0.5),Float64(0.5)] # Temp fix for nao
+    dcpg = DCPoseGoals()
+    for i in xrange(num_dc):
+        dcpg.dc_values.append(Float32(0.5))
 
     for i in xrange(num_chains):
         if not int_markers[i].feedback_util.active:
@@ -69,5 +73,6 @@ while not rospy.is_shutdown():
         eepg.ee_poses.append(pose)
     rospy.loginfo(eepg.ee_poses[0].position)
     ee_pose_goal_pub.publish(eepg)
+    dc_pose_goal_pub.publish(dcpg)
 
     rate.sleep()
