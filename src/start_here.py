@@ -175,11 +175,14 @@ dc_joint_noise = [ 0.10,  0.10]
 
 ######################################################################################################
 # Step 3f: Specify scale of noise on the fixed frame
-fixed_frame_noise = 0
+fixed_frame_noise = 0.01
 ######################################################################################################
 
 ######################################################################################################
-# Step 3g: Specify non-kinematic joints that have noise
+# Step 3g: Sepecify Objective weights for position and orientation for each ee_fixed_joint
+
+ee_position_weight = [50, 50, 50, 1000, 1000]
+ee_rotation_weight = [49, 49, 49, 1000, 1000]
 
 ######################################################################################################
 

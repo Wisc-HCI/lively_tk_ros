@@ -33,11 +33,13 @@ eepg = Nothing
 dcpg = Nothing
 function eePoseGoals_cb(data::EEPoseGoals)
     global eepg
+    loginfo("ee cb: $data")
     eepg = data
 end
 
 function dcPoseGoals_cb(data::DCPoseGoals)
     global dcpg
+    loginfo("dc cb: $data")
     dcpg = data
 end
 
@@ -58,7 +60,7 @@ println("loaded robot: $loaded_robot")
 Subscriber{EEPoseGoals}("/relaxed_ik/ee_pose_goals", eePoseGoals_cb)
 Subscriber{DCPoseGoals}("/relaxed_ik/dc_pose_goals", dcPoseGoals_cb)
 Subscriber{BoolMsg}("/relaxed_ik/quit", quit_cb, queue_size=1)
-Subscriber{BoolMsg}("relaxed_ik/reset", reset_cb)
+Subscriber{BoolMsg}("/relaxed_ik/reset", reset_cb)
 angles_pub = Publisher("/relaxed_ik/joint_angle_solutions", JointAngles, queue_size = 3)
 
 sleep(0.5)
@@ -82,9 +84,8 @@ end
 empty_eepg = eepg
 empty_dcpg = dcpg
 
-loop_rate = Rate(700)
+loop_rate = Rate(500)
 quit = false
-# println("Starting")
 while !is_shutdown()
     global quit
     if quit == true
@@ -135,7 +136,6 @@ while !is_shutdown()
     for i = 1:length(xopt)
         push!(ja.angles.data, xopt[i])
     end
-
     ja.header.seq = eepg.header.seq
     ja.header.stamp = eepg.header.stamp
     ja.header.frame_id = eepg.header.frame_id

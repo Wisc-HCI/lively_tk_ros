@@ -27,9 +27,6 @@ function get_standard(path_to_src, info_file_name; solver_name = "slsqp", precon
     grad_types = ["forward_ad",   "forward_ad",           "forward_ad",   "forward_ad",           "forward_ad",   "forward_ad",     "forward_ad",    "forward_ad",    "finite_diff"]
     weight_priors = [50, 49, 49, 49, 5.0 ,4.0, 0.1, 1.0, 1.0]
 
-    y = info_file_name_to_yaml_block(path_to_src, info_file_name)
-    # TODO: Figure out how to add noise through a generic method
-
     inequality_constraints = []
     ineq_grad_types = []
     equality_constraints = []
@@ -44,6 +41,9 @@ function get_standard(path_to_src, info_file_name; solver_name = "slsqp", precon
 end
 
 function get_nchain(n, path_to_src, info_file_name; solver_name = "slsqp", preconfigured=false)
+    y = info_file_name_to_yaml_block(path_to_src, info_file_name)
+    ee_position_weight = y["ee_position_weight"]
+    ee_rotation_weight = y["ee_rotation_weight"]
     objectives = [min_jt_vel_obj, min_jt_accel_obj, min_jt_jerk_obj, joint_limit_obj, collision_nn_obj]
     grad_types = ["forward_ad",   "forward_ad",     "forward_ad",    "forward_ad",    "finite_diff"]
     weight_priors = [4.0 ,0.5, 0.2, 1.0, 1.0]
@@ -78,9 +78,9 @@ function get_nchain(n, path_to_src, info_file_name; solver_name = "slsqp", preco
         push!(grad_types,"forward_ad")
         push!(grad_types,"forward_ad")
         push!(grad_types,"forward_ad")
-        push!(weight_priors,50)
+        push!(weight_priors,ee_position_weight[i])
         push!(weight_priors,49)
-        push!(weight_priors,49)
+        push!(weight_priors,ee_rotation_weight[i])
         push!(weight_priors,48)
 
     end
@@ -144,7 +144,7 @@ end
 
 function get_finite_diff_version(path_to_src, info_file_name; solver_name = "slsqp", preconfigured=false)
     objectives = [position_obj_1, rotation_obj_1, min_jt_vel_obj, min_jt_accel_obj, min_jt_jerk_obj, collision_nn_obj]
-    grad_types = ["finite_diff", "finite_diff", "finite_diff", "finite_diff", "finite_diff", "finite_diff"]
+    grad_types = ["finite_diff", "finite_diff", "finite_diff", "finite_diff", "finite_diff",         "finite_diff"]
     weight_priors = [50., 40.0, 1.0 ,1.0, 1.0, 0.4]
     inequality_constraints = []
     ineq_grad_types = []
@@ -197,18 +197,17 @@ function solve(relaxedIK, goal_positions, goal_quats, dc_goals, time, priority; 
     else
         vars.goal_quats = goal_quats
     end
-
     xopt = groove_solve(relaxedIK.groove, prev_state=prev_state, max_iter=max_iter, max_time = max_time)
     update_relaxedIK_vars!(relaxedIK.relaxedIK_vars, xopt, time, priority)
     if filter
         xopt = filter_signal(relaxedIK.ema_filter, xopt)
     end
 
-    for dc = 1:length(relaxedIK.relaxedIK_vars.noise.xdc)
-        idx = get_index_from_joint_order(relaxedIK.relaxedIK_vars.robot, relaxedIK.relaxedIK_vars.noise.ndc[dc])
+    for dc = 1:length(relaxedIK.relaxedIK_vars.noise.dc_names)
+        idx = get_index_from_joint_order(relaxedIK.relaxedIK_vars.robot, relaxedIK.relaxedIK_vars.noise.dc_names[dc])
         lower_bound = relaxedIK.relaxedIK_vars.robot.bounds[idx][1]
         upper_bound = relaxedIK.relaxedIK_vars.robot.bounds[idx][2]
-        xopt[idx] = max(min(relaxedIK.relaxedIK_vars.noise.xdc[dc] + dc_goals[dc],upper_bound),lower_bound)
+        xopt[idx] = max(min(relaxedIK.relaxedIK_vars.noise.dc_noise[dc] + dc_goals[dc],upper_bound),lower_bound)
         # xopt[idx] = relaxedIK.relaxedIK_vars.noise.xdc[dc] + dc_goals[dc]
     end
 

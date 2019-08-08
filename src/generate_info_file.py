@@ -16,7 +16,8 @@ from RelaxedIK.Utils.colors import bcolors
 from RelaxedIK.GROOVE_RelaxedIK.relaxedIK_vars import RelaxedIK_vars
 from start_here import info_file_name, urdf_file_name, fixed_frame, joint_names, joint_ordering, \
                        ee_fixed_joints, ee_joint_noise, fixed_frame_noise, starting_config, \
-                       collision_file_name, joint_state_define, dc_joint_names, dc_joint_noise
+                       collision_file_name, joint_state_define, dc_joint_names, dc_joint_noise, \
+                       ee_position_weight, ee_rotation_weight
 import inspect
 
 rospy.init_node('generate_info_file')
@@ -84,11 +85,15 @@ else:
     out_file.write('ee_fixed_joints: {}\n'.format(ee_str))
 
 # Lively features
+ee_position_weight_str = '[ {0} ]'.format(" , ".join(['{0}'.format(n) for n in ee_position_weight]))
+ee_rotation_weight_str = '[ {0} ]'.format(" , ".join(['{0}'.format(n) for n in ee_rotation_weight]))
 ee_noise_str = '[ {0} ]'.format(" , ".join(['{0}'.format(n) for n in ee_joint_noise]))
-out_file.write('ee_joint_noise: {0}\n'.format(ee_noise_str))
 dc_noise_str = '[ {0} ]'.format(" , ".join(['{0}'.format(n) for n in dc_joint_noise]))
-out_file.write('dc_joint_noise: {0}\n'.format(dc_noise_str))
 dc_names_str = '[ {0} ]'.format(" , ".join(['{0}'.format(n) for n in dc_joint_names]))
+out_file.write('ee_position_weight: {0}\n'.format(ee_position_weight_str))
+out_file.write('ee_rotation_weight: {0}\n'.format(ee_rotation_weight_str))
+out_file.write('ee_joint_noise: {0}\n'.format(ee_noise_str))
+out_file.write('dc_joint_noise: {0}\n'.format(dc_noise_str))
 out_file.write('dc_joint_names: {0}\n'.format(dc_names_str))
 out_file.write('fixed_frame_noise: {0}\n'.format(fixed_frame_noise))
 
