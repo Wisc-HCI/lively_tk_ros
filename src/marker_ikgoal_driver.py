@@ -38,12 +38,15 @@ for i in xrange(num_chains):
     server.insert(int_marker.interactive_marker, int_marker.feedback_util.feedback_handler)
 
 server.applyChanges()
-
+seq = 1
 
 rate = rospy.Rate(40)
 while not rospy.is_shutdown():
     eepg = EEPoseGoals()
     dcpg = DCPoseGoals()
+    eepg.header.seq = seq
+    dcpg.header.seq = seq
+    seq += 1
     for i in xrange(num_dc):
         dcpg.dc_values.append(Float32(0.5))
 
