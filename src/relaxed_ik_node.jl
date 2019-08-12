@@ -31,11 +31,11 @@ end
 
 eepg = Nothing
 dcpg = Nothing
-function eePoseGoals_cb(data::EEPoseGoals)
-    global eepg
-    loginfo("ee cb: $data")
-    eepg = data
-end
+# function eePoseGoals_cb(data::EEPoseGoals)
+#     global eepg
+#     loginfo("ee cb: $data")
+#     eepg = data
+# end
 
 function dcPoseGoals_cb(data::DCPoseGoals)
     global dcpg
@@ -57,7 +57,7 @@ num_dc = relaxedIK.relaxedIK_vars.noise.num_dc
 println("loaded robot: $loaded_robot")
 
 
-Subscriber{EEPoseGoals}("/relaxed_ik/ee_pose_goals", eePoseGoals_cb)
+#Subscriber{EEPoseGoals}("/relaxed_ik/ee_pose_goals", eePoseGoals_cb)
 Subscriber{DCPoseGoals}("/relaxed_ik/dc_pose_goals", dcPoseGoals_cb)
 Subscriber{BoolMsg}("/relaxed_ik/quit", quit_cb, queue_size=1)
 Subscriber{BoolMsg}("/relaxed_ik/reset", reset_cb)
@@ -79,7 +79,7 @@ for i = 1:num_chains
 end
 dcpg = DCPoseGoals()
 for i = 1:num_dc
-    push!(dcpg.dc_values,Float32(0.5))
+    push!(dcpg.dc_values,0.5)
 end
 empty_eepg = eepg
 empty_dcpg = dcpg

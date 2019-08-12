@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<launch>
+   <node pkg="lively_ik" type="marker_ikgoal_driver.py" name="marker_ikgoal_driver" output="screen"/>
+</launch>

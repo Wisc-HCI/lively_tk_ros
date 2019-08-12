@@ -241,3 +241,37 @@ function bimanual_line_seg_collision_avoid_obj(x, vars)
 
     return groove_loss(x_val, 0.,2.,.2, .4, 2.)
 end
+
+function relative_position_objective(x, vars; idx1=4, idx2=5, goal_dist=0.15)
+    # For the time being, hard code as the last two end effectors
+
+    vars.robot.arms[idx1].getFrames(x[vars.robot.subchain_indices[idx1]])
+    vars.robot.arms[idx2].getFrames(x[vars.robot.subchain_indices[idx2]])
+    dist = norm(vars.robot.arms[idx1].out_pts[end] - vars.robot.arms[idx2].out_pts[end])
+    x_val = norm(goal_dist-dist)
+
+    return groove_loss(x_val, 0., 2, .1, 10., 2)
+end
+
+function orientation_match_objective(x, vars; idx1=4, idx2=5)
+    # For the time being, hard code as the last two end effectors
+    vars.robot.arms[idx1].getFrames(x[vars.robot.subchain_indices[idx1]])
+    vars.robot.arms[idx2].getFrames(x[vars.robot.subchain_indices[idx2]])
+    println("got frames")
+    eeMat1 = vars.robot.arms[idx1].out_frames[end]
+    eeMat2 = vars.robot.arms[idx2].out_frames[end]
+    println("mat1: $eeMat1")
+    println("mat2: $eeMat2")
+    ee_quat1 = Quat(eeMat1)
+    ee_quat2 = Quat(eeMat2)
+    println("quat1: $ee_quat1")
+    println("quat2: $ee_quat2")
+    disp1 = norm(quaternion_disp(goal_quat, ee_quat1))
+    disp2 = norm(quaternion_disp(goal_quat, ee_quat2))
+    println("disp1: $disp1")
+    println("disp2: $disp2")
+    x_val = min(disp1, disp2)
+    println("x_val: $x_val")
+
+    return groove_loss(x_val, 0., 2, .1, 10., 2)
+end

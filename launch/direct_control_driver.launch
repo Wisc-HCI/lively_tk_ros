@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<launch>
+   <node pkg="lively_ik" type="direct_control_driver.py" name="direct_control_driver" output="screen"/>
+</launch>
