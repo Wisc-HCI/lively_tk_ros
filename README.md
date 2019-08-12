@@ -1,6 +1,10 @@
-# relaxed_ik
+# lively_ik
 
-<b> RelaxedIK Solver </b>
+<b> LivelyIK Solver </b>
+
+If you are looking for RelaxedIK, go here: [RelaxedIK](https://github.com/uwgraphics/relaxed_ik)
+
+RelaxedIK info below:
 
 Welcome to RelaxedIK! This solver implements the methods discussed in our paper <i> RelaxedIK: Real-time Synthesis of Accurate and Feasible Robot Arm Motion </i> (http://www.roboticsproceedings.org/rss14/p43.html)
 
