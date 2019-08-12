@@ -44,6 +44,9 @@ class SliderWidget(object):
         dcpg = DCPoseGoals()
         for v in self.parent.values:
             dcpg.dc_values.append(Float32(v))
+        dcpg.header.seq = self.parent.seq
+        dcpg.header.stamp = rospy.Time.now()
+        self.parent.seq += 1
 
         self.parent.dc_pose_goal_pub.publish(dcpg)
 
@@ -54,7 +57,7 @@ class Window(QWidget):
         self.labels = []
         self.rospy_node = rospy.init_node('direct_control_driver')
         self.dc_pose_goal_pub = rospy.Publisher('/relaxed_ik/dc_pose_goals', DCPoseGoals, queue_size=3)
-
+        self.seq = 0
         path_to_src = os.path.dirname(__file__)
         y = get_relaxedIK_yaml_obj(path_to_src)
 
