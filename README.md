@@ -1,6 +1,10 @@
-# relaxed_ik
+# lively_ik
 
-<b> RelaxedIK Solver </b>
+<b> LivelyIK Solver </b>
+
+If you are looking for RelaxedIK, go here: [RelaxedIK](https://github.com/uwgraphics/relaxed_ik)
+
+RelaxedIK info below:
 
 DEVELOPMENT BRANCH
 
@@ -32,15 +36,15 @@ If you use our solver, please cite our RSS paper RelaxedIK: Real-time Synthesis 
 http://www.roboticsproceedings.org/rss14/p43.html
 
 <pre>
-@INPROCEEDINGS{Rakita-RSS-18, 
-    AUTHOR    = {Daniel Rakita AND Bilge Mutlu AND Michael Gleicher}, 
-    TITLE     = {{RelaxedIK: Real-time Synthesis of Accurate and Feasible Robot Arm Motion}}, 
-    BOOKTITLE = {Proceedings of Robotics: Science and Systems}, 
-    YEAR      = {2018}, 
-    ADDRESS   = {Pittsburgh, Pennsylvania}, 
-    MONTH     = {June}, 
-    DOI       = {10.15607/RSS.2018.XIV.043} 
-} 
+@INPROCEEDINGS{Rakita-RSS-18,
+    AUTHOR    = {Daniel Rakita AND Bilge Mutlu AND Michael Gleicher},
+    TITLE     = {{RelaxedIK: Real-time Synthesis of Accurate and Feasible Robot Arm Motion}},
+    BOOKTITLE = {Proceedings of Robotics: Science and Systems},
+    YEAR      = {2018},
+    ADDRESS   = {Pittsburgh, Pennsylvania},
+    MONTH     = {June},
+    DOI       = {10.15607/RSS.2018.XIV.043}
+}
 </pre>
 
 If you use our solver for a robot teleoperation interface, also consider citing our prior work that shows the effectiveness of RelaxedIK in this setting:
@@ -79,7 +83,7 @@ https://dl.acm.org/citation.cfm?id=3171221.3171279
 kdl urdf parser:
 <pre> sudo apt-get install ros-[your ros distro]-urdfdom-py </pre>
 <pre> sudo apt-get install ros-[your ros distro]-kdl-parser-py </pre>
-<pre> sudo apt-get install ros-[your ros distro]-kdl-conversions </pre> 
+<pre> sudo apt-get install ros-[your ros distro]-kdl-conversions </pre>
 
 readchar:
 <pre> sudo pip install readchar </pre>
@@ -143,10 +147,14 @@ Then, make sure that the terminal that that command was entered into has focus (
 
 <b> Coming Soon </b>
 
-RelaxedIK has been rewritten in Julia to substantially boost performance.  This version of the solver is currently in a beta test on this branch.  If you have feedback based on your experience using this version of the solver (positive or negative), please email me at rakita@cs.wisc.edu.  Thanks!
+RelaxedIK has been rewritten in Julia to substantially boost performance. If you would like to try out this version of RelaxedIK before it is pushed to the main branch, feel free to try it out as part of a beta testing phase.  To use it, please clone the "dev" branch using the following commands:
+
+<pre> git clone -b dev https://github.com/uwgraphics/relaxed_ik.git </pre>
+
+install the proper dependenices, and follow the new set of instructions in the start_here.py file.  
+
+If you have feedback on your experience using the new version of the solver (positive or negative), please email me at rakita@cs.wisc.edu .  The code will be moved to the main branch after this testing phase.  Thanks!
 
 <b> Change Log </b>
 
 Version 1.1 (8/16/18): added support for prismatic and fixed joints
-
-
