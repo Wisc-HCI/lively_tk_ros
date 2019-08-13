@@ -43,7 +43,7 @@ class SliderWidget(object):
         self.parent.values[self.index] = slider_value
         dcpg = DCPoseGoals()
         for v in self.parent.values:
-            dcpg.dc_values.append(Float32(v))
+            dcpg.dc_values.append(v)
         dcpg.header.seq = self.parent.seq
         dcpg.header.stamp = rospy.Time.now()
         self.parent.seq += 1

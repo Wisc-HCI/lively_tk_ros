@@ -9,14 +9,15 @@ using Rotations
 using ForwardDiff
 # using Knet
 # using Dates
-@rosimport lively_ik.msg : EEPoseGoals, DCPoseGoals, JointAngles
-@rosimport std_msgs.msg: Float64MultiArray, Bool, Float32, Int8
+@rosimport lively_ik.msg : DCPoseGoals, EEPoseGoals, JointAngles
+@rosimport std_msgs.msg: Float64MultiArray, Bool
 @rosimport geometry_msgs.msg: Point, Quaternion, Pose
 
 rostypegen()
 using .lively_ik.msg
 using .std_msgs.msg
 using .geometry_msgs.msg
+
 quit = false
 function quit_cb(data::BoolMsg)
     global quit
@@ -31,22 +32,22 @@ end
 
 eepg = Nothing
 dcpg = Nothing
-# function eePoseGoals_cb(data::EEPoseGoals)
-#     global eepg
-#     loginfo("ee cb: $data")
-#     eepg = data
-# end
 
+function eePoseGoals_cb(data::EEPoseGoals)
+    global eepg
+    #loginfo("eepg")
+    eepg = data
+end
 function dcPoseGoals_cb(data::DCPoseGoals)
     global dcpg
-    loginfo("dc cb: $data")
+    #loginfo("dcpg")
     dcpg = data
 end
 
 init_node("relaxed_ik_node_jl")
 
 path_to_src = Base.source_dir()
-# println(path_to_src)
+
 loaded_robot_file = open(path_to_src * "/RelaxedIK/Config/loaded_robot")
 loaded_robot = readline(loaded_robot_file)
 close(loaded_robot_file)
@@ -57,7 +58,7 @@ num_dc = relaxedIK.relaxedIK_vars.noise.num_dc
 println("loaded robot: $loaded_robot")
 
 
-#Subscriber{EEPoseGoals}("/relaxed_ik/ee_pose_goals", eePoseGoals_cb)
+Subscriber{EEPoseGoals}("/relaxed_ik/ee_pose_goals", eePoseGoals_cb)
 Subscriber{DCPoseGoals}("/relaxed_ik/dc_pose_goals", dcPoseGoals_cb)
 Subscriber{BoolMsg}("/relaxed_ik/quit", quit_cb, queue_size=1)
 Subscriber{BoolMsg}("/relaxed_ik/reset", reset_cb)
@@ -84,21 +85,22 @@ end
 empty_eepg = eepg
 empty_dcpg = dcpg
 
-loop_rate = Rate(500)
+loop_rate = Rate(200)
 quit = false
+loginfo("starting")
 while !is_shutdown()
     global quit
-    if quit == true
-        println("quitting")
-        quit = false
-        return
-    end
-
     global reset_solver
     global eepg
     global dcpg
     global relaxedIK
     global xopt
+
+    if quit == true
+        println("quitting")
+        quit = false
+        return
+    end
 
     if reset_solver == true
         println("resetting")
@@ -129,9 +131,15 @@ while !is_shutdown()
         push!(pos_goals, [pos_x, pos_y, pos_z])
         push!(quat_goals, Quat(quat_w, quat_x, quat_y, quat_z))
     end
+
+    loginfo("pos_goals: $pos_goals")
+    loginfo("quat_goals: $quat_goals")
+    loginfo("dc_goals: $dc_goals")
+
     time = to_sec(get_rostime())/4
     xopt = solve(relaxedIK, pos_goals, quat_goals, dc_goals, time, 0)
-    # println(relaxedIK.relaxedIK_vars.vars.objective_closures[end](xopt))
+    println("xopt: $xopt")
+    # # println(relaxedIK.relaxedIK_vars.vars.objective_closures[end](xopt))
     ja = JointAngles()
     for i = 1:length(xopt)
         push!(ja.angles.data, xopt[i])
