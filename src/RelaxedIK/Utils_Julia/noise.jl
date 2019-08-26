@@ -23,15 +23,15 @@ mutable struct NoiseGenerator
     dc_seed
     base_seed
     global_seed
-    dc_names
+    dc_weight
 end
 
-function NoiseGenerator(arm_scale, base_scale, dc_names, dc_scale)
+function NoiseGenerator(arm_scale, base_scale, dc_scale, dc_weight)
     num_chains = length(arm_scale)
     num_dc = length(dc_scale)
 
     arm_noise = []
-    dc_noise  = []
+    dc_noise  = zeros(num_dc)
     arm_seed  = []
     dc_seed   = []
 
@@ -40,16 +40,21 @@ function NoiseGenerator(arm_scale, base_scale, dc_names, dc_scale)
         push!(arm_seed,  posenoise(10*rand(3),10*rand(3)))
     end
     for i=1:num_dc
-        push!(dc_noise, 0)
-        push!(dc_seed,  10*rand())
+        if (dc_weight[i] > 0)
+            push!(dc_seed,  10*rand())
+        else
+            push!(dc_seed, 0)
+        end
     end
+
+    #dc_mask = zeros(length(dc_names))
 
     base_noise = posenoise(zeros(3),zeros(3))
     base_seed  = posenoise(10*rand(3),10*rand(3))
     global_seed = rand()*10
 
     # Remove in final
-    n = NoiseGenerator(num_chains, num_dc, time, arm_noise, dc_noise, base_noise, arm_scale, dc_scale, base_scale, arm_seed, dc_seed, base_seed, global_seed, dc_names)
+    n = NoiseGenerator(num_chains, num_dc, time, arm_noise, dc_noise, base_noise, arm_scale, dc_scale, base_scale, arm_seed, dc_seed, base_seed, global_seed, dc_weight)
 
     update!(n, 0.0, 0.0)
 
@@ -77,7 +82,7 @@ function update!(noisegen, time, priority)
     end
     # Handle Direct Control
     for i=1:noisegen.num_dc
-        if noisegen.dc_scale[i] > 0.0
+        if noisegen.dc_scale[i] > 0.0 && noisegen.dc_weight[i] > 0
             noisegen.dc_noise[i] = noise(noisegen.time,noisegen.dc_seed[i]) * noisegen.dc_scale[i]
         end
     end
@@ -85,6 +90,8 @@ function update!(noisegen, time, priority)
     if noisegen.base_scale > 0.0
         noisegen.base_noise.position = noise3D(noisegen.time,noisegen.base_seed.position) * noisegen.base_scale * scale * limit(time,noisegen.global_seed)
         noisegen.base_noise.rotation = noise3D(noisegen.time,noisegen.base_seed.rotation) * noisegen.base_scale * 0.3 * scale
+        noisegen.base_noise.position[1] *= 0
+        noisegen.base_noise.position[3] *= 0
     end
 
 end

@@ -17,6 +17,24 @@ function groove_loss_derivative(x_val, t, d, c, f, g)
     return -2.718281828459^((-(x_val - t)^d) / (2.0 * c^2)) * ( (-d*(x_val-t) ) / (2. * c^2) ) + g*f*(x_val-t)
 end
 
+function dc_obj(x, vars, idx)
+    # Calculate the delta between goal and state
+    goal = vars.joint_goal[idx]
+    x_val = abs(x[idx]-goal)
+
+    # return groove_loss(  x_val, 0.0, 2.0, 2.3, 0.003, 2.0 )
+    return groove_loss(  x_val, 0.0, 2, 0.3295051144911304, 0.1, 2)
+end
+
+function dc_noise_obj(x, vars, idx)
+    # Calculate the delta between goal and state
+    goal = vars.joint_goal[idx]+vars.noise.dc_noise[idx]
+    x_val = abs(x[idx]-goal)
+
+    # return groove_loss(  x_val, 0.0, 2.0, 2.3, 0.003, 2.0 )
+    return groove_loss(  x_val, 0.0, 2, 0.3295051144911304, 0.1, 2)
+end
+
 function position_obj(x, vars, idx)
     vars.robot.arms[idx].getFrames(x[vars.robot.subchain_indices[idx]])
     goal = vars.goal_positions[idx] + vars.noise.base_noise.position
@@ -68,85 +86,20 @@ function rotational_noise_obj(x, vars, idx)
     return groove_loss(x_val, 0., 2, .1, 10., 2)
 end
 
-function position_obj_1(x, vars)
-    return position_obj(x, vars, 1)
+function position_obj_std(x,vars)
+    return position_obj(x,vars,1)
 end
 
-function rotation_obj_1(x, vars)
-    return rotation_obj(x, vars, 1)
+function positional_noise_obj_std(x,vars)
+    return positional_noise_obj(x,vars,1)
 end
 
-function position_obj_2(x, vars)
-    return position_obj(x, vars, 2)
+function rotation_obj_std(x,vars)
+    return rotation_obj(x,vars,1)
 end
 
-function rotation_obj_2(x, vars)
-    return rotation_obj(x, vars, 2)
-end
-
-function position_obj_3(x, vars)
-    return position_obj(x, vars, 3)
-end
-
-function rotation_obj_3(x, vars)
-    return rotation_obj(x, vars, 3)
-end
-
-function position_obj_4(x, vars)
-    return position_obj(x, vars, 4)
-end
-
-function rotation_obj_4(x, vars)
-    return rotation_obj(x, vars, 4)
-end
-
-function position_obj_5(x, vars)
-    return position_obj(x, vars, 5)
-end
-
-function rotation_obj_5(x, vars)
-    return rotation_obj(x, vars, 5)
-end
-
-function positional_noise_obj_1(x, vars)
-    return positional_noise_obj(x, vars, 1)
-end
-
-function rotational_noise_obj_1(x, vars)
-    return rotational_noise_obj(x, vars, 1)
-end
-
-function positional_noise_obj_2(x, vars)
-    return positional_noise_obj(x, vars, 2)
-end
-
-function rotational_noise_obj_2(x, vars)
-    return rotational_noise_obj(x, vars, 2)
-end
-
-
-function positional_noise_obj_3(x, vars)
-    return positional_noise_obj(x, vars, 3)
-end
-
-function rotational_noise_obj_3(x, vars)
-    return rotational_noise_obj(x, vars, 3)
-end
-
-function positional_noise_obj_4(x, vars)
-    return positional_noise_obj(x, vars, 4)
-end
-
-function rotational_noise_obj_4(x, vars)
-    return rotational_noise_obj(x, vars, 4)
-end
-
-function positional_noise_obj_5(x, vars)
-    return positional_noise_obj(x, vars, 5)
-end
-
-function rotational_noise_obj_5(x, vars)
-    return rotational_noise_obj(x, vars, 5)
+function rotational_noise_obj_std(x,vars)
+    return rotational_noise_obj(x,vars,1)
 end
 
 function joint_goal_obj(x, vars)

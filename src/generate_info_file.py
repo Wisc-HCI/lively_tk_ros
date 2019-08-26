@@ -16,7 +16,7 @@ from RelaxedIK.Utils.colors import bcolors
 from RelaxedIK.GROOVE_RelaxedIK.relaxedIK_vars import RelaxedIK_vars
 from start_here import info_file_name, urdf_file_name, fixed_frame, joint_names, joint_ordering, \
                        ee_fixed_joints, ee_joint_noise, fixed_frame_noise, starting_config, \
-                       collision_file_name, joint_state_define, dc_joint_names, dc_joint_noise, \
+                       collision_file_name, joint_state_define, dc_joint_noise, dc_joint_weight, \
                        ee_position_weight, ee_rotation_weight
 import inspect
 
@@ -89,12 +89,12 @@ ee_position_weight_str = '[ {0} ]'.format(" , ".join(['{0}'.format(n) for n in e
 ee_rotation_weight_str = '[ {0} ]'.format(" , ".join(['{0}'.format(n) for n in ee_rotation_weight]))
 ee_noise_str = '[ {0} ]'.format(" , ".join(['{0}'.format(n) for n in ee_joint_noise]))
 dc_noise_str = '[ {0} ]'.format(" , ".join(['{0}'.format(n) for n in dc_joint_noise]))
-dc_names_str = '[ {0} ]'.format(" , ".join(['{0}'.format(n) for n in dc_joint_names]))
+dc_weight_str = '[ {0} ]'.format(" , ".join(['{0}'.format(n) for n in dc_joint_weight]))
 out_file.write('ee_position_weight: {0}\n'.format(ee_position_weight_str))
 out_file.write('ee_rotation_weight: {0}\n'.format(ee_rotation_weight_str))
 out_file.write('ee_joint_noise: {0}\n'.format(ee_noise_str))
 out_file.write('dc_joint_noise: {0}\n'.format(dc_noise_str))
-out_file.write('dc_joint_names: {0}\n'.format(dc_names_str))
+out_file.write('dc_joint_weight: {0}\n'.format(dc_weight_str))
 out_file.write('fixed_frame_noise: {0}\n'.format(fixed_frame_noise))
 
 

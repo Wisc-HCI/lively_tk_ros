@@ -23,9 +23,9 @@ function RelaxedIK(path_to_src, info_file_name, objectives, grad_types, weight_p
 end
 
 function get_standard(path_to_src, info_file_name; solver_name = "slsqp", preconfigured=false)
-    objectives = [position_obj_1, positional_noise_obj_1, rotation_obj_1, rotational_noise_obj_1, min_jt_vel_obj, min_jt_accel_obj, min_jt_jerk_obj, joint_limit_obj, collision_nn_obj]
-    grad_types = ["forward_ad",   "forward_ad",           "forward_ad",   "forward_ad",           "forward_ad",   "forward_ad",     "forward_ad",    "forward_ad",    "finite_diff"]
-    weight_priors = [50, 49, 49, 49, 5.0 ,4.0, 0.1, 1.0, 1.0]
+    objectives =    [position_obj_std, positional_noise_obj_std, rotation_obj_std, rotational_noise_obj_std, min_jt_vel_obj, min_jt_accel_obj, min_jt_jerk_obj, joint_limit_obj, collision_nn_obj]
+    grad_types =    ["forward_ad",     "forward_ad",             "forward_ad",     "forward_ad",             "forward_ad",   "forward_ad",     "forward_ad",    "forward_ad",    "finite_diff"]
+    weight_priors = [50,               49,                       49,               49,                       5.0,            4.0,              0.1,             1.0,             1.0]
 
     inequality_constraints = []
     ineq_grad_types = []
@@ -44,45 +44,45 @@ function get_nchain(n, path_to_src, info_file_name; solver_name = "slsqp", preco
     y = info_file_name_to_yaml_block(path_to_src, info_file_name)
     ee_position_weight = y["ee_position_weight"]
     ee_rotation_weight = y["ee_rotation_weight"]
+    dc_joint_weight = y["dc_joint_weight"]
+    joint_ordering = y["joint_ordering"]
     objectives =    [min_jt_vel_obj, min_jt_accel_obj, min_jt_jerk_obj, joint_limit_obj, collision_nn_obj, relative_position_objective]#, orientation_match_objective]
     grad_types =    ["forward_ad",   "forward_ad",     "forward_ad",    "forward_ad",    "finite_diff",    "forward_ad",              ]#  "forward_ad"]
-    weight_priors = [4.0,            0.5,              0.2,             1.0,             1.0,              1000,                      ]#  1000]
+    weight_priors = [10.0,            11.0,              9.0,             1.0,             1.0,              1000,                      ]#  1000]
     for i in 1:n
-        if i == 1
-            push!(objectives,position_obj_1)
-            push!(objectives,positional_noise_obj_1)
-            push!(objectives,rotation_obj_1)
-            push!(objectives,rotational_noise_obj_1)
-        elseif i == 2
-            push!(objectives,position_obj_2)
-            push!(objectives,positional_noise_obj_2)
-            push!(objectives,rotation_obj_2)
-            push!(objectives,rotational_noise_obj_2)
-        elseif i == 3
-            push!(objectives,position_obj_3)
-            push!(objectives,positional_noise_obj_3)
-            push!(objectives,rotation_obj_3)
-            push!(objectives,rotational_noise_obj_3)
-        elseif i == 4
-            push!(objectives,position_obj_4)
-            push!(objectives,positional_noise_obj_4)
-            push!(objectives,rotation_obj_4)
-            push!(objectives,rotational_noise_obj_4)
-        elseif i == 5
-            push!(objectives,position_obj_5)
-            push!(objectives,positional_noise_obj_5)
-            push!(objectives,rotation_obj_5)
-            push!(objectives,rotational_noise_obj_5)
-        end
-        push!(grad_types,"forward_ad")
-        push!(grad_types,"forward_ad")
-        push!(grad_types,"forward_ad")
+        # Add position objective
+        push!(objectives,(x,vars)->position_obj(x,vars,i))
         push!(grad_types,"forward_ad")
         push!(weight_priors,ee_position_weight[i])
-        push!(weight_priors,49)
-        push!(weight_priors,ee_rotation_weight[i])
-        push!(weight_priors,48)
 
+        # Add position noise objective
+        push!(objectives,(x,vars)->positional_noise_obj(x,vars,i))
+        push!(grad_types,"forward_ad")
+        push!(weight_priors,49)
+
+        # Add orientation objective
+        push!(objectives,(x,vars)->rotation_obj(x,vars,i))
+        push!(grad_types,"forward_ad")
+        push!(weight_priors,ee_rotation_weight[i])
+
+        # add orientation noise objective
+        push!(objectives,(x,vars)->rotational_noise_obj(x,vars,i))
+        push!(grad_types,"forward_ad")
+        push!(weight_priors,48)
+    end
+    for i in 1:length(dc_joint_weight)
+        weight = dc_joint_weight[i]
+        if weight > 0
+            # Add dc objective
+            push!(objectives,(x,vars)->dc_obj(x,vars,i))
+            push!(grad_types,"forward_ad")
+            push!(weight_priors,weight)
+
+            # Add dc noise objective
+            push!(objectives,(x,vars)->dc_noise_obj(x,vars,i))
+            push!(grad_types,"forward_ad")
+            push!(weight_priors,weight)
+        end
     end
     inequality_constraints = []
     ineq_grad_types = []
@@ -96,27 +96,15 @@ function get_nchain_base_ik(n, path_to_src, info_file_name; solver_name = "slsqp
     grad_types = []
     weight_priors = []
     for i in 1:n
-        if i == 1
-            push!(objectives,position_obj_1)
-            push!(objectives,positional_noise_obj_1)
-        elseif i == 2
-            push!(objectives,position_obj_2)
-            push!(objectives,positional_noise_obj_2)
-        elseif i == 3
-            push!(objectives,position_obj_3)
-            push!(objectives,positional_noise_obj_3)
-        elseif i == 4
-            push!(objectives,position_obj_4)
-            push!(objectives,positional_noise_obj_4)
-        elseif i == 5
-            push!(objectives,position_obj_5)
-            push!(objectives,positional_noise_obj_5)
-        end
+        # Add position objective
+        push!(objectives,(x,vars)->position_obj(x,vars,i))
         push!(grad_types,"forward_ad")
-        push!(grad_types,"forward_ad")
-        push!(weight_priors,50)
-        push!(weight_priors,49)
+        push!(weight_priors,ee_position_weight[i])
 
+        # Add orientation objective
+        push!(objectives,(x,vars)->rotation_obj(x,vars,i))
+        push!(grad_types,"forward_ad")
+        push!(weight_priors,ee_rotation_weight[i])
     end
     inequality_constraints = []
     ineq_grad_types = []
@@ -189,6 +177,8 @@ function solve(relaxedIK, goal_positions, goal_quats, dc_goals, time, priority; 
         vars.goal_positions = goal_positions
     end
 
+    # Assign the dc_goals to the joint_goal in vars
+    vars.joint_goal = dc_goals
 
     if vars.rotation_mode == "relative"
         for i = 1:vars.robot.num_chains
@@ -201,14 +191,6 @@ function solve(relaxedIK, goal_positions, goal_quats, dc_goals, time, priority; 
     update_relaxedIK_vars!(relaxedIK.relaxedIK_vars, xopt, time, priority)
     if filter
         xopt = filter_signal(relaxedIK.ema_filter, xopt)
-    end
-
-    for dc = 1:length(relaxedIK.relaxedIK_vars.noise.dc_names)
-        idx = get_index_from_joint_order(relaxedIK.relaxedIK_vars.robot, relaxedIK.relaxedIK_vars.noise.dc_names[dc])
-        lower_bound = relaxedIK.relaxedIK_vars.robot.bounds[idx][1]
-        upper_bound = relaxedIK.relaxedIK_vars.robot.bounds[idx][2]
-        xopt[idx] = max(min(relaxedIK.relaxedIK_vars.noise.dc_noise[dc] + dc_goals[dc],upper_bound),lower_bound)
-        # xopt[idx] = relaxedIK.relaxedIK_vars.noise.xdc[dc] + dc_goals[dc]
     end
 
     return xopt

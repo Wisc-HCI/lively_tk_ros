@@ -33,14 +33,14 @@ end
 eepg = Nothing
 dcpg = Nothing
 
-function eePoseGoals_cb(data::EEPoseGoals)
-    global eepg
-    #loginfo("eepg")
-    eepg = data
-end
+# function eePoseGoals_cb(data::EEPoseGoals)
+#     global eepg
+#     loginfo("eepg")
+#     eepg = data
+# end
 function dcPoseGoals_cb(data::DCPoseGoals)
     global dcpg
-    #loginfo("dcpg")
+    loginfo("dcpg")
     dcpg = data
 end
 
@@ -58,7 +58,7 @@ num_dc = relaxedIK.relaxedIK_vars.noise.num_dc
 println("loaded robot: $loaded_robot")
 
 
-Subscriber{EEPoseGoals}("/relaxed_ik/ee_pose_goals", eePoseGoals_cb)
+# Subscriber{EEPoseGoals}("/relaxed_ik/ee_pose_goals", eePoseGoals_cb)
 Subscriber{DCPoseGoals}("/relaxed_ik/dc_pose_goals", dcPoseGoals_cb)
 Subscriber{BoolMsg}("/relaxed_ik/quit", quit_cb, queue_size=1)
 Subscriber{BoolMsg}("/relaxed_ik/reset", reset_cb)
@@ -132,13 +132,13 @@ while !is_shutdown()
         push!(quat_goals, Quat(quat_w, quat_x, quat_y, quat_z))
     end
 
-    loginfo("pos_goals: $pos_goals")
-    loginfo("quat_goals: $quat_goals")
-    loginfo("dc_goals: $dc_goals")
+    # loginfo("pos_goals: $pos_goals")
+    # loginfo("quat_goals: $quat_goals")
+    # loginfo("dc_goals: $dc_goals")
 
     time = to_sec(get_rostime())/4
     xopt = solve(relaxedIK, pos_goals, quat_goals, dc_goals, time, 0)
-    println("xopt: $xopt")
+    # println("xopt: $xopt")
     # # println(relaxedIK.relaxedIK_vars.vars.objective_closures[end](xopt))
     ja = JointAngles()
     for i = 1:length(xopt)

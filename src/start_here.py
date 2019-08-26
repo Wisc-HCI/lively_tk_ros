@@ -95,13 +95,6 @@ joint_names = [ ["HeadYaw","HeadPitch"], # Head
 				["LHipYawPitch","LHipRoll","LHipPitch","LKneePitch","LAnklePitch","LAnkleRoll"], # LLeg
 				["RHipYawPitch","RHipRoll","RHipPitch","RKneePitch","RAnklePitch","RAnkleRoll"]  # RLeg
 			  ]
-######################################################################################################
-
-######################################################################################################
-# Step 3b: Specify non-kinematic joints that have noise
-dc_joint_names = ["LHand","RHand"]
-######################################################################################################
-
 
 ######################################################################################################
 # Step 3c: Please provide the order that you want joints to appear in the final returned joint configurations,
@@ -145,7 +138,6 @@ ee_fixed_joints = ['gaze_joint',
 				   "RArm_effector_fixedjoint",
 				   "LLeg_effector_fixedjoint",
 				   "RLeg_effector_fixedjoint"]
-dc_joints = ["LHand","RHand"] # Direct-control joints
 ######################################################################################################
 
 
@@ -169,7 +161,13 @@ starting_config = [ 0.00, 0.00, # Head
 # Step 3f: Please provide the noise for each join in ee_fixed_joints and dc_joints.
 #   Specifying zeros results in no noise.
 ee_joint_noise = [ 0.005, 0.005, 0.005, 0.0, 0.0 ]
-dc_joint_noise = [ 0.10,  0.10]
+dc_joint_noise = [ 0.0, 0.0, # Head
+				   0.0, 0.0, 0.0, 0.0, 0.0, # LArm
+				   0.0, 0.0, 0.0, 0.0, 0.0, # RArm
+				   0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # LLeg
+				   0.0, 0.0, 0.0, 0.0, 0.0, 0.0,  # RLeg
+				   0.1,  0.1 # Hands
+		         ]
 
 ######################################################################################################
 
@@ -183,6 +181,13 @@ fixed_frame_noise = 0.01
 
 ee_position_weight = [50, 50, 50, 1000, 1000]
 ee_rotation_weight = [49, 49, 49, 1000, 1000]
+dc_joint_weight = [ 0, 0, # Head
+					0, 0, 0, 0, 0, # LArm
+					0, 0, 0, 0, 0, # RArm
+					0, 0, 0, 0, 0, 0, # LLeg
+					0, 0, 0, 0, 0, 0, # RLeg
+					100, 100 # Hands
+				  ]
 
 ######################################################################################################
 
