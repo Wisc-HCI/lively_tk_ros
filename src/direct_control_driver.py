@@ -63,19 +63,18 @@ class Window(QWidget):
 
         grid = QGridLayout()
 
-        joint_list = y["dc_joint_names"]
+        joint_weights = y["dc_joint_weight"]
         joint_ordering = y["joint_ordering"]
         joint_limits = y["joint_limits"]
 
 
+        self.values = [0 for joint in joint_ordering]
         slider_count = 0
-        self.values = []
         for i, joint in enumerate(joint_ordering):
-            if joint in joint_list:
-                slider_widget = SliderWidget(self, slider_count, joint, joint_limits[i][0], joint_limits[i][1])
+            if joint_weights[i] > 0:
+                slider_widget = SliderWidget(self, i, joint, joint_limits[i][0], joint_limits[i][1])
                 self.sliders.append(slider_widget)
                 grid.addWidget(slider_widget.groupBox, slider_count, 0)
-                self.values.append(0)
                 slider_count += 1
 
         self.setLayout(grid)

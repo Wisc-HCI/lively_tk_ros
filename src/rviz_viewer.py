@@ -59,7 +59,7 @@ if __name__ == '__main__':
 
     prev_state = []
 
-    rate = rospy.Rate(20.0)
+    rate = rospy.Rate(10.0)
     prev_sol = starting_config
     while not rospy.is_shutdown():
         tf_pub.sendTransform((0, 0, 0),
