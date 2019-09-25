@@ -35,12 +35,12 @@ dcpg = Nothing
 
 function eePoseGoals_cb(data::EEPoseGoals)
     global eepg
-    loginfo("eepg")
+    loginfo("$data")
     eepg = data
 end
 function dcPoseGoals_cb(data::DCPoseGoals)
     global dcpg
-    loginfo("dcpg")
+    # loginfo("dcpg")
     dcpg = data
 end
 
@@ -138,7 +138,7 @@ while !is_shutdown()
 
     time = to_sec(get_rostime())/4
     xopt = solve(relaxedIK, pos_goals, quat_goals, dc_goals, time, 0)
-    loginfo("xopt: $xopt")
+    # loginfo("xopt: $xopt")
 
     ja = JointAngles()
     for i = 1:length(xopt)

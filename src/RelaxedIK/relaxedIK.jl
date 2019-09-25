@@ -46,9 +46,9 @@ function get_nchain(n, path_to_src, info_file_name; solver_name = "slsqp", preco
     ee_rotation_weight = y["ee_rotation_weight"]
     dc_joint_weight = y["dc_joint_weight"]
     joint_ordering = y["joint_ordering"]
-    objectives =    [min_jt_vel_obj, min_jt_accel_obj, min_jt_jerk_obj, joint_limit_obj, collision_nn_obj, relative_position_objective]#, orientation_match_objective]
-    grad_types =    ["forward_ad",   "forward_ad",     "forward_ad",    "forward_ad",    "finite_diff",    "forward_ad",              ]#  "forward_ad"]
-    weight_priors = [10.0,            11.0,              9.0,             1.0,             1.0,              1000,                      ]#  1000]
+    objectives =    [min_jt_vel_obj, min_jt_accel_obj, min_jt_jerk_obj, joint_limit_obj, collision_nn_obj, (x,vars)->relative_position_obj(x,vars,4,5,0.15), (x,vars)->orientation_match_obj(x,vars,4,5)]
+    grad_types =    ["forward_ad",   "forward_ad",     "forward_ad",    "forward_ad",    "finite_diff",    "forward_ad",                                     "forward_ad"]
+    weight_priors = [10.0,            11.0,            9.0,             1.0,             1.0,              1000,                                             1000]
     for i in 1:n
         # Add position objective
         push!(objectives,(x,vars)->position_obj(x,vars,i))
