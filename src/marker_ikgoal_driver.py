@@ -6,7 +6,7 @@ from interactive_markers.interactive_marker_server import *
 from visualization_msgs.msg import *
 from RelaxedIK.relaxedIK import get_relaxedIK_from_info_file
 from RelaxedIK.Utils.interactive_marker_utils import InteractiveMarkerFeedbackUtil, InteractiveMarkerUtil, InteractiveMarkerServerUtil
-from lively_ik.msg import EEPoseGoals
+from wiscutils.msg import EEPoseGoals
 from geometry_msgs.msg import PoseStamped, Vector3Stamped, QuaternionStamped, Pose
 import RelaxedIK.Utils.transformations as T
 

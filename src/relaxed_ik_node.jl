@@ -9,12 +9,12 @@ using Rotations
 using ForwardDiff
 # using Knet
 # using Dates
-@rosimport lively_ik.msg : DCPoseGoals, EEPoseGoals, JointAngles
+@rosimport wiscutils.msg : DCPoseGoals, EEPoseGoals, JointAngles
 @rosimport std_msgs.msg: Float64MultiArray, Bool
 @rosimport geometry_msgs.msg: Point, Quaternion, Pose
 
 rostypegen()
-using .lively_ik.msg
+using .wiscutils.msg
 using .std_msgs.msg
 using .geometry_msgs.msg
 
@@ -35,7 +35,7 @@ dcpg = Nothing
 
 function eePoseGoals_cb(data::EEPoseGoals)
     global eepg
-    loginfo("$data")
+    # loginfo("$data")
     eepg = data
 end
 function dcPoseGoals_cb(data::DCPoseGoals)
@@ -85,7 +85,7 @@ end
 empty_eepg = eepg
 empty_dcpg = dcpg
 
-loop_rate = Rate(10)
+loop_rate = Rate(80)
 quit = false
 loginfo("starting")
 while !is_shutdown()

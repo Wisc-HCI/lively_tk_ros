@@ -70,14 +70,14 @@ end
 function update!(noisegen, time, priority)
     # Priority is a value 0-1.
     # Higher priority means less noise
-    scale = 1-priority
+    mag = 1-priority
     noisegen.time = time
 
     # Handle End Effector Noise
     for i=1:noisegen.num_chains
         if noisegen.arm_scale[i] > 0.0
-            noisegen.arm_noise[i].position = noise3D(noisegen.time,noisegen.arm_seed[i].position) * noisegen.arm_scale[i] * scale * limit(time,noisegen.global_seed)
-            noisegen.arm_noise[i].rotation = noise3D(noisegen.time,noisegen.arm_seed[i].rotation) * noisegen.arm_scale[i] * 0.3 * scale
+            noisegen.arm_noise[i].position = noise3D(noisegen.time,noisegen.arm_seed[i].position) * noisegen.arm_scale[i] * mag * limit(time,noisegen.global_seed)
+            noisegen.arm_noise[i].rotation = noise3D(noisegen.time,noisegen.arm_seed[i].rotation) * noisegen.arm_scale[i] * 0.3 * mag
         end
     end
     # Handle Direct Control
@@ -88,10 +88,10 @@ function update!(noisegen, time, priority)
     end
     # Handle fixed frame noise
     if noisegen.base_scale > 0.0
-        noisegen.base_noise.position = noise3D(noisegen.time,noisegen.base_seed.position) * noisegen.base_scale * scale * limit(time,noisegen.global_seed)
-        noisegen.base_noise.rotation = noise3D(noisegen.time,noisegen.base_seed.rotation) * noisegen.base_scale * 0.3 * scale
-        noisegen.base_noise.position[1] *= 0
-        noisegen.base_noise.position[3] *= 0
+        noisegen.base_noise.position = noise3D(noisegen.time,noisegen.base_seed.position) * noisegen.base_scale * mag# * limit(time,noisegen.global_seed)
+        #noisegen.base_noise.rotation = noise3D(noisegen.time,noisegen.base_seed.rotation) * noisegen.base_scale * 0.05 * mag
+        #noisegen.base_noise.position[1] *= 0
+        #noisegen.base_noise.position[3] *= 0
     end
 
 end

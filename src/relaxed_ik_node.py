@@ -15,7 +15,7 @@ AND FOLLOW THE STEP-BY-STEP INSTRUCTIONS THERE.  Thanks!
 import rospy
 import os
 from RelaxedIK.relaxedIK import RelaxedIK
-from relaxed_ik.msg import EEPoseGoals, JointAngles
+from wiscutils.msg import EEPoseGoals, JointAngles
 from std_msgs.msg import Float64
 from RelaxedIK.Utils.colors import bcolors
 from RelaxedIK.relaxedIK import get_relaxedIK_from_info_file

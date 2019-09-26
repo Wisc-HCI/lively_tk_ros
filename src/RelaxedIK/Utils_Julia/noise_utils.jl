@@ -165,8 +165,8 @@ noise(x, seed; detail::T = 1, persistence = 1.0) where T <: Integer =
 
 noise3D(x, seedvec; detail::T = 1, persistence = 1.0) where T <: Integer =
  Vector{Float64}([noise(x, seedvec[1],detail=detail,persistence=persistence) * 2 - 1,
-                 noise(x, seedvec[2],detail=detail,persistence=persistence) * 2 - 1,
-                 noise(x, seedvec[3],detail=detail,persistence=persistence) * 2 - 1])
+                  noise(x, seedvec[2],detail=detail,persistence=persistence) * 2 - 1,
+                  noise(x, seedvec[3],detail=detail,persistence=persistence) * 2 - 1])
 
 noise4D(x, seedvec; detail::T = 1, persistence = 1.0) where T <: Integer =
  Vector{Float64}([noise(x, seedvec[1],detail=detail,persistence=persistence),

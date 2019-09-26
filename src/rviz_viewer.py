@@ -16,7 +16,7 @@ import tf
 import os
 from RelaxedIK.Utils.yaml_utils import get_relaxedIK_yaml_obj
 from sensor_msgs.msg import JointState
-from lively_ik.msg import JointAngles
+from wiscutils.msg import JointAngles
 
 ja_solution = ''
 def ja_solution_cb(data):

@@ -195,16 +195,6 @@ function bimanual_line_seg_collision_avoid_obj(x, vars)
     return groove_loss(x_val, 0.,2.,.2, .4, 2.)
 end
 
-function relative_position_obj(x, vars, idx1, idx2, goal_dist)
-
-    vars.robot.arms[idx1].getFrames(x[vars.robot.subchain_indices[idx1]])
-    vars.robot.arms[idx2].getFrames(x[vars.robot.subchain_indices[idx2]])
-    dist = norm(vars.robot.arms[idx1].out_pts[end] - vars.robot.arms[idx2].out_pts[end])
-    x_val = norm(goal_dist-dist)
-
-    return groove_loss(x_val, 0., 2, .1, 10., 2)
-end
-
 function orientation_match_obj(x, vars, idx1, idx2)
 
     vars.robot.arms[idx1].getFrames(x[vars.robot.subchain_indices[idx1]])
@@ -217,6 +207,42 @@ function orientation_match_obj(x, vars, idx1, idx2)
     disp1 = norm(quaternion_disp(ee_quat1, ee_quat2))
     disp2 = norm(quaternion_disp(ee_quat1, ee_quat3))
     x_val = min(disp1, disp2)
+
+    return groove_loss(x_val, 0., 2, .1, 10., 2)
+end
+
+function x_match_obj(x, vars, idx1, idx2, goal_dist)
+
+    vars.robot.arms[idx1].getFrames(x[vars.robot.subchain_indices[idx1]])
+    vars.robot.arms[idx2].getFrames(x[vars.robot.subchain_indices[idx2]])
+    x_1 = vars.robot.arms[idx1].out_pts[end][1]
+    x_2 = vars.robot.arms[idx2].out_pts[end][1]
+    dist = abs(x_1 - x_2)
+    x_val = abs(goal_dist-dist)
+
+    return groove_loss(x_val, 0., 2, .1, 10., 2)
+end
+
+function y_match_obj(x, vars, idx1, idx2, goal_dist)
+
+    vars.robot.arms[idx1].getFrames(x[vars.robot.subchain_indices[idx1]])
+    vars.robot.arms[idx2].getFrames(x[vars.robot.subchain_indices[idx2]])
+    y_1 = vars.robot.arms[idx1].out_pts[end][2]
+    y_2 = vars.robot.arms[idx2].out_pts[end][2]
+    dist = abs(y_1 - y_2)
+    x_val = abs(goal_dist-dist)
+
+    return groove_loss(x_val, 0., 2, .1, 10., 2)
+end
+
+function z_match_obj(x, vars, idx1, idx2, goal_dist)
+
+    vars.robot.arms[idx1].getFrames(x[vars.robot.subchain_indices[idx1]])
+    vars.robot.arms[idx2].getFrames(x[vars.robot.subchain_indices[idx2]])
+    z_1 = vars.robot.arms[idx1].out_pts[end][3]
+    z_2 = vars.robot.arms[idx2].out_pts[end][3]
+    dist = abs(z_1 - z_2)
+    x_val = abs(goal_dist-dist)
 
     return groove_loss(x_val, 0., 2, .1, 10., 2)
 end

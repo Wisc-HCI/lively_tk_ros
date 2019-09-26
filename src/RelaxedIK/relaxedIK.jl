@@ -46,9 +46,9 @@ function get_nchain(n, path_to_src, info_file_name; solver_name = "slsqp", preco
     ee_rotation_weight = y["ee_rotation_weight"]
     dc_joint_weight = y["dc_joint_weight"]
     joint_ordering = y["joint_ordering"]
-    objectives =    [min_jt_vel_obj, min_jt_accel_obj, min_jt_jerk_obj, joint_limit_obj, collision_nn_obj, (x,vars)->relative_position_obj(x,vars,4,5,0.15), (x,vars)->orientation_match_obj(x,vars,4,5)]
-    grad_types =    ["forward_ad",   "forward_ad",     "forward_ad",    "forward_ad",    "finite_diff",    "forward_ad",                                     "forward_ad"]
-    weight_priors = [10.0,            11.0,            9.0,             1.0,             1.0,              1000,                                             1000]
+    objectives =    [min_jt_vel_obj, min_jt_accel_obj, min_jt_jerk_obj, joint_limit_obj, collision_nn_obj]
+    grad_types =    ["forward_ad",   "forward_ad",     "forward_ad",    "forward_ad",    "finite_diff"   ]
+    weight_priors = [70.0,           65.0,             50.0,            8.0,             3.0             ]
     for i in 1:n
         # Add position objective
         push!(objectives,(x,vars)->position_obj(x,vars,i))
@@ -58,7 +58,7 @@ function get_nchain(n, path_to_src, info_file_name; solver_name = "slsqp", preco
         # Add position noise objective
         push!(objectives,(x,vars)->positional_noise_obj(x,vars,i))
         push!(grad_types,"forward_ad")
-        push!(weight_priors,49)
+        push!(weight_priors,10)
 
         # Add orientation objective
         push!(objectives,(x,vars)->rotation_obj(x,vars,i))
@@ -68,7 +68,7 @@ function get_nchain(n, path_to_src, info_file_name; solver_name = "slsqp", preco
         # add orientation noise objective
         push!(objectives,(x,vars)->rotational_noise_obj(x,vars,i))
         push!(grad_types,"forward_ad")
-        push!(weight_priors,48)
+        push!(weight_priors,9)
     end
     for i in 1:length(dc_joint_weight)
         weight = dc_joint_weight[i]
@@ -84,6 +84,27 @@ function get_nchain(n, path_to_src, info_file_name; solver_name = "slsqp", preco
             push!(weight_priors,weight)
         end
     end
+
+    # Keep Feet matched
+    push!(objectives,(x,vars)->x_match_obj(x,vars,4,5,0))
+    push!(grad_types,"forward_ad")
+    push!(weight_priors,1000)
+
+    push!(objectives,(x,vars)->y_match_obj(x,vars,4,5,0.15))
+    push!(grad_types,"forward_ad")
+    push!(weight_priors,1000)
+
+    push!(objectives,(x,vars)->z_match_obj(x,vars,4,5,0))
+    push!(grad_types,"forward_ad")
+    push!(weight_priors,1000)
+
+
+    push!(objectives,(x,vars)->orientation_match_obj(x,vars,4,5))
+    push!(grad_types,"forward_ad")
+    push!(weight_priors,1000)
+
+
+
     inequality_constraints = []
     ineq_grad_types = []
     equality_constraints = []

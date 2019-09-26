@@ -5,7 +5,7 @@ import sys
 import os
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (QApplication, QCheckBox, QGridLayout, QGroupBox, QMenu, QPushButton, QRadioButton, QVBoxLayout, QWidget, QSlider, QLabel)
-from lively_ik.msg import DCPoseGoals
+from wiscutils.msg import DCPoseGoals
 from std_msgs.msg import Float32
 from RelaxedIK.Utils.yaml_utils import get_relaxedIK_yaml_obj
 
