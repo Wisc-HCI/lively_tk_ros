@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <launch>
   <rosparam param="lively_ik/freq">1</rosparam>
+  <rosparam param="lively_ik/priority">0</rosparam>
   <rosparam param="lively_ik/bias">[1,1,1]</rosparam>
    <!-- ##################################################################################### -->
 

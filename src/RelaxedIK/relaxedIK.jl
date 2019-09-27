@@ -48,7 +48,7 @@ function get_nchain(n, path_to_src, info_file_name; solver_name = "slsqp", preco
     joint_ordering = y["joint_ordering"]
     objectives =    [min_jt_vel_obj, min_jt_accel_obj, min_jt_jerk_obj, joint_limit_obj, collision_nn_obj]
     grad_types =    ["forward_ad",   "forward_ad",     "forward_ad",    "forward_ad",    "finite_diff"   ]
-    weight_priors = [70.0,           65.0,             50.0,            8.0,             3.0             ]
+    weight_priors = [6.0,            3.0,              2.0,             0.0,             0.5             ]
     for i in 1:n
         # Add position objective
         push!(objectives,(x,vars)->position_obj(x,vars,i))
@@ -58,7 +58,7 @@ function get_nchain(n, path_to_src, info_file_name; solver_name = "slsqp", preco
         # Add position noise objective
         push!(objectives,(x,vars)->positional_noise_obj(x,vars,i))
         push!(grad_types,"forward_ad")
-        push!(weight_priors,10)
+        push!(weight_priors,3*ee_position_weight[i]/4)
 
         # Add orientation objective
         push!(objectives,(x,vars)->rotation_obj(x,vars,i))
@@ -68,7 +68,7 @@ function get_nchain(n, path_to_src, info_file_name; solver_name = "slsqp", preco
         # add orientation noise objective
         push!(objectives,(x,vars)->rotational_noise_obj(x,vars,i))
         push!(grad_types,"forward_ad")
-        push!(weight_priors,9)
+        push!(weight_priors,3*ee_rotation_weight[i]/4)
     end
     for i in 1:length(dc_joint_weight)
         weight = dc_joint_weight[i]
@@ -88,22 +88,20 @@ function get_nchain(n, path_to_src, info_file_name; solver_name = "slsqp", preco
     # Keep Feet matched
     push!(objectives,(x,vars)->x_match_obj(x,vars,4,5,0))
     push!(grad_types,"forward_ad")
-    push!(weight_priors,1000)
+    push!(weight_priors,1)
 
     push!(objectives,(x,vars)->y_match_obj(x,vars,4,5,0.15))
     push!(grad_types,"forward_ad")
-    push!(weight_priors,1000)
+    push!(weight_priors,1)
 
     push!(objectives,(x,vars)->z_match_obj(x,vars,4,5,0))
     push!(grad_types,"forward_ad")
-    push!(weight_priors,1000)
+    push!(weight_priors,1)
 
 
     push!(objectives,(x,vars)->orientation_match_obj(x,vars,4,5))
     push!(grad_types,"forward_ad")
-    push!(weight_priors,1000)
-
-
+    push!(weight_priors,1)
 
     inequality_constraints = []
     ineq_grad_types = []
