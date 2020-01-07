@@ -16,7 +16,7 @@ path_to_src = os.path.dirname(__file__)
 
 relaxedIK = get_relaxedIK_from_info_file(path_to_src)
 num_chains = relaxedIK.vars.robot.numChains
-num_dc = 2
+print(num_chains)
 
 init_ee_positions =  relaxedIK.vars.init_ee_positions
 init_ee_quats =  relaxedIK.vars.init_ee_quats

@@ -28,7 +28,7 @@ if __name__ == '__main__':
     rospy.init_node('preprocessing')
 
     path_to_src = os.path.dirname(__file__)
-
+    print(path_to_src)
     y = get_relaxedIK_yaml_obj(path_to_src)
     if not y == None:
         urdf_file_name = y['urdf_file_name']
