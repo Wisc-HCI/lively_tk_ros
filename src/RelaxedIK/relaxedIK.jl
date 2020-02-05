@@ -87,6 +87,7 @@ function get_nchain(n, path_to_src, info_file_name; solver_name = "slsqp", preco
     ee_rotation_weight = y["ee_rotation_weight"]
     dc_joint_weight = y["dc_joint_weight"]
     joint_ordering = y["joint_ordering"]
+    match_objectives = y["match_objectives"]
     objectives =    [min_jt_vel_obj, min_jt_accel_obj, min_jt_jerk_obj, joint_limit_obj, collision_nn_obj]
     grad_types =    ["forward_ad",   "forward_ad",     "forward_ad",    "forward_ad",    "finite_diff"   ]
     weight_priors = [6.0,            3.0,              2.0,             0.0,             0.5             ]
@@ -126,22 +127,42 @@ function get_nchain(n, path_to_src, info_file_name; solver_name = "slsqp", preco
         end
     end
 
-    # Keep Feet matched
-    # push!(objectives,(x,vars)->x_match_obj(x,vars,4,5,0))
-    # push!(grad_types,"forward_ad")
-    # push!(weight_priors,1)
-    #
-    # push!(objectives,(x,vars)->y_match_obj(x,vars,4,5,0.15))
-    # push!(grad_types,"forward_ad")
-    # push!(weight_priors,1)
-    #
-    # push!(objectives,(x,vars)->z_match_obj(x,vars,4,5,0))
-    # push!(grad_types,"forward_ad")
-    # push!(weight_priors,1)
-    #
-    # push!(objectives,(x,vars)->orientation_match_obj(x,vars,4,5))
-    # push!(grad_types,"forward_ad")
-    # push!(weight_priors,1)
+    # Match Objectives #
+    for i in 1:length(match_objectives)
+        objective_info = match_objectives[i]
+        if objective_info["type"] == "x"
+            arm1 = objective_info["arm_index_1"]
+            arm2 = objective_info["arm_index_2"]
+            delta = objective_info["delta"]
+            weight = objective_info["weight"]
+            push!(objectives,(x,vars)->x_match_obj(x,vars,arm1,arm2,delta))
+            push!(grad_types,"forward_ad")
+            push!(weight_priors,weight)
+        elseif objective_info["type"] == "y"
+            arm1 = objective_info["arm_index_1"]
+            arm2 = objective_info["arm_index_2"]
+            delta = objective_info["delta"]
+            weight = objective_info["weight"]
+            push!(objectives,(x,vars)->y_match_obj(x,vars,arm1,arm2,delta))
+            push!(grad_types,"forward_ad")
+            push!(weight_priors,weight)
+        elseif objective_info["type"] == "z"
+            arm1 = objective_info["arm_index_1"]
+            arm2 = objective_info["arm_index_2"]
+            delta = objective_info["delta"]
+            weight = objective_info["weight"]
+            push!(objectives,(x,vars)->y_match_obj(x,vars,arm1,arm2,delta))
+            push!(grad_types,"forward_ad")
+            push!(weight_priors,weight)
+        elseif objective_info["type"] == "orientation"
+            arm1 = objective_info["arm_index_1"]
+            arm2 = objective_info["arm_index_2"]
+            weight = objective_info["weight"]
+            push!(objectives,(x,vars)->orientation_match_obj(x,vars,arm1,arm2))
+            push!(grad_types,"forward_ad")
+            push!(weight_priors,weight)
+        end
+    end
 
     inequality_constraints = []
     ineq_grad_types = []
@@ -255,8 +276,8 @@ function solve(relaxedIK, goal_positions, goal_quats, dc_goals, time, priority; 
     return xopt
 end
 
-function solve_precise(relaxedIK, goal_positions, goal_quats; prev_state = nothing, pos_tol = 0.001, rot_tol = 0.001, max_tries = 3, max_iter = 0, max_time = 0.0)
-    xopt = solve(relaxedIK, goal_positions, goal_quats, prev_state = prev_state, filter = false, max_iter = max_iter, max_time = 0.0)
+function solve_precise(relaxedIK, goal_positions, goal_quats, dc_goals, time, priority; prev_state = nothing, pos_tol = 0.001, rot_tol = 0.001, max_tries = 3, max_iter = 0, max_time = 0.0)
+    xopt = solve(relaxedIK, goal_positions, goal_quats, dc_goals, time, priority, prev_state = prev_state, filter = false, max_iter = max_iter, max_time = 0.0)
     valid_sol = true
     pos_error = 0.0
     rot_error = 0.0
@@ -270,7 +291,7 @@ function solve_precise(relaxedIK, goal_positions, goal_quats; prev_state = nothi
 
     try_idx = 1
     while (! valid_sol) && (try_idx < max_tries)
-        xopt = solve(relaxedIK, goal_positions, goal_quats, prev_state = xopt, filter = false)
+        xopt = solve(relaxedIK, goal_positions, goal_quats, dc_goals, time, priority, prev_state = xopt, filter = false)
         valid_sol = true
         for i = 1:length(goal_positions)
             pos_error, rot_error = get_ee_error(relaxedIK, xopt, goal_positions[1], goal_quats[1], i)

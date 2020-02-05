@@ -138,7 +138,7 @@ while !is_shutdown()
 
     time = to_sec(get_rostime())/4
     priority = get_param("/lively_ik/priority")
-    xopt = solve(relaxedIK, pos_goals, quat_goals, dc_goals, time, priority)
+    xopt = solve_precise(relaxedIK, pos_goals, quat_goals, dc_goals, time, priority)[1]
     # loginfo("xopt: $xopt")
 
     ja = JointAngles()

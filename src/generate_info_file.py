@@ -17,8 +17,9 @@ from RelaxedIK.GROOVE_RelaxedIK.relaxedIK_vars import RelaxedIK_vars
 from start_here import info_file_name, urdf_file_name, fixed_frame, joint_names, joint_ordering, \
                        ee_fixed_joints, ee_joint_noise, fixed_frame_noise, starting_config, \
                        collision_file_name, joint_state_define, dc_joint_noise, dc_joint_weight, \
-                       ee_position_weight, ee_rotation_weight
+                       ee_position_weight, ee_rotation_weight, match_objectives
 import inspect
+import yaml
 
 rospy.init_node('generate_info_file')
 
@@ -28,121 +29,67 @@ if info_file_name == '':
     print bcolors.FAIL + 'info_file_name is a required field in start_here.py.  Please fill that in and run again.' + bcolors.ENDC
     exit(-1)
 
-out_file = open(path_to_src + '/RelaxedIK/Config/info_files/' + info_file_name, 'w')
+config = {}
 
 if urdf_file_name == '':
     print bcolors.FAIL + 'urdf_file_name is a required field in start_here.py.  Please fill that in and run again.' + bcolors.ENDC
     exit(-1)
 else:
-    out_file.write('urdf_file_name: \"{}\"\n'.format(urdf_file_name))
+    config['urdf_file_name'] = urdf_file_name
 
 if fixed_frame == '':
     print bcolors.FAIL + 'fixed_frame is a required field in start_here.py.  Please fill that in and run again.' + bcolors.ENDC
     exit(-1)
 else:
-    out_file.write('fixed_frame: \"{}\"\n'.format(fixed_frame))
+    config['fixed_frame'] = fixed_frame
 
 if len(joint_names) == 0:
     print bcolors.FAIL + 'joint_names is a required field in start_here.py.  Please fill that in and run again.' + bcolors.ENDC
     exit(-1)
 else:
-    num_chains = len(joint_names)
-    chains_str = ''
-    for i in range(num_chains):
-        chains_str += '[ '
-        for j in range(len(joint_names[i])):
-            chains_str += '\"' + joint_names[i][j] + '\"'
-            if not j == len(joint_names[i]) -1:
-                chains_str += ', '
-        chains_str += ' ]'
-        if not i == num_chains - 1:
-            chains_str += ', '
-    out_file.write('joint_names: [ {} ]\n'.format(chains_str))
-
+    config['joint_names'] = joint_names
 
 if len(joint_ordering) == 0:
     print bcolors.FAIL + 'joint_ordering is a required field in start_here.py.  Please fill that in and run again.' + bcolors.ENDC
     exit(-1)
 else:
-    ordering_str = '[ '
-    for i in range(len(joint_ordering)):
-        ordering_str += '\"{}\"'.format(joint_ordering[i])
-        if not i == len(joint_ordering) -1:
-            ordering_str += ', '
-    ordering_str += ' ]'
-    out_file.write('joint_ordering: {}\n'.format(ordering_str))
+    config['joint_ordering'] = joint_ordering
 
 if len(ee_fixed_joints) == 0:
     print bcolors.FAIL + 'ee_fixed_joints is a required field in start_here.py.  Please fill that in and run again.' + bcolors.ENDC
     exit(-1)
 else:
-    ee_str = '[ '
-    for i in range(len(ee_fixed_joints)):
-        ee_str += '\"{}\"'.format(ee_fixed_joints[i])
-        if not i == len(ee_fixed_joints) -1:
-            ee_str += ', '
-    ee_str += ' ]'
-    out_file.write('ee_fixed_joints: {}\n'.format(ee_str))
+    config['ee_fixed_joints'] = ee_fixed_joints
 
 # Lively features
-ee_position_weight_str = '[ {0} ]'.format(" , ".join(['{0}'.format(n) for n in ee_position_weight]))
-ee_rotation_weight_str = '[ {0} ]'.format(" , ".join(['{0}'.format(n) for n in ee_rotation_weight]))
-ee_noise_str = '[ {0} ]'.format(" , ".join(['{0}'.format(n) for n in ee_joint_noise]))
-dc_noise_str = '[ {0} ]'.format(" , ".join(['{0}'.format(n) for n in dc_joint_noise]))
-dc_weight_str = '[ {0} ]'.format(" , ".join(['{0}'.format(n) for n in dc_joint_weight]))
-out_file.write('ee_position_weight: {0}\n'.format(ee_position_weight_str))
-out_file.write('ee_rotation_weight: {0}\n'.format(ee_rotation_weight_str))
-out_file.write('ee_joint_noise: {0}\n'.format(ee_noise_str))
-out_file.write('dc_joint_noise: {0}\n'.format(dc_noise_str))
-out_file.write('dc_joint_weight: {0}\n'.format(dc_weight_str))
-out_file.write('fixed_frame_noise: {0}\n'.format(fixed_frame_noise))
+config['ee_position_weight'] = ee_position_weight
+config['ee_rotation_weight'] = ee_rotation_weight
+config['ee_joint_noise'] = ee_joint_noise
+config['dc_joint_noise'] = dc_joint_noise
+config['dc_joint_weight'] = dc_joint_weight
+config['fixed_frame_noise'] = fixed_frame_noise
 
-
+# Match Objectives
+config['match_objectives'] = match_objectives
 
 if len(starting_config) == 0:
     print bcolors.FAIL + 'starting_config is a required field in start_here.py.  Please fill that in and run again.' + bcolors.ENDC
     exit(-1)
 else:
-    st_str = '[ '
-    for i in range(len(starting_config)):
-        st_str += '{}'.format(str(starting_config[i]))
-        if not i == len(starting_config) -1:
-            st_str += ', '
-    st_str += ' ]'
-    out_file.write('starting_config: {}\n'.format(st_str))
-
+    config['starting_config'] = starting_config
 
 
 if collision_file_name == '':
     print bcolors.FAIL + 'collision_file_name is a required field in start_here.py.  Please fill that in and run again.' + bcolors.ENDC
     exit(-1)
 else:
-    out_file.write('collision_file_name: \"{}\"\n'.format(collision_file_name))
+    config['collision_file_name'] = collision_file_name
 
 robot_name_split = urdf_file_name.split('.')
 robot_name = robot_name_split[0]
 
-out_file.write('collision_nn_file: \"{}\"\n'.format(robot_name + '_nn'))
-
-out_file.write('path_to_src: \"{}\"\n'.format(path_to_src))
-
-
-'''
-thread_dofs_str = '[ '
-for i in xrange(len(thread_dofs)):
-    thread_dofs_str += ' [ '
-    for j in xrange(len(thread_dofs[i])):
-        thread_dofs_str += str(thread_dofs[i][j])
-        if not j >= len(thread_dofs[i]) - 1:
-            thread_dofs_str += ', '
-    thread_dofs_str += ' ] '
-    if not i >= len(thread_dofs) - 1:
-        thread_dofs_str += ', '
-thread_dofs_str += ' ] '
-
-out_file.write('thread_dofs: {}\n'.format(thread_dofs_str))
-'''
-
+config['collision_nn_file'] = robot_name + '_nn'
+config['path_to_src'] = path_to_src
 
 # AUTO############################################################################################################################################
 ##################################################################################################################################################
@@ -153,102 +100,62 @@ vars = RelaxedIK_vars('', path_to_src + '/RelaxedIK/urdfs/' + urdf_file_name, jo
 robot = vars.robot
 num_chains = robot.numChains
 
-
-
-out_file.write('axis_types: [ ')
+axis_types = []
 for i in range(num_chains):
-    out_file.write('[ ')
+    arm_axes = []
     chain_len = len(robot.arms[i].axes)
     for j in range(chain_len):
-        out_file.write('\"{}\"'.format(robot.arms[i].axes[j]))
-        if not j == chain_len - 1:
-            out_file.write(', ')
-    out_file.write(' ]')
-    if not i == num_chains - 1:
-        out_file.write(', ')
-out_file.write(' ]\n')
+        arm_axes.append(robot.arms[i].axes[j])
+    axis_types.append(arm_axes)
+config['axis_types'] = axis_types
+config['velocity_limits'] = robot.velocity_limits
+config['joint_limits'] = [[limit[0],limit[1]] for limit in robot.bounds]
 
-out_file.write('velocity_limits: [ ')
-vels = robot.velocity_limits
-for i in range(len(vels)):
-    out_file.write('{}'.format(vels[i]))
-    if not i == len(vels) - 1:
-        out_file.write(', ')
-out_file.write(' ]\n')
-
-
-joint_limits = robot.bounds
-limits = []
-for i in range(len(vels)):
-    # print(joint_limits[i])
-    try:
-        limits.append([joint_limits[i][0], joint_limits[i][1]])
-    except:
-        pass
-out_file.write("joint_limits: {0}\n".format(str(limits)))
-
-
-out_file.write('displacements: [ ')
+displacements = []
 for i in range(num_chains):
-    out_file.write('[ ')
+    arm_displacements = []
     chain_len = len(robot.arms[i].displacements)
     for j in range(chain_len):
         d = robot.arms[i].displacements[j]
-        out_file.write('[{},{},{}]'.format(d[0], d[1], d[2]))
-        if not j == chain_len - 1:
-            out_file.write(', ')
-    out_file.write(' ]')
-    if not i == num_chains - 1:
-        out_file.write(', ')
-out_file.write(' ]\n')
+        arm_displacements.append([d[0], d[1], d[2]])
+    displacements.append(arm_displacements)
+config['displacements'] = displacements
 
 
-
-out_file.write('disp_offsets: [ ')
+disp_offsets = []
 for i in range(num_chains):
     d = robot.arms[i].dispOffset
-    out_file.write('[{},{},{}]'.format(d[0], d[1], d[2]))
-    if not i == num_chains - 1:
-        out_file.write(', ')
-out_file.write(' ]\n')
+    disp_offsets.append([d[0], d[1], d[2]])
+config['disp_offsets'] = disp_offsets
 
-
-out_file.write('rot_offsets: [ ')
+rot_offsets = []
 for i in range(num_chains):
-    out_file.write('[ ')
+    arm_offsets = []
     chain_len = len(robot.arms[i].original_rotOffsets)
     for j in range(chain_len):
         d = robot.arms[i].original_rotOffsets[j]
-        out_file.write('[{},{},{}]'.format(d[0], d[1], d[2]))
-        if not j == chain_len - 1:
-            out_file.write(', ')
-    out_file.write(' ]')
-    if not i == num_chains - 1:
-        out_file.write(', ')
-out_file.write(' ]\n')
+        arm_offsets.append([d[0], d[1], d[2]])
+    rot_offsets.append(arm_offsets)
+config['rot_offsets'] = rot_offsets
 
-
-out_file.write('joint_types: [ ')
+joint_types = []
 for i in range(num_chains):
-    out_file.write('[ ')
+    arm_types = []
     chain_len = len(robot.arms[i].joint_types)
     for j in range(chain_len):
-        out_file.write('\"{}\"'.format(robot.arms[i].joint_types[j]))
-        if not j == chain_len - 1:
-            out_file.write(', ')
-    out_file.write(' ]')
-    if not i == num_chains - 1:
-        out_file.write(', ')
-out_file.write(' ]\n')
+        arm_types.append(robot.arms[i].joint_types[j])
+    joint_types.append(arm_types)
+config['joint_types'] = joint_types
 
 
 joint_state_define_func_file_name = robot_name + '_joint_state_define'
 fp = path_to_src + '/RelaxedIK/Config/joint_state_define_functions/' + joint_state_define_func_file_name
 js_file = open(fp, 'w')
 js_file.write(inspect.getsource(joint_state_define))
-out_file.write('joint_state_define_func_file: \"{}\"\n'.format(joint_state_define_func_file_name))
+config['joint_state_define_func_file'] = joint_state_define_func_file_name
 
-out_file.close()
+with open(path_to_src + '/RelaxedIK/Config/info_files/' + info_file_name, 'w') as info_file:
+    info_file.write(yaml.dump(config))
 
 print bcolors.OKGREEN + 'info file {} successfully created!'.format(info_file_name) + bcolors.ENDC
 
