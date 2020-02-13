@@ -151,7 +151,7 @@ function get_nchain(n, path_to_src, info_file_name; solver_name = "slsqp", preco
             arm2 = objective_info["arm_index_2"]
             delta = objective_info["delta"]
             weight = objective_info["weight"]
-            push!(objectives,(x,vars)->y_match_obj(x,vars,arm1,arm2,delta))
+            push!(objectives,(x,vars)->z_match_obj(x,vars,arm1,arm2,delta))
             push!(grad_types,"forward_ad")
             push!(weight_priors,weight)
         elseif objective_info["type"] == "orientation"
