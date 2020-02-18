@@ -35,7 +35,7 @@ dcpg = Nothing
 
 function eePoseGoals_cb(data::EEPoseGoals)
     global eepg
-    loginfo("$data")
+    #loginfo("$data")
     eepg = data
 end
 function dcPoseGoals_cb(data::DCPoseGoals)
@@ -149,6 +149,7 @@ while !is_shutdown()
     ja.header.seq = eepg.header.seq
     ja.header.stamp = eepg.header.stamp
     ja.header.frame_id = eepg.header.frame_id
+    println(ja.angles)
 
     publish(angles_pub, ja)
 

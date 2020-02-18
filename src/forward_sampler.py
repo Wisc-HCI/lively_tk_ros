@@ -62,7 +62,7 @@ class Monitor(object):
             new_mat[0:3, 0:3] = f[1][-1]
             new_mat[3, 3] = 1
             rotation = Tf.euler_from_matrix(new_mat, 'rzyx')
-            pairs.append({'position':position,'rotation':rotation})
+            pairs.append({'position':{'x':position[0],'y':position[1],'z':position[2]},'rotation':{'r':rotation[0],'p':rotation[1],'y':rotation[2]}})
         #print(js_msg.position)
         #print(frames[2][0][-1])
         print("")
