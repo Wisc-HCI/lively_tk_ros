@@ -18,6 +18,8 @@ from sensor_msgs.msg import JointState
 from visualization_msgs.msg import Marker
 from RelaxedIK.Utils.yaml_utils import get_relaxedIK_yaml_obj
 from RelaxedIK.Utils import tf_fast as Tf
+from wisc_msgs.msg import EEPoseGoals
+from wisc_tools.geometry import Pose
 import rospy
 import roslaunch
 import os
@@ -43,12 +45,14 @@ class Monitor(object):
                                    path_to_src=path_to_src)
         self.robot = self.vars.robot
         self.js_sub = rospy.Subscriber('/joint_states',JointState, self.js_sub_cb, queue_size=5)
+        self.goal_pub = rospy.Publisher('/relaxed_ik/ee_pose_goals',EEPoseGoals, queue_size=5)
         self.tf_pub = tf.TransformBroadcaster()
 
 
     def js_sub_cb(self,js_msg):
         # TODO: Use forward kinematics to determine EE Poses
         state = [0]*len(self.joint_ordering)
+        print(js_msg.position)
         for i,angle in enumerate(js_msg.position):
             name = js_msg.name[i]
             joint_index = self.joint_ordering.index(name)
@@ -56,13 +60,19 @@ class Monitor(object):
                 state[joint_index] = angle
         frames = self.robot.getFrames(state)
         pairs = []
+        ee_pose_goals = EEPoseGoals()
         for f in frames:
             position = f[0][-1]
             new_mat = np.zeros((4, 4))
             new_mat[0:3, 0:3] = f[1][-1]
             new_mat[3, 3] = 1
-            rotation = Tf.euler_from_matrix(new_mat, 'rzyx')
-            pairs.append({'position':{'x':position[0],'y':position[1],'z':position[2]},'rotation':{'r':rotation[0],'p':rotation[1],'y':rotation[2]}})
+            rotation = Tf.euler_from_matrix(new_mat, 'szxy')
+            info = {'position':{'x':position[0],'y':position[1],'z':position[2]},'rotation':{'r':rotation[0],'p':rotation[1],'y':rotation[2]}}
+            pose = Pose.from_eulerpose_dict(info).ros_pose
+            ee_pose_goals.ee_poses.append(pose)
+            pairs.append(info)
+
+        self.goal_pub.publish(ee_pose_goals)
         #print(js_msg.position)
         #print(frames[2][0][-1])
         print("")

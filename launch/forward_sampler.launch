@@ -4,5 +4,6 @@
    <rosparam command='load' file='$(find lively_ik)/src/RelaxedIK/Config/info_files/$(arg info_file_name)'/>
    <node pkg="lively_ik" type="forward_sampler.py" name="forward_sampler" output="screen"/>
    <include file="$(find lively_ik)/launch/rviz_viewer_no_pub.launch"/>
+   <node pkg="lively_ik" type="goal_viewer.py" name="goal_viewer" output="screen"/>
 
 </launch>

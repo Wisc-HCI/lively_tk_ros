@@ -13,7 +13,7 @@ AND FOLLOW THE STEP-BY-STEP INSTRUCTIONS THERE.  Thanks!
 from visualization_msgs.msg import Marker, MarkerArray
 import rospy
 import tf
-from wiscutils.msg import EEPoseGoals
+from wisc_msgs.msg import EEPoseGoals
 
 
 class MarkerViewer(object):
@@ -28,7 +28,7 @@ class MarkerViewer(object):
             self.markers[fixed_joint].type = Marker.ARROW
             self.markers[fixed_joint].id = i
             self.markers[fixed_joint].scale.x = 0.1
-            self.markers[fixed_joint].scale.y = 0.01
+            self.markers[fixed_joint].scale.y = 0.03
             self.markers[fixed_joint].scale.z = 0.01
             self.markers[fixed_joint].color.a = 1.0
             self.markers[fixed_joint].color.r = 0.75

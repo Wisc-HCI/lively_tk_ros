@@ -315,9 +315,8 @@
   <joint name="LArm_effector_fixedjoint" type="fixed">
     <parent link="l_wrist"/>
     <child link="l_hand"/>
-    <origin rpy="0 0 0" xyz="0.025 0 0"/>
-    <axis xyz="1.0 0 0"/>
-    <limit effort="0.144" lower="0.02" upper="0.98" velocity="12.56"/>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <axis xyz="0 0 0"/>
   </joint>
   <link name="l_gripper">
     <inertial>
@@ -477,9 +476,8 @@
   <joint name="RArm_effector_fixedjoint" type="fixed">
     <parent link="r_wrist"/>
     <child link="r_hand"/>
-    <origin rpy="0 0 0" xyz="0.025 0 0"/>
-    <axis xyz="1.0 0 0"/>
-    <limit effort="0.144" lower="0.02" upper="0.98" velocity="12.56"/>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <axis xyz="0 0 0"/>
   </joint>
   <link name="r_hand">
     <inertial>

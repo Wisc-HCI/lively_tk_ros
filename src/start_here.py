@@ -144,12 +144,7 @@ ee_fixed_joints = ['gaze_joint',
 #   The configuration should be a single list of values for each joint's rotation (in radians) adhering
 #   to the joint order you specified in Step 3b
 #   ex: starting_config = [ 3.12769839, -0.03987385, -2.07729916, -1.03981438, -1.58652782, -1.5710159 ]
-starting_config = [ 0.00, 0.00, # Head
-					0.00, 0.00, 0.00, 0.00, 0.00, # LArm
-					0.00, 0.00, 0.00, 0.00, 0.00, # RArm
-					0.00, 0.00, 0.00, # LLeg
-					0.5,  0.5 # Direct-control joints
-			      ]
+starting_config = [0.00, -0.20, 1.58, 0.13, -1.24, -0.50, 0.02, 1.57, -0.14, 1.23, 0.51, -0.02, -0.00, -0.03, -0.00, 0.55, 0.58]
 
 ######################################################################################################
 
@@ -157,7 +152,7 @@ starting_config = [ 0.00, 0.00, # Head
 ######################################################################################################
 # Step 3f: Please provide the noise for each join in ee_fixed_joints and dc_joints.
 #   Specifying zeros results in no noise.
-ee_joint_noise = [ 0.002, 0.002, 0.002, 0.0 ]
+ee_joint_noise = [0.01, 0.01, 0.01, 0.0]
 dc_joint_noise = [ 0.0, 0.0, # Head
 				   0.0, 0.0, 0.0, 0.0, 0.0, # LArm
 				   0.0, 0.0, 0.0, 0.0, 0.0, # RArm
@@ -169,7 +164,7 @@ dc_joint_noise = [ 0.0, 0.0, # Head
 
 ######################################################################################################
 # Step 3f: Specify scale of noise on the fixed frame
-fixed_frame_noise = 0.02
+fixed_frame_noise = 0.05
 ######################################################################################################
 
 ######################################################################################################
