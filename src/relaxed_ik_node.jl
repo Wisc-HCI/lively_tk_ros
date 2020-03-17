@@ -10,7 +10,7 @@ using ForwardDiff
 # using Knet
 # using Dates
 @rosimport wisc_msgs.msg: DCPoseGoals, EEPoseGoals, JointAngles
-@rosimport std_msgs.msg: Float64MultiArray, Bool
+@rosimport std_msgs.msg: Float64MultiArray, Bool, Float32
 @rosimport geometry_msgs.msg: Point, Quaternion, Pose
 
 rostypegen()
@@ -32,6 +32,8 @@ end
 
 eepg = Nothing
 dcpg = Nothing
+priority = 0
+bias = [1.0,1.0,1.0]
 
 function eePoseGoals_cb(data::EEPoseGoals)
     global eepg
@@ -41,8 +43,18 @@ end
 function dcPoseGoals_cb(data::DCPoseGoals)
     global dcpg
     dcpg = data
-    values = dcpg.dc_values
-    println("Values Update: $values")
+    #values = dcpg.dc_values
+    #println("Values Update: $values")
+end
+
+function priority_cb(data::Float32Msg)
+    global priority
+    priority = data.data
+end
+
+function bias_cb(data::Point)
+    global bias
+    bias = [data.x,data.y,data.z]
 end
 
 init_node("lively_ik_node")
@@ -61,6 +73,8 @@ println("loaded robot: $loaded_robot")
 
 Subscriber{EEPoseGoals}("/relaxed_ik/ee_pose_goals", eePoseGoals_cb)
 Subscriber{DCPoseGoals}("/relaxed_ik/dc_pose_goals", dcPoseGoals_cb)
+Subscriber{Float32Msg}("/lively_ik/priority", priority_cb)
+Subscriber{Point}("/lively_ik/bias", bias_cb)
 Subscriber{BoolMsg}("/relaxed_ik/quit", quit_cb, queue_size=1)
 Subscriber{BoolMsg}("/relaxed_ik/reset", reset_cb)
 angles_pub = Publisher("/relaxed_ik/joint_angle_solutions", JointAngles, queue_size = 3)
@@ -94,6 +108,7 @@ while !is_shutdown()
     global reset_solver
     global eepg
     global dcpg
+    global priority
     global relaxedIK
     global xopt
 
@@ -113,7 +128,7 @@ while !is_shutdown()
 
     pose_goals = eepg.ee_poses
     dc_goals = dcpg.dc_values
-    println(dc_goals)
+    # println(dc_goals)
 
     pos_goals = []
     quat_goals = []
@@ -139,9 +154,10 @@ while !is_shutdown()
     #loginfo("dc_goals: $dc_goals")
 
     time = to_sec(get_rostime())/4
-    priority = get_param("/lively_ik/priority")
+    # priority = get_param("/lively_ik/priority")
+    bias = get_param("/lively_ik/bias")
     #xopt = solve_precise(relaxedIK, pos_goals, quat_goals, dc_goals, time, priority)[1]
-    xopt = solve(relaxedIK, pos_goals, quat_goals, dc_goals, time, priority)
+    xopt = solve(relaxedIK, pos_goals, quat_goals, dc_goals, time, priority, bias)
     # loginfo("xopt: $xopt")
 
     ja = JointAngles()

@@ -245,7 +245,7 @@ function get_rot_mats(relaxedIK, x)
     return rot_mats
 end
 
-function solve(relaxedIK, goal_positions, goal_quats, dc_goals, time, priority; prev_state = nothing, filter=true, max_iter = 0, max_time = 0.05)
+function solve(relaxedIK, goal_positions, goal_quats, dc_goals, time, priority, bias; prev_state = nothing, filter=true, max_iter = 0, max_time = 0.05)
     vars = relaxedIK.relaxedIK_vars
 
     if vars.position_mode == "relative"
@@ -268,7 +268,7 @@ function solve(relaxedIK, goal_positions, goal_quats, dc_goals, time, priority; 
         vars.goal_quats = goal_quats
     end
     xopt = groove_solve(relaxedIK.groove, prev_state=prev_state, max_iter=max_iter, max_time = max_time)
-    update_relaxedIK_vars!(relaxedIK.relaxedIK_vars, xopt, time, priority)
+    update_relaxedIK_vars!(relaxedIK.relaxedIK_vars, xopt, time, priority, bias)
     if filter
         xopt = filter_signal(relaxedIK.ema_filter, xopt)
     end

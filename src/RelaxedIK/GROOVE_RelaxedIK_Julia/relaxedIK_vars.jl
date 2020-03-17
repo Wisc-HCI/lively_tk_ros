@@ -181,9 +181,9 @@ function RelaxedIK_vars(path_to_src, info_file_name, objectives, grad_types, wei
     return rv
 end
 
-function update_relaxedIK_vars!(relaxedIK_vars, xopt, time, priority)
+function update_relaxedIK_vars!(relaxedIK_vars, xopt, time, priority, bias)
     update!(relaxedIK_vars.vars, xopt)
-    update!(relaxedIK_vars.noise, time, priority)
+    update!(relaxedIK_vars.noise, time, priority, bias)
 end
 
 function info_file_name_to_yaml_block(path_to_src, info_file_name)

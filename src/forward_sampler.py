@@ -19,7 +19,7 @@ from visualization_msgs.msg import Marker
 from RelaxedIK.Utils.yaml_utils import get_relaxedIK_yaml_obj
 from RelaxedIK.Utils import tf_fast as Tf
 from wisc_msgs.msg import EEPoseGoals
-from wisc_tools.geometry import Pose
+from wisc_tools.structures import Pose
 import rospy
 import roslaunch
 import os
