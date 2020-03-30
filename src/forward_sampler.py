@@ -11,27 +11,44 @@ AND FOLLOW THE STEP-BY-STEP INSTRUCTIONS THERE.  Thanks!
 ######################################################################################################
 
 
-from start_here import urdf_file_name, joint_names, joint_ordering, ee_fixed_joints, starting_config, \
-    joint_state_define, collision_file_name, fixed_frame
 from RelaxedIK.GROOVE_RelaxedIK.relaxedIK_vars import RelaxedIK_vars
 from sensor_msgs.msg import JointState
 from visualization_msgs.msg import Marker
 from RelaxedIK.Utils.yaml_utils import get_relaxedIK_yaml_obj
 from RelaxedIK.Utils import tf_fast as Tf
-from wisc_msgs.msg import EEPoseGoals
+from wisc_msgs.msg import EEPoseGoals, JointAngles
 from wisc_tools.structures import Pose
 import rospy
 import roslaunch
 import os
 import tf
 import numpy as np
+from argparse import ArgumentParser
 
 
 class Monitor(object):
-    def __init__(self,path_to_src):
+    def __init__(self,path_to_src,mode="publish",root="./noise"):
         self.fixed_frame = rospy.get_param('fixed_frame')
         self.joint_names = rospy.get_param('joint_names')
         self.joint_ordering = rospy.get_param('joint_ordering')
+
+        if mode == "publish":
+            self.collect_mode = False
+            self.publish_mode = True
+        elif mode == "collect":
+            self.collect_mode = True
+            self.publish_mode = False
+            # Clear the current contents if they exist
+            with open(root+"_js.csv","w") as js_file:
+                js_file.write("time,"+",".join(self.joint_ordering))
+            with open(root+"_goals.csv","w") as goal_file:
+                js_file.write("time,"+",{0}_orig,{0}_noise")
+            self.js_file_writer = open(root+"_js.csv",mode='a')
+            self.goal_file_writer = open(root+"_goals.csv",mode='a')
+        else:
+            self.collect_mode = False
+            self.publish_mode = False
+
         self.vars = RelaxedIK_vars('relaxedIK',
                                    path_to_src + '/RelaxedIK/urdfs/' + rospy.get_param('urdf_file_name'),
                                    self.joint_names,
@@ -45,14 +62,20 @@ class Monitor(object):
                                    path_to_src=path_to_src)
         self.robot = self.vars.robot
         self.js_sub = rospy.Subscriber('/joint_states',JointState, self.js_sub_cb, queue_size=5)
-        self.goal_pub = rospy.Publisher('/relaxed_ik/ee_pose_goals',EEPoseGoals, queue_size=5)
+        if self.publish_mode:
+            self.goal_pub = rospy.Publisher('/relaxed_ik/ee_pose_goals',EEPoseGoals, queue_size=5)
         self.tf_pub = tf.TransformBroadcaster()
 
 
     def js_sub_cb(self,js_msg):
-        # TODO: Use forward kinematics to determine EE Poses
+
+        # Read the JointState messages,
+        # and Use forward finematics to deduce
+        # the pose goals
         state = [0]*len(self.joint_ordering)
         print(js_msg.position)
+        if self.collect:
+
         for i,angle in enumerate(js_msg.position):
             name = js_msg.name[i]
             joint_index = self.joint_ordering.index(name)
@@ -73,8 +96,7 @@ class Monitor(object):
             pairs.append(info)
 
         self.goal_pub.publish(ee_pose_goals)
-        #print(js_msg.position)
-        #print(frames[2][0][-1])
+
         print("")
         print(",\n".join([str(pair) for pair in pairs]))
 
@@ -89,6 +111,10 @@ class Monitor(object):
 if __name__ == '__main__':
     rospy.init_node('forward_monitor')
 
+    parser = ArgumentParser(description='Forward Monitor')
+    parser.add_argument("--file_root", dest="file_root", default="./noise", help="Specify the root name for files")
+    args = parser.parse_known_args()[0]
+
     path_to_src = os.path.dirname(__file__)
 
     try:
@@ -96,13 +122,6 @@ if __name__ == '__main__':
         urdf_file = open(path_to_src + '/RelaxedIK/urdfs/' + urdf_file_name, 'r')
         urdf_string = urdf_file.read()
         rospy.set_param('robot_description', urdf_string)
-
-        # uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
-        # roslaunch.configure_logging(uuid)
-        # launch_path = path_to_src + '/../launch/robot_state_pub.launch'
-        # launch = roslaunch.parent.ROSLaunchParent(uuid, [launch_path])
-        #
-        # launch.start()
 
         monitor = Monitor(path_to_src)
     except:

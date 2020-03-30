@@ -37,11 +37,11 @@ function NoiseGenerator(arm_scale, base_scale, dc_scale, dc_weight)
 
     for i=1:num_chains
         push!(arm_noise, posenoise(zeros(3),zeros(3)))
-        push!(arm_seed,  posenoise(10*rand(3),10*rand(3)))
+        push!(arm_seed,  posenoise(1000*rand(3),1000*rand(3)))
     end
     for i=1:num_dc
         if (dc_weight[i] > 0)
-            push!(dc_seed,  10*rand())
+            push!(dc_seed,  1000*rand())
         else
             push!(dc_seed, 0)
         end
@@ -50,8 +50,8 @@ function NoiseGenerator(arm_scale, base_scale, dc_scale, dc_weight)
     #dc_mask = zeros(length(dc_names))
 
     base_noise = posenoise(zeros(3),zeros(3))
-    base_seed  = posenoise(10*rand(3),10*rand(3))
-    global_seed = rand()*10
+    base_seed  = posenoise(1000*rand(3),1000*rand(3))
+    global_seed = rand()*1000
 
     # Remove in final
     n = NoiseGenerator(num_chains, num_dc, time, arm_noise, dc_noise, base_noise, arm_scale, dc_scale, base_scale, arm_seed, dc_seed, base_seed, global_seed, dc_weight)

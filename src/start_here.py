@@ -4,18 +4,14 @@ author: Danny Rakita
 website: http://pages.cs.wisc.edu/~rakita/
 email: rakita@cs.wisc.edu
 last update: 8/16/18
-
 DEVELOPMENT BRANCH
-
 Intro: Welcome to RelaxedIK! RelaxedIK is an inverse kinematics (IK) solver designed for robot platforms such that the conversion
 between Cartesian end-effector pose goals (such as "move the robot's right arm end-effector to position X, while maintaining an end-effector
 orientation Y") to Joint-Space (i.e., the robot's rotation values for each joint degree-of-freedom at a particular time-point) is
 done both ACCURATELY and FEASIBLY.  By this, we mean that RelaxedIK attempts to find the closest possible solution to the
 desired end-effector pose goals without exhibiting negative effects such as self-collisions, environment collisions,
 kinematic-singularities, or joint-space discontinuities.
-
 To get started, just follow the instructions found here.
-
 If anything with the solver is not working as expected, or if you have any feedback, feel free to let us know! (rakita@cs.wisc.edu)
 We are actively supporting and extending this code, so we are interested to hear about how the solver is being used and any positive
 or negative experiences in using it.
@@ -48,21 +44,21 @@ or negative experiences in using it.
 # Step 1b: Please set the following variable to the file name of your robot urdf.  For example, for the
 #   ur5 robot urdf already in the urdfs folder, this variable would read 'ur5.urdf'
 #   ex: urdf_file_name = 'ur5.urdf'
-urdf_file_name = 'pepper_modified.urdf'
+urdf_file_name = 'ur3e.urdf'
 ######################################################################################################
 
 
 ######################################################################################################
 # Step 1c: Please provide the fixed frame name.  This will be the root link name in the urdf
 #   ex: fixed_frame  = 'base_link'
-fixed_frame = 'base_link'
+fixed_frame = 'world'
 ######################################################################################################
 
 ######################################################################################################
 # Step 1d: At the end of this walk-through, there will be a central yaml file automatically generated that
 #   will contain information about your robot setup.  Please provide a name for that file.
 #   ex: info_file_name = 'ur5_info.yaml'
-info_file_name = 'pepper_info.yaml'
+info_file_name = 'info_ur3e.yaml'
 ######################################################################################################
 
 
@@ -89,12 +85,9 @@ info_file_name = 'pepper_info.yaml'
 #                'LEFT_WRIST_PITCH', 'LEFT_WRIST_YAW_2'] ]
 #   example 2 shows what this would be for a single end-effector robot, specifically using the UR5 robot
 #   ex2: [ ['shoulder_pan_joint', 'shoulder_lift_joint', 'elbow_joint', 'wrist_1_joint', 'wrist_2_joint', 'wrist_3_joint'] ]
-joint_names = [ ["HeadYaw","HeadPitch"], # Head
-				["LShoulderPitch","LShoulderRoll","LElbowYaw","LElbowRoll","LWristYaw","LHand"], # LArm
-				["RShoulderPitch","RShoulderRoll","RElbowYaw","RElbowRoll","RWristYaw","RHand"], # RArm
-				["HipRoll","HipPitch","KneePitch","base_footprint_joint"], # Legs
-			  ]
-
+joint_names = [
+	[ 'shoulder_pan_joint', 'shoulder_lift_joint', 'elbow_joint', 'wrist_1_joint', 'wrist_2_joint', 'wrist_3_joint' ]
+]
 ######################################################################################################
 # Step 3c: Please provide the order that you want joints to appear in the final returned joint configurations,
 #   using the names specified in step 3a.  ALL ACTUATED JOINTS specified in step 3a should appear somewhere in
@@ -111,12 +104,9 @@ joint_names = [ ["HeadYaw","HeadPitch"], # Head
 #   ex1: [ 'WAIST', 'RIGHT_SHOULDER_PITCH', 'RIGHT_SHOULDER_ROLL', 'RIGHT_SHOULDER_YAW', 'RIGHT_ELBOW', 'RIGHT_WRIST_YAW',
 #               'RIGHT_WRIST_PITCH', 'RIGHT_WRIST_YAW_2','LEFT_SHOULDER_PITCH', 'LEFT_SHOULDER_ROLL', 'LEFT_SHOULDER_YAW',
 #               'LEFT_ELBOW', 'LEFT_WRIST_YAW', 'LEFT_WRIST_PITCH', 'LEFT_WRIST_YAW_2' ]
-joint_ordering =  [ "HeadYaw","HeadPitch", # Head
-					"LShoulderPitch","LShoulderRoll","LElbowYaw","LElbowRoll","LWristYaw", # LArm
-					"RShoulderPitch","RShoulderRoll","RElbowYaw","RElbowRoll","RWristYaw", # RArm
-					"HipRoll","HipPitch","KneePitch", # Legs
-					"LHand","RHand" # Direct-control joints
-			      ]
+joint_ordering =  [
+ 	'shoulder_pan_joint', 'shoulder_lift_joint', 'elbow_joint', 'wrist_1_joint', 'wrist_2_joint', 'wrist_3_joint'
+]
 ######################################################################################################
 
 
@@ -131,11 +121,9 @@ joint_ordering =  [ "HeadYaw","HeadPitch", # Head
 #   ex1: ee_fixed_joints = ['RIGHT_HAND', 'LEFT_HAND']
 #   For example 2, using the UR5, this is a single chain robot, so it will only have a single end-effector joint
 #   ex2: ee_fixed_joints = ['ee_fixed_joint']
-ee_fixed_joints = ['gaze_joint',
-				   "LArm_effector_fixedjoint",
-				   "RArm_effector_fixedjoint",
-				   "base_footprint_joint"
-				   ]
+ee_fixed_joints = [
+	'ee_fixed_joint'
+]
 ######################################################################################################
 
 
@@ -144,49 +132,36 @@ ee_fixed_joints = ['gaze_joint',
 #   The configuration should be a single list of values for each joint's rotation (in radians) adhering
 #   to the joint order you specified in Step 3b
 #   ex: starting_config = [ 3.12769839, -0.03987385, -2.07729916, -1.03981438, -1.58652782, -1.5710159 ]
-starting_config = [0.00, -0.20, 1.58, 0.13, -1.24, -0.50, 0.02, 1.57, -0.14, 1.23, 0.51, -0.02, -0.00, -0.03, -0.00, 0.55, 0.58]
-
+starting_config = [
+	1.55, -1.77, 1.40, -1.19, -1.57, 0.00
+]
 ######################################################################################################
 
 
 ######################################################################################################
 # Step 3f: Please provide the noise for each join in ee_fixed_joints and dc_joints.
 #   Specifying zeros results in no noise.
-ee_joint_noise = [0.01, 0.01, 0.01, 0.0]
-dc_joint_noise = [ 0.0, 0.0, # Head
-				   0.0, 0.0, 0.0, 0.0, 0.0, # LArm
-				   0.0, 0.0, 0.0, 0.0, 0.0, # RArm
-				   0.0, 0.0, 0.0, # Legs
-				   0.15, 0.15 # Hands
-		         ]
+ee_joint_noise = [ 0.05 ]
+dc_joint_noise = [ 0,0,0,0,0,0 ]
 
 ######################################################################################################
 
 ######################################################################################################
 # Step 3f: Specify scale of noise on the fixed frame
-fixed_frame_noise = 0.05
+fixed_frame_noise = 0.0
 ######################################################################################################
 
 ######################################################################################################
 # Step 3g: Sepecify Objective weights for position and orientation for each ee_fixed_joint
 
-ee_position_weight = [ 1, 6, 6, 1 ]
-ee_rotation_weight = [ 1, 5, 5, 1 ]
-dc_joint_weight = [ 0, 0, # Head
-					0, 0, 0, 0, 0, # LArm
-					0, 0, 0, 0, 0, # RArm
-					0, 0, 0, # Legs
-					5, 5 # Hands
-				  ]
-
-######################################################################################################
-
-######################################################################################################
-# Step 3h: Sepecify Objective weights for position and orientation for each ee_fixed_joint
+ee_position_weight = [50]
+ee_rotation_weight = [49]
+dc_joint_weight = [ 0,0,0,0,0,0 ]
 
 match_objectives = []
 
 ######################################################################################################
+
 
 ######################################################################################################
 # Step 4: Please provide a function that takes in a vector corresponding to a robot configuration (x) and
@@ -331,7 +306,7 @@ def joint_state_define(x):
 #
 #   Please provide the name of the collision file that you have been filling out in the RelaxedIK/Config directory:
 #   ex: collision_file_name = 'collision.yaml'
-collision_file_name = 'collision_pepper.yaml'
+collision_file_name = 'collision_ur3e.yaml'
 ###########################################################################################################
 
 
