@@ -26,36 +26,6 @@ import numpy as np
 import random
 from argparse import ArgumentParser
 
-class MA_filter:
-    def __init__(self, init_state, window_size = 25):
-        self.window_size = window_size
-        self.filtered_signal = []
-        for i in xrange(window_size):
-            self.filtered_signal.append(np.array(init_state))
-
-    def filter(self, state):
-        state_arr = np.array(state)
-        size = state_arr.size
-        weights = self.window_size*[0]
-        filtered_state = np.zeros((len(state)))
-
-        # sum = 0.0
-        filtered_state = np.array([np.average([self.filtered_signal[t][i] for t in xrange(self.window_size)]) for i in xrange(size)])
-        # for i in xrange(self.window_size):
-        #     weights[i] = 0#self.a*(1.0 - self.a)**(i)
-        #     if i == 0:
-        #         filtered_state = weights[i]*state_arr
-        #     else:
-        #         try:
-        #             filtered_state = filtered_state + weights[i]*self.filtered_signal[-i]
-        #         except:
-        #             return state
-        #
-        #     # sum += weights[i]
-
-        self.filtered_signal = [filtered_state] + self.filtered_signal[0:self.window_size]
-        return filtered_state
-
 class Monitor(object):
     def __init__(self,path_to_src,root="./noise"):
         self.fixed_frame = rospy.get_param('fixed_frame')
@@ -68,8 +38,10 @@ class Monitor(object):
         self.n_arms = len(self.ee_fixed_joints)
         self.joint_scaling = [.01*abs(val[1]-val[0]) for val in self.joint_limits]
         self.joint_seeds = [random.randint(0,10240) for joint in self.joint_ordering]
-        self.ewma_filter = MA_filter([0]*self.n_joints,100)
-        self.algorithms = ['relaxed','lively','joint_perlin','joint_random_normal','joint_random_normal_ewma']
+        self.last_random = [0]*self.n_joints
+        self.last_random_ewma = [0]*self.n_joints
+        self.ewma_filter = EMA_filter([0]*self.n_joints,.1,75)
+        self.algorithms = ['relaxed','lively','joint_perlin','joint_random_normal_ewma']
 
         # Clear the current contents if they exist
         with open(root+"_joints.csv","w") as js_file:
@@ -111,8 +83,9 @@ class Monitor(object):
         # the poses that would result
         joints = self.n_joints*5*[0]
         perlin_noise = [(noise1D(time/4,self.joint_seeds[i])-0.5)*self.joint_scaling[i] for i in range(self.n_joints)]
-        normal_noise = [random.normalvariate(0, self.joint_scaling[i]*.3) for i in range(self.n_joints)]
-        ewma_noise = self.ewma_filter.filter([v*50 for v in normal_noise])
+        normal_delta = [random.normalvariate(-1*self.last_random[i]*.01, self.joint_scaling[i]*.03) for i in range(self.n_joints)]
+        self.last_random = [normal_delta[i]+self.last_random[i] for i in range(self.n_joints)]
+        self.last_random_ewma = self.ewma_filter.filter(self.last_random)
 
         joints = {algorithm:[] for algorithm in self.algorithms}
         # First handle the vanilla relaxed_ik values
@@ -124,8 +97,8 @@ class Monitor(object):
         joints['relaxed'] =dpa_msg.angles_relaxed.data
         joints['lively'] = dpa_msg.angles_lively.data
         joints['joint_perlin'] = [clamp(angle+perlin_noise[i],self.joint_limits[i][0],self.joint_limits[i][1]) for i,angle in enumerate(dpa_msg.angles_relaxed.data)]
-        joints['joint_random_normal'] = [clamp(angle+normal_noise[i],self.joint_limits[i][0],self.joint_limits[i][1]) for i,angle in enumerate(dpa_msg.angles_relaxed.data)]
-        joints['joint_random_normal_ewma'] = [clamp(angle+ewma_noise[i],self.joint_limits[i][0],self.joint_limits[i][1]) for i,angle in enumerate(dpa_msg.angles_relaxed.data)]
+        joints['joint_random_normal'] = [clamp(angle+self.last_random[i],self.joint_limits[i][0],self.joint_limits[i][1]) for i,angle in enumerate(dpa_msg.angles_relaxed.data)]
+        joints['joint_random_normal_ewma'] = [clamp(angle+self.last_random_ewma[i],self.joint_limits[i][0],self.joint_limits[i][1]) for i,angle in enumerate(dpa_msg.angles_relaxed.data)]
 
         for algorithm in self.algorithms:
             self.js_file_writer.write(",".join([str(time),algorithm]+[str(j) for j in joints[algorithm]])+"\n")
