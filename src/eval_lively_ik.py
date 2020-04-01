@@ -16,7 +16,7 @@ from RelaxedIK.Utils.noise_utils import noise1D, clamp
 from RelaxedIK.Utils import tf_fast as Tf
 from RelaxedIK.Utils.filter import EMA_filter
 from sensor_msgs.msg import JointState
-from wisc_msgs.msg import DebugPoseAngles
+from wisc_msgs.msg import DebugPoseAngles, DebugGoals
 from wisc_tools.structures import Pose, Quaternion
 import rospy
 import itertools
@@ -45,13 +45,13 @@ class Monitor(object):
 
         # Clear the current contents if they exist
         with open(root+"_joints.csv","w") as js_file:
-            header = ['time','algorithm']+self.joint_ordering
+            header = ['time','algorithm','collision','eval']+self.joint_ordering
             # for group in ['relaxed','lively','joint_perlin','joint_random_normal','joint_random_normal_ewma']:
             #     header.extend([j+"_"+group for j in self.joint_ordering])
             js_file.write(",".join(header)+"\n")
         with open(root+"_poses.csv","w") as pose_file:
             values = ['x','y','z','qx','qy','qz','qw']
-            header = ['time','algorithm']
+            header = ['time','algorithm','collision','eval']
             # for group in ['goal','relaxed','lively','joint_perlin','joint_random_normal','joint_random_normal_ewma']:
             #     header.extend(["{0}_{1}_{2}".format(pair[0],pair[1],group) for pair in itertools.product(self.ee_fixed_joints,values)])
             pose_file.write(",".join(header+values)+"\n")
@@ -70,12 +70,14 @@ class Monitor(object):
                                    rotation_mode='absolute',
                                    path_to_src=path_to_src)
         self.robot = self.vars.robot
+        self.collision_graph = self.vars.collision_graph
         self.dpa_sub = rospy.Subscriber('/relaxed_ik/debug_pose_angles',
                                         DebugPoseAngles,
                                         self.dpa_sub_cb,
                                         queue_size=5)
 
     def dpa_sub_cb(self,dpa_msg):
+        rospy.loginfo("Got Update!")
         time = dpa_msg.header.stamp.to_sec()
 
         # Read the DebugPoseGoal messages,
@@ -88,34 +90,32 @@ class Monitor(object):
         self.last_random_ewma = self.ewma_filter.filter(self.last_random)
 
         joints = {algorithm:[] for algorithm in self.algorithms}
+        collision = {algorithm:0 for algorithm in self.algorithms}
+        frames = {algorithm:None for algorithm in self.algorithms}
         # First handle the vanilla relaxed_ik values
-        #relaxed = slice(0,self.n_joints)
-        #lively = slice(self.n_joints,2*self.n_joints)
-        #joint_perlin = slice(2*self.n_joints,3*self.n_joints)
-        #joint_random_normal = slice(3*self.n_joints,4*self.n_joints)
-        #joint_random_normal_ewma = slice(4*self.n_joints,5*self.n_joints)
-        joints['relaxed'] =dpa_msg.angles_relaxed.data
-        joints['lively'] = dpa_msg.angles_lively.data
-        joints['joint_perlin'] = [clamp(angle+perlin_noise[i],self.joint_limits[i][0],self.joint_limits[i][1]) for i,angle in enumerate(dpa_msg.angles_relaxed.data)]
-        joints['joint_random_normal'] = [clamp(angle+self.last_random[i],self.joint_limits[i][0],self.joint_limits[i][1]) for i,angle in enumerate(dpa_msg.angles_relaxed.data)]
-        joints['joint_random_normal_ewma'] = [clamp(angle+self.last_random_ewma[i],self.joint_limits[i][0],self.joint_limits[i][1]) for i,angle in enumerate(dpa_msg.angles_relaxed.data)]
+        joints['relaxed'] =dpa_msg.angles_relaxed
+        joints['lively'] = dpa_msg.angles_lively
+        joints['joint_perlin'] = [clamp(angle+perlin_noise[i],self.joint_limits[i][0],self.joint_limits[i][1]) for i,angle in enumerate(dpa_msg.angles_relaxed)]
+        joints['joint_random_normal'] = [clamp(angle+self.last_random[i],self.joint_limits[i][0],self.joint_limits[i][1]) for i,angle in enumerate(dpa_msg.angles_relaxed)]
+        joints['joint_random_normal_ewma'] = [clamp(angle+self.last_random_ewma[i],self.joint_limits[i][0],self.joint_limits[i][1]) for i,angle in enumerate(dpa_msg.angles_relaxed)]
 
         for algorithm in self.algorithms:
-            self.js_file_writer.write(",".join([str(time),algorithm]+[str(j) for j in joints[algorithm]])+"\n")
+            frames[algorithm] = self.robot.getFrames(joints[algorithm])
+            collision[algorithm] = self.collision_graph.get_collision_score(frames[algorithm])
+            self.js_file_writer.write(",".join([str(time),algorithm,str(collision[algorithm]),dpa_msg.eval_type]+\
+                                               [str(j) for j in joints[algorithm]])+"\n")
 
         # Transfer the poses from the actual goal
         goal_info = []
         for i in range(self.n_arms):
-            pos = dpa_msg.ee_poses.ee_poses[i].position
-            ori = dpa_msg.ee_poses.ee_poses[i].orientation
-            info = [time,'goal',pos.x,pos.y,pos.z,ori.x,ori.y,ori.z,ori.w]
+            pos = dpa_msg.ee_poses[i].position
+            ori = dpa_msg.ee_poses[i].orientation
+            info = [time,'goal',None,dpa_msg.eval_type,pos.x,pos.y,pos.z,ori.x,ori.y,ori.z,ori.w]
         self.pose_file_writer.write(",".join([str(d) for d in info])+"\n")
 
         # Solve the positions that result for relaxed_ik and lively_k
         for algorithm in self.algorithms:
-            frames = self.robot.getFrames(joints[algorithm])
-            #frames = self.robot.getFrames([1.55, -1.77, 1.4, -1.19, -1.57, 0.0])
-            for f in frames:
+            for f in frames[algorithm]:
                 pos = f[0][-1]
                 new_mat = np.zeros((4, 4))
                 new_mat[0:3, 0:3] = f[1][-1]
@@ -123,7 +123,7 @@ class Monitor(object):
                 rotation = Tf.euler_from_matrix(new_mat, 'szxy')
                 info = {'r':rotation[0],'p':rotation[1],'y':rotation[2]}
                 ori = Quaternion.from_euler_dict(info).ros_quaternion
-                info = [time,algorithm,pos[0],pos[1],pos[2],ori.x,ori.y,ori.z,ori.w]
+                info = [time,algorithm,collision[algorithm],dpa_msg.eval_type,pos[0],pos[1],pos[2],ori.x,ori.y,ori.z,ori.w]
                 self.pose_file_writer.write(",".join([str(d) for d in info])+"\n")
 
 

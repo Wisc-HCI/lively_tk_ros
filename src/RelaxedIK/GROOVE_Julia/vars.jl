@@ -87,9 +87,15 @@ function populate_constraint_closures!(vars, target_vars)
     end
 end
 
-function update!(vars, xopt)
-    vars.prev_state3 = vars.prev_state2
-    vars.prev_state2 = vars.prev_state
-    vars.prev_state = vars.xopt
+function update!(vars, xopt; discontinuous=false)
+    if discontinuous
+        vars.prev_state3 = xopt
+        vars.prev_state2 = xopt
+        vars.prev_state = xopt
+    else
+        vars.prev_state3 = vars.prev_state2
+        vars.prev_state2 = vars.prev_state
+        vars.prev_state = vars.xopt
+    end
     vars.xopt = xopt
 end

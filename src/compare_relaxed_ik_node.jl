@@ -9,8 +9,8 @@ using Rotations
 using ForwardDiff
 # using Knet
 # using Dates
-@rosimport wisc_msgs.msg: DCPoseGoals, EEPoseGoals, JointAngles, DebugPoseAngles
-@rosimport std_msgs.msg: Float64MultiArray, Bool, Float32
+@rosimport wisc_msgs.msg: DCPoseGoals, EEPoseGoals, JointAngles, DebugPoseAngles, DebugGoals
+@rosimport std_msgs.msg: Float64MultiArray, Bool, Float64
 @rosimport geometry_msgs.msg: Point, Quaternion, Pose
 
 rostypegen()
@@ -30,20 +30,6 @@ function reset_cb(data::BoolMsg)
     reset_solver = data.data
 end
 
-eepg = Nothing
-dcpg = Nothing
-
-function eePoseGoals_cb(data::EEPoseGoals)
-    global eepg
-    #loginfo("$data")
-    eepg = data
-end
-function dcPoseGoals_cb(data::DCPoseGoals)
-    global dcpg
-    dcpg = data
-    #values = dcpg.dc_values
-    #println("Values Update: $values")
-end
 
 init_node("lively_ik_node")
 
@@ -57,18 +43,7 @@ livelyIK = get_standard(path_to_src, loaded_robot)
 num_chains = relaxedIK.relaxedIK_vars.robot.num_chains
 num_dc = relaxedIK.relaxedIK_vars.noise.num_dc
 
-println("loaded robot: $loaded_robot")
-
-
-Subscriber{EEPoseGoals}("/relaxed_ik/ee_pose_goals", eePoseGoals_cb)
-Subscriber{DCPoseGoals}("/relaxed_ik/dc_pose_goals", dcPoseGoals_cb)
-Subscriber{BoolMsg}("/relaxed_ik/quit", quit_cb, queue_size=1)
-Subscriber{BoolMsg}("/relaxed_ik/reset", reset_cb)
-angles_pub = Publisher("/relaxed_ik/debug_pose_angles", DebugPoseAngles, queue_size = 3)
-
-sleep(0.5)
-
-eepg = EEPoseGoals()
+goal_info = DebugGoals()
 pose = Pose()
 pose.position.x = -0.12590331808269600
 pose.position.y = 0.23734846974527900
@@ -78,26 +53,25 @@ pose.orientation.x = -0.4993768344058750
 pose.orientation.y = 0.5065220290165270
 pose.orientation.z = 0.48931110723822800
 for i = 1:num_chains
-    push!(eepg.ee_poses, pose)
+    push!(goal_info.ee_poses, pose)
 end
-dcpg = DCPoseGoals()
 for i = 1:num_dc
-    push!(dcpg.dc_values,0.5)
+    push!(goal_info.dc_values,0.5)
 end
-empty_eepg = eepg
-empty_dcpg = dcpg
+goal_info.priority = 0
+goal_info.eval_type = "null"
+goal_info.bias = Point(1,1,1)
+empty_goal_info = goal_info
 
-loop_rate = Rate(40)
-quit = false
-loginfo("starting")
-while !is_shutdown()
+angles_pub = Publisher("/relaxed_ik/debug_pose_angles", DebugPoseAngles, queue_size = 3)
+
+function goals_cb(data::DebugGoals)
     global quit
     global reset_solver
-    global eepg
-    global dcpg
     global relaxedIK
     global livelyIK
     global xopt
+    global goal_info
 
     if quit == true
         println("quitting")
@@ -110,12 +84,11 @@ while !is_shutdown()
         reset_solver = false
         relaxedIK = get_standard(path_to_src, loaded_robot)
         livelyIK = get_standard(path_to_src, loaded_robot)
-        eepg = empty_eepg
-        dcpg = empty_dcpg
+        goal_info = empty_goal_info
     end
 
-    pose_goals = eepg.ee_poses
-    dc_goals = dcpg.dc_values
+    pose_goals = goal_info.ee_poses
+    dc_goals = goal_info.dc_values
     # println(dc_goals)
 
     pos_goals = []
@@ -144,26 +117,47 @@ while !is_shutdown()
     time = to_sec(get_rostime())/4
     # priority = get_param("/lively_ik/priority")
     # bias = get_param("/lively_ik/bias")
+    priority = goal_info.priority
+    bias = [goal_info.bias.x,goal_info.bias.y,goal_info.bias.z]
     #xopt = solve_precise(relaxedIK, pos_goals, quat_goals, dc_goals, time, priority)[1]
-    rxopt = solve(relaxedIK, pos_goals, quat_goals, dc_goals, time, 1, [0,0,0])
-    lxopt = solve(livelyIK, pos_goals, quat_goals, dc_goals, time, 0, [1,1,1])
+    rxopt = solve(relaxedIK, pos_goals, quat_goals, dc_goals, time, 1, [0,0,0],discontinuous=!goal_info.continuous)
+    lxopt = solve(livelyIK, pos_goals, quat_goals, dc_goals, time, priority, bias, discontinuous=!goal_info.continuous)
     # loginfo("xopt: $xopt")
 
     dpa = DebugPoseAngles()
     for i = 1:length(rxopt)
-        push!(dpa.angles_relaxed.data, rxopt[i])
+        push!(dpa.angles_relaxed, rxopt[i])
     end
     for i = 1:length(lxopt)
-        push!(dpa.angles_lively.data, lxopt[i])
+        push!(dpa.angles_lively, lxopt[i])
     end
-    dpa.dc_values = dcpg
-    dpa.ee_poses  = eepg
-    dpa.header.seq = eepg.header.seq
-    dpa.header.stamp = get_rostime()#eepg.header.stamp
-    dpa.header.frame_id = eepg.header.frame_id
+    dpa.dc_values = goal_info.dc_values
+    dpa.ee_poses  = goal_info.ee_poses
+    dpa.header.seq = goal_info.header.seq
+    dpa.header.stamp = get_rostime()#goal_info.header.stamp
+    dpa.header.frame_id = goal_info.header.frame_id
+    dpa.eval_type = goal_info.eval_type
     # println(ja.angles)
 
     publish(angles_pub, dpa)
-
-    rossleep(loop_rate)
+    println("Published update")
 end
+
+
+println("loaded robot: $loaded_robot")
+
+# Test the callback
+goals_cb(goal_info)
+
+Subscriber{DebugGoals}("/relaxed_ik/debug_goals", goals_cb)
+Subscriber{BoolMsg}("/relaxed_ik/quit", quit_cb, queue_size=1)
+Subscriber{BoolMsg}("/relaxed_ik/reset", reset_cb)
+
+
+println("Lively_IK Ready!")
+
+for i = 1:400
+    goals_cb(goal_info)
+end
+
+spin()

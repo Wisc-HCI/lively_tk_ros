@@ -181,8 +181,8 @@ function RelaxedIK_vars(path_to_src, info_file_name, objectives, grad_types, wei
     return rv
 end
 
-function update_relaxedIK_vars!(relaxedIK_vars, xopt, time, priority, bias)
-    update!(relaxedIK_vars.vars, xopt)
+function update_relaxedIK_vars!(relaxedIK_vars, xopt, time, priority, bias; discontinuous=false)
+    update!(relaxedIK_vars.vars, xopt, discontinuous=discontinuous)
     update!(relaxedIK_vars.noise, time, priority, bias)
 end
 
