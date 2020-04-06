@@ -22,153 +22,103 @@ function RelaxedIK(path_to_src, info_file_name, objectives, grad_types, weight_p
     return RelaxedIK(relaxedIK_vars, groove, ema_filter)
 end
 
+
 function get_standard(path_to_src, info_file_name; solver_name = "slsqp", preconfigured=false)
 
     y = info_file_name_to_yaml_block(path_to_src, info_file_name)
-    ee_position_weight = y["ee_position_weight"]
-    ee_rotation_weight = y["ee_rotation_weight"]
-    dc_joint_weight = y["dc_joint_weight"]
+
     joint_ordering = y["joint_ordering"]
+    mode = y["mode"]
 
-    objectives =    [min_jt_vel_obj, min_jt_accel_obj, min_jt_jerk_obj, joint_limit_obj, collision_nn_obj]
-    grad_types =    ["forward_ad",   "forward_ad",     "forward_ad",    "forward_ad",    "finite_diff"]
-    weight_priors = [5.0,            4.0,              0.1,             1.0,             2.0]
+    objective_info = y["objectives"]
+    objectives = []
+    grad_types = []
+    weight_priors = []
 
-    push!(objectives,(x,vars)->position_obj(x,vars,1))
-    push!(grad_types,"forward_ad")
-    push!(weight_priors,ee_position_weight[1])
-
-    # Add position noise objective
-    push!(objectives,(x,vars)->positional_noise_obj(x,vars,1))
-    push!(grad_types,"forward_ad")
-    push!(weight_priors,3*ee_position_weight[1]/4)
-
-    # Add orientation objective
-    push!(objectives,(x,vars)->rotation_obj(x,vars,1))
-    push!(grad_types,"forward_ad")
-    push!(weight_priors,ee_rotation_weight[1])
-
-    # add orientation noise objective
-    push!(objectives,(x,vars)->rotational_noise_obj(x,vars,1))
-    push!(grad_types,"forward_ad")
-    push!(weight_priors,3*ee_rotation_weight[1]/4)
-
-    for i in 1:length(dc_joint_weight)
-        weight = dc_joint_weight[i]
-        if weight > 0
-            # Add dc objective
-            push!(objectives,(x,vars)->dc_obj(x,vars,i))
-            push!(grad_types,"forward_ad")
-            push!(weight_priors,weight)
-
-            # Add dc noise objective
-            push!(objectives,(x,vars)->dc_noise_obj(x,vars,i))
-            push!(grad_types,"forward_ad")
-            push!(weight_priors,weight)
+    for i = 1:length(objective_info)
+        objective = objective_info[i]
+        objective_type = objective["type"]
+        println("Adding objective: $objective_type")
+        gradient = objective["gradient"]
+        weight = objective["weight"]
+        #println(typeof(weight))
+        #println(typeof(gradient))
+        #println(typeof("finite_diff"))
+        push!(grad_types,gradient)
+        push!(weight_priors,weight)
+        if objective["type"] == "position"
+            # Add position objective
+            index = Int64(objective["index"])
+            push!(objectives,(x,vars)->position_obj(x,vars,objective["index"]))
+        elseif objective["type"] == "rotation"
+            # Add rotation objective
+            index = Int64(objective["index"])
+            push!(objectives,(x,vars)->rotation_obj(x,vars,objective["index"]))
+        elseif objective["type"] == "positional_noise"
+            # Add positional noise objective
+            index = Int64(objective["index"])
+            push!(objectives,(x,vars)->positional_noise_obj(x,vars,objective["index"]))
+        elseif objective["type"] == "rotational_noise"
+            # Add rotational noise objective
+            index = Int64(objective["index"])
+            push!(objectives,(x,vars)->rotational_noise_obj(x,vars,objective["index"]))
+        elseif objective["type"] == "dc"
+            # Add direct control objective
+            index = Int64(objective["index"])
+            push!(objectives,(x,vars)->dc_obj(x,vars,objective["index"]))
+        elseif objective["type"] == "dc_noise"
+            # Add direct control noise objective
+            index = Int64(objective["index"])
+            push!(objectives,(x,vars)->dc_noise_obj(x,vars,objective["index"]))
+        elseif objective["type"] == "min_jt_vel"
+            # Add minimization of joint velocity objective
+            push!(objectives,(x,vars)->min_jt_vel_obj(x,vars))
+        elseif objective["type"] == "min_jt_accel"
+            # Add minimization of joint acceleration objective
+            push!(objectives,(x,vars)->min_jt_accel_obj(x,vars))
+        elseif objective["type"] == "min_jt_jerk"
+            # Add minimization of joint jerk objective
+            push!(objectives,(x,vars)->min_jt_jerk_obj(x,vars))
+        elseif objective["type"] == "joint_limit"
+            # Add joint limit objective
+            push!(objectives,(x,vars)->joint_limit_obj(x,vars))
+        elseif objective["type"] == "collision_nn"
+            # Add collision avoidance objective
+            push!(objectives,(x,vars)->min_jt_vel_obj(x,vars))
+        elseif objective["type"] == "match_position" && objective["dim"] == "x"
+            # Add position x match objective
+            index_1 = Int64(objective["index_1"])
+            index_2 = Int64(objective["index_2"])
+            delta = objective["delta"]
+            push!(objectives,(x,vars)->x_match_obj(x,vars,index_1,index_2,delta))
+        elseif objective["type"] == "match_position" && objective["dim"] == "y"
+            # Add position y match objective
+            index_1 = Int64(objective["index_1"])
+            index_2 = Int64(objective["index_2"])
+            delta = objective["delta"]
+            push!(objectives,(x,vars)->y_match_obj(x,vars,index_1,index_2,delta))
+        elseif objective["type"] == "match_position" && objective["dim"] == "z"
+            # Add position z match objective
+            index_1 = Int64(objective["index_1"])
+            index_2 = Int64(objective["index_2"])
+            delta = objective["delta"]
+            push!(objectives,(x,vars)->z_match_obj(x,vars,index_1,index_2,delta))
+        elseif objective["type"] == "match_rotation"
+            # Add rotation match objective
+            index_1 = Int64(objective["index_1"])
+            index_2 = Int64(objective["index_2"])
+            push!(objectives,(x,vars)->orientation_match_obj(x,vars,index_1,index_2))
         end
     end
-
+    weight_priors = convert(Array{Float64}, weight_priors)
+    println("Weights: $weight_priors")
     inequality_constraints = []
     ineq_grad_types = []
     equality_constraints = []
     eq_grad_types = []
-    relaxedIK = RelaxedIK(path_to_src, info_file_name, objectives, grad_types, weight_priors, inequality_constraints, ineq_grad_types, equality_constraints, eq_grad_types, solver_name = solver_name, preconfigured=preconfigured)
-    num_chains = relaxedIK.relaxedIK_vars.robot.num_chains
+    relaxedIK = RelaxedIK(path_to_src, info_file_name, objectives, grad_types, weight_priors, inequality_constraints, ineq_grad_types, equality_constraints, eq_grad_types, solver_name = solver_name, preconfigured=preconfigured, position_mode=mode, rotation_mode=mode)
 
-    if num_chains > 1
-        relaxedIK = get_nchain(num_chains, path_to_src, info_file_name, preconfigured=preconfigured)
-    end
     return relaxedIK
-end
-
-function get_nchain(n, path_to_src, info_file_name; solver_name = "slsqp", preconfigured=false)
-    y = info_file_name_to_yaml_block(path_to_src, info_file_name)
-    ee_position_weight = y["ee_position_weight"]
-    ee_rotation_weight = y["ee_rotation_weight"]
-    dc_joint_weight = y["dc_joint_weight"]
-    joint_ordering = y["joint_ordering"]
-    match_objectives = y["match_objectives"]
-    objectives =    [min_jt_vel_obj, min_jt_accel_obj, min_jt_jerk_obj, joint_limit_obj, collision_nn_obj]
-    grad_types =    ["forward_ad",   "forward_ad",     "forward_ad",    "forward_ad",    "finite_diff"   ]
-    weight_priors = [6.0,            3.0,              2.0,             0.0,             0.5             ]
-    for i in 1:n
-        # Add position objective
-        push!(objectives,(x,vars)->position_obj(x,vars,i))
-        push!(grad_types,"forward_ad")
-        push!(weight_priors,ee_position_weight[i])
-
-        # Add position noise objective
-        push!(objectives,(x,vars)->positional_noise_obj(x,vars,i))
-        push!(grad_types,"forward_ad")
-        push!(weight_priors,3*ee_position_weight[i]/4)
-
-        # Add orientation objective
-        push!(objectives,(x,vars)->rotation_obj(x,vars,i))
-        push!(grad_types,"forward_ad")
-        push!(weight_priors,ee_rotation_weight[i])
-
-        # add orientation noise objective
-        push!(objectives,(x,vars)->rotational_noise_obj(x,vars,i))
-        push!(grad_types,"forward_ad")
-        push!(weight_priors,3*ee_rotation_weight[i]/4)
-    end
-    for i in 1:length(dc_joint_weight)
-        weight = dc_joint_weight[i]
-        if weight > 0
-            # Add dc objective
-            push!(objectives,(x,vars)->dc_obj(x,vars,i))
-            push!(grad_types,"forward_ad")
-            push!(weight_priors,weight)
-
-            # Add dc noise objective
-            push!(objectives,(x,vars)->dc_noise_obj(x,vars,i))
-            push!(grad_types,"forward_ad")
-            push!(weight_priors,weight)
-        end
-    end
-
-    # Match Objectives #
-    for i in 1:length(match_objectives)
-        objective_info = match_objectives[i]
-        if objective_info["type"] == "x"
-            arm1 = objective_info["arm_index_1"]
-            arm2 = objective_info["arm_index_2"]
-            delta = objective_info["delta"]
-            weight = objective_info["weight"]
-            push!(objectives,(x,vars)->x_match_obj(x,vars,arm1,arm2,delta))
-            push!(grad_types,"forward_ad")
-            push!(weight_priors,weight)
-        elseif objective_info["type"] == "y"
-            arm1 = objective_info["arm_index_1"]
-            arm2 = objective_info["arm_index_2"]
-            delta = objective_info["delta"]
-            weight = objective_info["weight"]
-            push!(objectives,(x,vars)->y_match_obj(x,vars,arm1,arm2,delta))
-            push!(grad_types,"forward_ad")
-            push!(weight_priors,weight)
-        elseif objective_info["type"] == "z"
-            arm1 = objective_info["arm_index_1"]
-            arm2 = objective_info["arm_index_2"]
-            delta = objective_info["delta"]
-            weight = objective_info["weight"]
-            push!(objectives,(x,vars)->z_match_obj(x,vars,arm1,arm2,delta))
-            push!(grad_types,"forward_ad")
-            push!(weight_priors,weight)
-        elseif objective_info["type"] == "orientation"
-            arm1 = objective_info["arm_index_1"]
-            arm2 = objective_info["arm_index_2"]
-            weight = objective_info["weight"]
-            push!(objectives,(x,vars)->orientation_match_obj(x,vars,arm1,arm2))
-            push!(grad_types,"forward_ad")
-            push!(weight_priors,weight)
-        end
-    end
-
-    inequality_constraints = []
-    ineq_grad_types = []
-    equality_constraints = []
-    eq_grad_types = []
-    return RelaxedIK(path_to_src, info_file_name, objectives, grad_types, weight_priors, inequality_constraints, ineq_grad_types, equality_constraints, eq_grad_types, solver_name = solver_name, preconfigured=preconfigured)
 end
 
 function get_nchain_base_ik(n, path_to_src, info_file_name; solver_name = "slsqp", preconfigured=false)
@@ -245,8 +195,9 @@ function get_rot_mats(relaxedIK, x)
     return rot_mats
 end
 
-function solve(relaxedIK, goal_positions, goal_quats, dc_goals, time, priority, bias; prev_state = nothing, filter=true, max_iter = 0, max_time = 0.05, discontinuous=false)
+function solve(relaxedIK, goal_positions, goal_quats, dc_goals, time, bias, weights; prev_state = nothing, filter=true, max_iter = 0, max_time = 0.05)
     vars = relaxedIK.relaxedIK_vars
+    vars.vars.weight_priors = weights
 
     if vars.position_mode == "relative"
         vars.goal_positions = copy(vars.init_ee_positions)
@@ -268,7 +219,7 @@ function solve(relaxedIK, goal_positions, goal_quats, dc_goals, time, priority, 
         vars.goal_quats = goal_quats
     end
     xopt = groove_solve(relaxedIK.groove, prev_state=prev_state, max_iter=max_iter, max_time = max_time)
-    update_relaxedIK_vars!(relaxedIK.relaxedIK_vars, xopt, time, priority, bias, discontinuous=discontinuous)
+    update_relaxedIK_vars!(relaxedIK.relaxedIK_vars, xopt, time, bias)
     if filter
         xopt = filter_signal(relaxedIK.ema_filter, xopt)
     end

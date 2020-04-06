@@ -1,7 +1,0 @@
-<?xml version="1.0"?>
-<launch>
-   <!-- ##################################################################################### -->
-
-   <node pkg="lively_ik" type="pub_to_lively_ik_continuous_movement.py" name="lively_ik_node" output="screen"/>
-
-</launch>

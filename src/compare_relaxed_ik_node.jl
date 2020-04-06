@@ -45,13 +45,13 @@ num_dc = relaxedIK.relaxedIK_vars.noise.num_dc
 
 goal_info = DebugGoals()
 pose = Pose()
-pose.position.x = -0.12590331808269600
-pose.position.y = 0.23734846974527900
-pose.position.z = 0.3734423326681300
-pose.orientation.w = 0.5046115849968640
-pose.orientation.x = -0.4993768344058750
-pose.orientation.y = 0.5065220290165270
-pose.orientation.z = 0.48931110723822800
+pose.position.x = 0
+pose.position.y = 0
+pose.position.z = 0
+pose.orientation.w = 1
+pose.orientation.x = 0
+pose.orientation.y = 0
+pose.orientation.z = 0
 for i = 1:num_chains
     push!(goal_info.ee_poses, pose)
 end
@@ -65,13 +65,13 @@ empty_goal_info = goal_info
 
 angles_pub = Publisher("/relaxed_ik/debug_pose_angles", DebugPoseAngles, queue_size = 3)
 
-function goals_cb(data::DebugGoals)
+function goals_cb(goal_info::DebugGoals)
     global quit
     global reset_solver
     global relaxedIK
     global livelyIK
     global xopt
-    global goal_info
+    global empty_goal_info
 
     if quit == true
         println("quitting")
@@ -89,7 +89,6 @@ function goals_cb(data::DebugGoals)
 
     pose_goals = goal_info.ee_poses
     dc_goals = goal_info.dc_values
-    # println(dc_goals)
 
     pos_goals = []
     quat_goals = []
@@ -110,19 +109,31 @@ function goals_cb(data::DebugGoals)
         push!(quat_goals, Quat(quat_w, quat_x, quat_y, quat_z))
     end
 
-    #loginfo("pos_goals: $pos_goals")
-    #loginfo("quat_goals: $quat_goals")
-    #loginfo("dc_goals: $dc_goals")
+    time = to_sec(goal_info.header.stamp)/4
 
-    time = to_sec(get_rostime())/4
-    # priority = get_param("/lively_ik/priority")
-    # bias = get_param("/lively_ik/bias")
-    priority = goal_info.priority
     bias = [goal_info.bias.x,goal_info.bias.y,goal_info.bias.z]
-    #xopt = solve_precise(relaxedIK, pos_goals, quat_goals, dc_goals, time, priority)[1]
-    rxopt = solve(relaxedIK, pos_goals, quat_goals, dc_goals, time, 1, [0,0,0],discontinuous=!goal_info.continuous)
-    lxopt = solve(livelyIK, pos_goals, quat_goals, dc_goals, time, priority, bias, discontinuous=!goal_info.continuous)
-    # loginfo("xopt: $xopt")
+    lively_weights = [50.0, 2.0, 0.0, 0.0, 5.0, 2.0, 0.1, 1.0, 2.0]
+    normal_weights = [0.0, 0.0, 50.0, 2.0, 5.0, 2.0, 0.1, 1.0, 2.0]
+
+    rxopt = solve(relaxedIK, pos_goals, quat_goals, dc_goals, time, [0,0,0], normal_weights)
+    lxopt = solve(livelyIK,  pos_goals, quat_goals, dc_goals, time, bias,    lively_weights)
+    ideal_noise = livelyIK.relaxedIK_vars.noise.arm_noise
+
+    ideal_goals = []
+    for i = 1:num_chains
+        pos_goal = pos_goals[i] .+ ideal_noise[i].position
+        pos_noise_goal = Point(pos_goal[1],pos_goal[2],pos_goal[3])
+        # Ignoring orientation for now
+        pose = Pose()
+        pose.position.x = pos_goal[1]
+        pose.position.y = pos_goal[2]
+        pose.position.z = pos_goal[3]
+        pose.orientation.w = 1
+        pose.orientation.x = 0
+        pose.orientation.y = 0
+        pose.orientation.z = 0
+        push!(ideal_goals,pose)
+    end
 
     dpa = DebugPoseAngles()
     for i = 1:length(rxopt)
@@ -131,6 +142,7 @@ function goals_cb(data::DebugGoals)
     for i = 1:length(lxopt)
         push!(dpa.angles_lively, lxopt[i])
     end
+    dpa.ideal_noise = ideal_goals
     dpa.dc_values = goal_info.dc_values
     dpa.ee_poses  = goal_info.ee_poses
     dpa.header.seq = goal_info.header.seq
@@ -140,7 +152,6 @@ function goals_cb(data::DebugGoals)
     # println(ja.angles)
 
     publish(angles_pub, dpa)
-    println("Published update")
 end
 
 
@@ -155,9 +166,6 @@ Subscriber{BoolMsg}("/relaxed_ik/reset", reset_cb)
 
 
 println("Lively_IK Ready!")
-
-for i = 1:400
-    goals_cb(goal_info)
-end
+set_param("ready",true)
 
 spin()

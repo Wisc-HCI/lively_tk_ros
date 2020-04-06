@@ -77,7 +77,7 @@ class Monitor(object):
                                         queue_size=5)
 
     def dpa_sub_cb(self,dpa_msg):
-        rospy.loginfo("Got Update!")
+        # rospy.loginfo("Got Update!")
         time = dpa_msg.header.stamp.to_sec()
 
         # Read the DebugPoseGoal messages,
@@ -106,11 +106,17 @@ class Monitor(object):
                                                [str(j) for j in joints[algorithm]])+"\n")
 
         # Transfer the poses from the actual goal
-        goal_info = []
         for i in range(self.n_arms):
             pos = dpa_msg.ee_poses[i].position
             ori = dpa_msg.ee_poses[i].orientation
             info = [time,'goal',None,dpa_msg.eval_type,pos.x,pos.y,pos.z,ori.x,ori.y,ori.z,ori.w]
+        self.pose_file_writer.write(",".join([str(d) for d in info])+"\n")
+
+        # Transfer the "ideal" noise
+        for i in range(self.n_arms):
+            pos = dpa_msg.ideal_noise[i].position
+            ori = dpa_msg.ideal_noise[i].orientation
+            info = [time,'ideal',None,dpa_msg.eval_type,pos.x,pos.y,pos.z,ori.x,ori.y,ori.z,ori.w]
         self.pose_file_writer.write(",".join([str(d) for d in info])+"\n")
 
         # Solve the positions that result for relaxed_ik and lively_k

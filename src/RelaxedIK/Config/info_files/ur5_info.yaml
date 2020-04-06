@@ -2,8 +2,6 @@ axis_types:
 - [z, y, y, y, z, y]
 collision_file_name: collision_ur5.yaml
 collision_nn_file: ur5_robotiq_nn
-dc_joint_noise: [0, 0, 0, 0, 0, 0]
-dc_joint_weight: [0, 0, 0, 0, 0, 0]
 disp_offsets:
 - [0.0, 0.0, 0.089159]
 displacements:
@@ -14,9 +12,6 @@ displacements:
   - [0.0, 0.0, 0.09465]
   - [0.0, 0.0823, 0.0]
 ee_fixed_joints: [ee_fixed_joint]
-ee_joint_noise: [0.05]
-ee_position_weight: [50]
-ee_rotation_weight: [49]
 fixed_frame: base_link
 fixed_frame_noise: 0.0
 joint_limits:
@@ -34,7 +29,62 @@ joint_ordering: [shoulder_pan_joint, shoulder_lift_joint, elbow_joint, wrist_1_j
 joint_state_define_func_file: ur5_robotiq_joint_state_define
 joint_types:
 - [revolute, revolute, revolute, revolute, revolute, revolute]
-match_objectives: []
+mode: absolute
+objectives:
+- type: position
+  index: 1
+  weight: 50.0
+  gradient: forward_ad
+- type: rotation
+  index: 1
+  weight: 49.0
+  gradient: forward_ad
+- type: positional_noise
+  index: 1
+  scale: 0.05
+  weight: 12.0
+  gradient: forward_ad
+- type: rotational_noise
+  index: 1
+  scale: 0.02
+  weight: 11.0
+  gradient: forward_ad
+- type: dc
+  index: 2
+  weight: 0.0
+  gradient: forward_ad
+- type: dc_noise
+  index: 2
+  scale: 0.4
+  weight: 0.0
+  gradient: forward_ad
+- type: min_jt_vel
+  weight: 5.0
+  gradient: forward_ad
+- type: min_jt_accel
+  weight: 4.0
+  gradient: forward_ad
+- type: min_jt_jerk
+  weight: 0.1
+  gradient: forward_ad
+- type: joint_limit
+  weight: 1.0
+  gradient: forward_ad
+- type: collision_nn
+  weight: 2.0
+  gradient: finite_diff
+# - type: match_position
+#   dim: x
+#   index_1: 1
+#   index_2: 2
+#   delta: 0
+#   weight: 0
+#   gradient: forward_ad
+# - type: match_rotation
+#   index_1: 1
+#   index_2: 2
+#   weight: 0
+#   gradient: forward_ad
 path_to_src: /home/schoen/Workspaces/lik/src/lively_ik/src
 rot_offsets:
 - - [0.0, 0.0, 0.0]

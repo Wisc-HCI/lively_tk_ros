@@ -74,7 +74,24 @@ function RelaxedIK_vars(path_to_src, info_file_name, objectives, grad_types, wei
         push!(goal_quats_relative, Quat(1.,0.,0.,0.))
     end
 
-    noise = NoiseGenerator(y["ee_joint_noise"],y["fixed_frame_noise"],y["dc_joint_noise"],y["dc_joint_weight"])
+    position_scale = zeros(num_chains)
+    rotation_scale = zeros(num_chains)
+    joint_scale = zeros(length(y["joint_ordering"]))
+
+    objective_info = y["objectives"]
+
+    for i = 1:length(objective_info)
+        objective = objective_info[i]
+        if objective["type"] == "positional_noise"
+            position_scale[objective["index"]] = objective["scale"]
+        elseif objective["type"] == "rotational_noise"
+            rotation_scale[objective["index"]] = objective["scale"]
+        elseif objective["type"] == "dc_noise"
+            joint_scale[objective["index"]] = objective["scale"]
+        end
+    end
+
+    noise = NoiseGenerator(position_scale, rotation_scale, joint_scale, y["fixed_frame_noise"])
     joint_goal = zeros(length(vars.init_state))
 
     if preconfigured == false
@@ -181,9 +198,9 @@ function RelaxedIK_vars(path_to_src, info_file_name, objectives, grad_types, wei
     return rv
 end
 
-function update_relaxedIK_vars!(relaxedIK_vars, xopt, time, priority, bias; discontinuous=false)
-    update!(relaxedIK_vars.vars, xopt, discontinuous=discontinuous)
-    update!(relaxedIK_vars.noise, time, priority, bias)
+function update_relaxedIK_vars!(relaxedIK_vars, xopt, time, bias)
+    update!(relaxedIK_vars.vars, xopt)
+    update!(relaxedIK_vars.noise, time, bias)
 end
 
 function info_file_name_to_yaml_block(path_to_src, info_file_name)

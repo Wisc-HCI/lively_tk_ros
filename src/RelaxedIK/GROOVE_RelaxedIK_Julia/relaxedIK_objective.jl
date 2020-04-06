@@ -36,6 +36,7 @@ function dc_noise_obj(x, vars, idx)
 end
 
 function position_obj(x, vars, idx)
+    #println("POS IDX: $idx")
     vars.robot.arms[idx].getFrames(x[vars.robot.subchain_indices[idx]])
     goal = vars.goal_positions[idx] + vars.noise.base_noise.position
     x_val = norm(vars.robot.arms[idx].out_pts[end] - goal)
@@ -44,6 +45,7 @@ function position_obj(x, vars, idx)
 end
 
 function rotation_obj(x, vars, idx)
+    #println("ROT IDX: $idx")
     vars.robot.arms[idx].getFrames(x[vars.robot.subchain_indices[idx]])
     eeMat = vars.robot.arms[idx].out_frames[end]
 
@@ -61,6 +63,7 @@ function rotation_obj(x, vars, idx)
 end
 
 function positional_noise_obj(x, vars, idx)
+    #println("POS NOISE IDX: $idx")
     vars.robot.arms[idx].getFrames(x[vars.robot.subchain_indices[idx]])
     goal = vars.goal_positions[idx] + vars.noise.arm_noise[idx].position + vars.noise.base_noise.position
     x_val = norm(vars.robot.arms[idx].out_pts[end] - goal)
@@ -68,6 +71,7 @@ function positional_noise_obj(x, vars, idx)
 end
 
 function rotational_noise_obj(x, vars, idx)
+    #println("ROT NOISE IDX: $idx")
     vars.robot.arms[idx].getFrames(x[vars.robot.subchain_indices[idx]])
     eeMat = vars.robot.arms[idx].out_frames[end]
     orilog = quaternion_log(vars.goal_quats[idx])

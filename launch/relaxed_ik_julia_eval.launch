@@ -2,9 +2,8 @@
 <launch>
   <arg name="info_file_name"/>
   <arg name="out_file_root" default="./noise"/>
-  <rosparam param="lively_ik/freq">1</rosparam>
-  <rosparam param="lively_ik/priority">0</rosparam>
-  <rosparam param="lively_ik/bias">[1,1,1]</rosparam>
+
+  <param name="ready" value="false"/>
   <rosparam command='load' file='$(find lively_ik)/src/RelaxedIK/Config/info_files/$(arg info_file_name)'/>
 
   <include file="$(find lively_ik)/launch/load_info_file.launch">
@@ -14,5 +13,7 @@
   <node pkg="lively_ik" type="compare_relaxed_ik_node.jl" name="lively_ik_node" output="screen"/>
   <node pkg="lively_ik" type="eval_lively_ik.py" name="eval_lively_ik" output="screen"
         args="--file_root $(arg out_file_root)"/>
+
+  <node pkg="lively_ik" type="pub_to_lively_ik.py" name="lively_ik_eval_generator" output="screen"/>
 
 </launch>
