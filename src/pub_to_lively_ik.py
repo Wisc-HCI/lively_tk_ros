@@ -22,13 +22,21 @@ from wisc_tools.control import StateController
 class Driver(object):
     def __init__(self):
         num_poses = 10
-        radius = .5 # m
-        poses = []
-        times = []
+        radius = .25 # m
+        poses = [Pose.from_pose_dict({'position':{'x':-0.12590331808269600,
+                                                  'y':0.23734846974527900,
+                                                  'z':0.3734423326681300},
+                                      'quaternion':{'w':0.5046115849968640,
+                                                    'x':-0.4993768344058750,
+                                                    'y':0.5065220290165270,
+                                                    'z':0.48931110723822800}
+                                      })
+                ]
+        times = [0.5]
 
         radius_squared = radius**2
 
-        previous_pose = None
+        previous_pose = poses[0]
         self.last_time = 0
 
         for pose in range(num_poses):
@@ -47,7 +55,7 @@ class Driver(object):
 
             x = r * math.sin( theta) * math.cos( phi )
             y = r * math.sin( theta) * math.sin( phi )
-            z = abs(r * math.cos( theta ))
+            z = abs(r * math.cos( theta ))+0.25
 
             position = Position(x, y, z)
 
@@ -55,10 +63,7 @@ class Driver(object):
 
             pose = Pose(position, orientation)
 
-            if previous_pose is not None:
-                time = 4*StateController.time_to_pose(previous_pose, pose)
-            else:
-                time = 0.5
+            time = 4*StateController.time_to_pose(previous_pose, pose)
 
             times.append(time)
             self.last_time += time
