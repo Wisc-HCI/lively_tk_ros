@@ -52,8 +52,10 @@ class Eval(object):
         self.seq = 0
         self.eval_number = eval_number
 
-        if self.eval_number == 1:
+        if self.eval_number == 2:
             self.driver = Driver(continuous = False)
+        if self.eval_number == 3:
+            self.driver = Driver(continuous = True)
 
         # Clear the current contents if they exist
         with open(root+"_joints.csv","w") as js_file:
@@ -104,6 +106,32 @@ class Eval(object):
                }
         return Pose.from_eulerpose_dict(info)
 
+    # def generate_pose_trajectory(self):
+    #     poses = [Pose.from_pose_dict({'position':{'x':-0.12590331808269600,
+    #                                               'y':0.23734846974527900,
+    #                                               'z':0.3734423326681300},
+    #                                   'quaternion':{'w':0.5046115849968640,
+    #                                                 'x':-0.4993768344058750,
+    #                                                 'y':0.5065220290165270,
+    #                                                 'z':0.48931110723822800}
+    #                                   })
+    #             ]
+    #     times = [0.5]
+    #     self.last_time = 0.5
+    #     previous_pose = poses[0]
+    #     print('num poses: {}'.format(self.num_poses))
+    #     for pose_index in range(self.num_poses):
+    #         pose = self.generate_goal_pose()
+    #         time = 4*StateController.time_to_pose(previous_pose, pose)
+    #
+    #         times.append(time)
+    #         self.last_time += time
+    #
+    #         poses.append(pose)
+    #         previous_pose = pose
+    #
+    #     self.pose_trajectory = PoseTrajectory([{'time': times[i], 'pose': poses[i]} for i in range(len(poses))])
+
     def generate_pose_trajectory(self):
         poses = [Pose.from_pose_dict({'position':{'x':-0.12590331808269600,
                                                   'y':0.23734846974527900,
@@ -117,22 +145,20 @@ class Eval(object):
         times = [0.5]
         self.last_time = 0.5
         previous_pose = poses[0]
-        print('num poses: {}'.format(self.num_poses))
         for pose_index in range(self.num_poses):
             pose = self.generate_goal_pose()
-            time = 4*StateController.time_to_pose(previous_pose, pose)
-
+            time = self.last_time + StateController.time_to_pose(previous_pose, pose)
             times.append(time)
             self.last_time += time
-
             poses.append(pose)
             previous_pose = pose
-
         self.pose_trajectory = PoseTrajectory([{'time': times[i], 'pose': poses[i]} for i in range(len(poses))])
 
     def start(self):
         rospy.loginfo("Initializing Driver")
-        if self.eval_number == 1:
+        if self.eval_number == 2:
+            self.driver.start()
+        if self.eval_number == 3:
             self.driver.start()
 
         self.start_time = rospy.get_time()
@@ -197,14 +223,21 @@ class Eval(object):
                     info = [time,algorithm,collision[algorithm],dpa_msg.eval_type,pos[0],pos[1],pos[2],ori.x,ori.y,ori.z,ori.w]
                     self.pose_file_writer.write(",".join([str(d) for d in info])+"\n")
 
-    def random_poses(self):
+    def stochastic_collision(self):
+        self.driver.run()
+        if not self.driver.running:
+            self.running = False
+
+    def continuous(self):
         self.driver.run()
         if not self.driver.running:
             self.running = False
 
     def run(self):
-        if self.eval_number == 1:
-            self.random_poses()
+        if self.eval_number == 2:
+            self.stochastic_collision()
+        elif self.eval_number == 3:
+            self.continuous()
         else:
             time = rospy.get_time() - self.start_time
 
@@ -224,7 +257,7 @@ class Eval(object):
             self.seq += 1
 
 if __name__ == '__main__':
-    eval_number = 1
+    eval_number = 3
     rospy.init_node('eval_lively_ik')
 
     parser = ArgumentParser(description='Eval of Lively IK')

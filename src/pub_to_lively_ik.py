@@ -63,17 +63,18 @@ class Driver(object):
 
             pose = Pose(position, orientation)
 
-            time = 4*StateController.time_to_pose(previous_pose, pose)
-
+            ttp = StateController.time_to_pose(previous_pose, pose)
+            time = self.last_time + ttp
             times.append(time)
-            self.last_time += time
-
+            self.last_time = time
             poses.append(pose)
             previous_pose = pose
+
 
         self.pose_trajectory = PoseTrajectory([{'time': times[i], 'pose': poses[i]} for i in range(len(poses))])
 
         if continuous:
+            print('interpolating')
             self.pose_trajectory.__interpolate__()
 
         self.goal_pub = rospy.Publisher('/relaxed_ik/debug_goals', DebugGoals, queue_size=10)
