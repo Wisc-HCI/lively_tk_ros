@@ -249,39 +249,26 @@ class Eval(object):
                     info = [time,algorithm,collision[algorithm],dpa_msg.eval_type,pos[0],pos[1],pos[2],ori.x,ori.y,ori.z,ori.w]
                     self.pose_file_writer.write(",".join([str(d) for d in info])+"\n")
 
-    def stochastic_collision(self):
-        self.driver.run()
-        if not self.driver.running:
-            self.running = False
-
-    def continuous(self):
-        self.driver.run()
-        if not self.driver.running:
-            self.running = False
-
     def run(self):
-        if self.eval_number == 2:
-            self.stochastic_collision()
+        time = rospy.get_time() - self.start_time
+
+        debug_goal = DebugGoals()
+        debug_goal.header.seq =self.seq
+        debug_goal.header.stamp = rospy.get_rostime()
+
+        debug_goal.ee_poses.append(self.pose_trajectory[time].ros_pose)
+        if time > self.last_time:
+            debug_goal.eval_type = "exit"
         else:
-            time = rospy.get_time() - self.start_time
+            debug_goal.eval_type = "continuous"
+        debug_goal.dc_values = [0,0,0,0,0,0]
+        debug_goal.bias = Position(1,1,1).ros_point
 
-            debug_goal = DebugGoals()
-            debug_goal.header.seq =self.seq
-            debug_goal.header.stamp = rospy.get_rostime()
-
-            debug_goal.ee_poses.append(self.pose_trajectory[time].ros_pose)
-            if time > self.last_time:
-                debug_goal.eval_type = "exit"
-            else:
-                debug_goal.eval_type = "continuous"
-            debug_goal.dc_values = [0,0,0,0,0,0]
-            debug_goal.bias = Position(1,1,1).ros_point
-
-            self.goal_pub.publish(debug_goal)
-            self.seq += 1
+        self.goal_pub.publish(debug_goal)
+        self.seq += 1
 
 if __name__ == '__main__':
-    eval_number = 1
+    eval_number = 3
     rospy.init_node('eval_lively_ik')
 
     parser = ArgumentParser(description='Eval of Lively IK')
