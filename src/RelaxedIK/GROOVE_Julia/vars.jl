@@ -91,4 +91,5 @@ function update!(vars, xopt)
     vars.prev_state3 = vars.prev_state2
     vars.prev_state2 = vars.prev_state
     vars.prev_state = vars.xopt
+    vars.xopt = xopt
 end
