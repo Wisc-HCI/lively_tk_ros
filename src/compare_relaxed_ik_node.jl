@@ -9,8 +9,8 @@ using Rotations
 using ForwardDiff
 # using Knet
 # using Dates
-@rosimport wisc_msgs.msg: DCPoseGoals, EEPoseGoals, JointAngles, DebugPoseAngles, DebugGoals
-@rosimport std_msgs.msg: Float64MultiArray, Bool, Float64
+@rosimport wisc_msgs.msg: DCPoseGoals, EEPoseGoals, JointAngles, DebugGoals, DebugPoseAngles
+@rosimport std_msgs.msg: Float64MultiArray, Bool, Float32
 @rosimport geometry_msgs.msg: Point, Quaternion, Pose
 
 rostypegen()
@@ -30,6 +30,16 @@ function reset_cb(data::BoolMsg)
     reset_solver = data.data
 end
 
+eepg = Nothing
+dcpg = Nothing
+priority = 0
+bias = [1.0,1.0,1.0]
+
+function goals_cb(data::DebugGoals)
+    global goal_info
+    #loginfo("$data")
+    goal_info = data
+end
 
 init_node("lively_ik_node")
 
@@ -42,6 +52,16 @@ relaxedIK = get_standard(path_to_src, loaded_robot)
 livelyIK = get_standard(path_to_src, loaded_robot)
 num_chains = relaxedIK.relaxedIK_vars.robot.num_chains
 num_dc = relaxedIK.relaxedIK_vars.noise.num_dc
+
+println("loaded robot: $loaded_robot")
+
+
+Subscriber{DebugGoals}("/relaxed_ik/debug_goals", goals_cb)
+Subscriber{BoolMsg}("/relaxed_ik/quit", quit_cb, queue_size=1)
+Subscriber{BoolMsg}("/relaxed_ik/reset", reset_cb)
+angles_pub = Publisher("/relaxed_ik/debug_pose_angles", DebugPoseAngles, queue_size = 3)
+
+sleep(0.5)
 
 goal_info = DebugGoals()
 pose = Pose()
@@ -63,15 +83,20 @@ goal_info.eval_type = "null"
 goal_info.bias = Point(1,1,1)
 empty_goal_info = goal_info
 
-angles_pub = Publisher("/relaxed_ik/debug_pose_angles", DebugPoseAngles, queue_size = 3)
+loop_rate = Rate(40)
+quit = false
+loginfo("starting")
+started = false
 
-function goals_cb(goal_info::DebugGoals)
+while !is_shutdown()
     global quit
     global reset_solver
     global relaxedIK
     global livelyIK
     global xopt
+    global goal_info
     global empty_goal_info
+    global started
 
     if quit == true
         println("quitting")
@@ -112,11 +137,13 @@ function goals_cb(goal_info::DebugGoals)
     time = to_sec(goal_info.header.stamp)/4
 
     bias = [goal_info.bias.x,goal_info.bias.y,goal_info.bias.z]
-    lively_weights = [50.0, 2.0, 0.0, 0.0, 5.0, 2.0, 0.1, 1.0, 2.0]
-    normal_weights = [0.0, 0.0, 50.0, 2.0, 5.0, 2.0, 0.1, 1.0, 2.0]
+    normal_weights = [50.0, 20.0, 0.00, 0.00, 5.0, 2.0, 0.1, 1.0, 2.0]
+    lively_weights = [25.0, 10.0, 25.0, 10.0, 5.0, 2.0, 0.1, 1.0, 2.0]
 
-    rxopt = solve(relaxedIK, pos_goals, quat_goals, dc_goals, time, [0,0,0], normal_weights)
-    lxopt = solve(livelyIK,  pos_goals, quat_goals, dc_goals, time, bias,    lively_weights)
+    rxopt, rtry_idx, rvalid_sol, rpos_error, rrot_error = solve_precise(relaxedIK, pos_goals, quat_goals, dc_goals, time, [0,0,0], normal_weights)
+    lxopt, ltry_idx, lvalid_sol, lpos_error, lrot_error = solve_precise(livelyIK,  pos_goals, quat_goals, dc_goals, time, bias,    lively_weights)
+    # rxopt = solve(relaxedIK, pos_goals, quat_goals, dc_goals, time, 1, [0,0,0])
+    # lxopt = solve(livelyIK,  pos_goals, quat_goals, dc_goals, time, 0, bias   )
     ideal_noise = livelyIK.relaxedIK_vars.noise.arm_noise
 
     ideal_goals = []
@@ -151,21 +178,13 @@ function goals_cb(goal_info::DebugGoals)
     dpa.eval_type = goal_info.eval_type
     # println(ja.angles)
 
-    publish(angles_pub, dpa)
+    if started
+        publish(angles_pub, dpa)
+    else
+        started = true
+        println("Lively_IK Ready!")
+        set_param("ready",true)
+    end
+
+    rossleep(loop_rate)
 end
-
-
-println("loaded robot: $loaded_robot")
-
-# Test the callback
-goals_cb(goal_info)
-
-Subscriber{DebugGoals}("/relaxed_ik/debug_goals", goals_cb)
-Subscriber{BoolMsg}("/relaxed_ik/quit", quit_cb, queue_size=1)
-Subscriber{BoolMsg}("/relaxed_ik/reset", reset_cb)
-
-
-println("Lively_IK Ready!")
-set_param("ready",true)
-
-spin()

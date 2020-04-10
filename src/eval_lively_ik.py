@@ -41,7 +41,7 @@ class Eval(object):
         self.joint_limits = rospy.get_param('joint_limits')
         self.n_joints = len(self.joint_ordering)
         self.n_arms = len(self.ee_fixed_joints)
-        self.joint_scaling = [.01*abs(val[1]-val[0]) for val in self.joint_limits]
+        self.joint_scaling = [.001*abs(val[1]-val[0]) for val in self.joint_limits]
         self.joint_seeds = [random.randint(0,10240) for joint in self.joint_ordering]
         self.last_random = [0]*self.n_joints
         self.last_random_ewma = [0]*self.n_joints
@@ -142,12 +142,13 @@ class Eval(object):
                                                     'z':0.48931110723822800}
                                       })
                 ]
-        times = [0.5]
-        self.last_time = 0.5
+        times = [0.25]
+        self.last_time = 0.25
         previous_pose = poses[0]
         for pose_index in range(self.num_poses):
             pose = self.generate_goal_pose()
-            time = self.last_time + StateController.time_to_pose(previous_pose, pose)
+            time = self.last_time + .25 * StateController.time_to_pose(previous_pose, pose)
+
             times.append(time)
             self.last_time += time
             poses.append(pose)
@@ -175,7 +176,8 @@ class Eval(object):
             # and Use forward finematics to deduce
             # the poses that would result
             joints = self.n_joints*5*[0]
-            perlin_noise = [(noise1D(time/4,self.joint_seeds[i])-0.5)*self.joint_scaling[i] for i in range(self.n_joints)]
+            perlin_noise = [(noise1D(time/4,self.joint_seeds[i]))*self.joint_scaling[i] for i in range(self.n_joints)]
+            #print(perlin_noise)
             normal_delta = [random.normalvariate(-1*self.last_random[i]*.01, self.joint_scaling[i]*.03) for i in range(self.n_joints)]
             self.last_random = [normal_delta[i]+self.last_random[i] for i in range(self.n_joints)]
             self.last_random_ewma = self.ewma_filter.filter(self.last_random)
@@ -295,3 +297,5 @@ if __name__ == '__main__':
     except:
         if initialized:
             rospy.logerr('Could not close files!')
+
+    rospy.loginfo("Finished Publishing")
