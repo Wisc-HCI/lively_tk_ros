@@ -28,8 +28,10 @@ import numpy as np
 import random
 from argparse import ArgumentParser
 
+from pub_to_lively_ik import Driver
+
 class Eval(object):
-    def __init__(self,path_to_src,root="./noise",num_poses=10):
+    def __init__(self,path_to_src,root="./noise",num_poses=10,eval_number=0):
         self.num_poses = num_poses
         self.fixed_frame = rospy.get_param('fixed_frame')
         self.ee_fixed_joints = rospy.get_param('ee_fixed_joints')
@@ -48,6 +50,10 @@ class Eval(object):
         self.last_time = 0
         self.running = False
         self.seq = 0
+        self.eval_number = eval_number
+
+        if self.eval_number == 1:
+            self.driver = Driver(continuous = False)
 
         # Clear the current contents if they exist
         with open(root+"_joints.csv","w") as js_file:
@@ -111,6 +117,7 @@ class Eval(object):
         times = [0.25]
         self.last_time = 0.25
         previous_pose = poses[0]
+        print('num poses: {}'.format(self.num_poses))
         for pose_index in range(self.num_poses):
             pose = self.generate_goal_pose()
             time = self.last_time + .25 * StateController.time_to_pose(previous_pose, pose)
@@ -125,6 +132,9 @@ class Eval(object):
 
     def start(self):
         rospy.loginfo("Initializing Driver")
+        if self.eval_number == 1:
+            self.driver.start()
+
         self.start_time = rospy.get_time()
         self.running = True
 
@@ -188,27 +198,34 @@ class Eval(object):
                     info = [time,algorithm,collision[algorithm],dpa_msg.eval_type,pos[0],pos[1],pos[2],ori.x,ori.y,ori.z,ori.w]
                     self.pose_file_writer.write(",".join([str(d) for d in info])+"\n")
 
+    def random_poses(self):
+        self.driver.run()
+        if not self.driver.running:
+            self.running = False
+
     def run(self):
-        time = rospy.get_time() - self.start_time
-
-        debug_goal = DebugGoals()
-        debug_goal.header.seq =self.seq
-        debug_goal.header.stamp = rospy.get_rostime()
-
-        debug_goal.ee_poses.append(self.pose_trajectory[time].ros_pose)
-        if time > self.last_time:
-            debug_goal.eval_type = "exit"
+        if self.eval_number == 1:
+            self.random_poses()
         else:
-            debug_goal.eval_type = "continuous"
-        debug_goal.dc_values = [0,0,0,0,0,0]
-        debug_goal.bias = Position(1,1,1).ros_point
+            time = rospy.get_time() - self.start_time
 
-        self.goal_pub.publish(debug_goal)
-        self.seq += 1
+            debug_goal = DebugGoals()
+            debug_goal.header.seq =self.seq
+            debug_goal.header.stamp = rospy.get_rostime()
 
+            debug_goal.ee_poses.append(self.pose_trajectory[time].ros_pose)
+            if time > self.last_time:
+                debug_goal.eval_type = "exit"
+            else:
+                debug_goal.eval_type = "continuous"
+            debug_goal.dc_values = [0,0,0,0,0,0]
+            debug_goal.bias = Position(1,1,1).ros_point
 
+            self.goal_pub.publish(debug_goal)
+            self.seq += 1
 
 if __name__ == '__main__':
+    eval_number = 1
     rospy.init_node('eval_lively_ik')
 
     parser = ArgumentParser(description='Eval of Lively IK')
@@ -227,7 +244,7 @@ if __name__ == '__main__':
     except Exception as e:
         rospy.logerr('Could not retrieve/apply required parameters!')
         rospy.logerr(str(e))
-    evaluator = Eval(path_to_src,args.file_root)
+    evaluator = Eval(path_to_src,args.file_root,eval_number = eval_number)
     initialized = True
 
     while not rospy.get_param("ready"):
