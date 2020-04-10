@@ -27,6 +27,7 @@ import tf
 import numpy as np
 import random
 from argparse import ArgumentParser
+import math
 
 from pub_to_lively_ik import Driver
 
@@ -54,8 +55,6 @@ class Eval(object):
 
         if self.eval_number == 2:
             self.driver = Driver(continuous = False)
-        if self.eval_number == 3:
-            self.driver = Driver(continuous = True)
 
         # Clear the current contents if they exist
         with open(root+"_joints.csv","w") as js_file:
@@ -85,7 +84,10 @@ class Eval(object):
                                    path_to_src=path_to_src)
         self.robot = self.vars.robot
         self.collision_graph = self.vars.collision_graph
-        self.generate_pose_trajectory()
+        if self.eval_number == 1:
+            self.generate_pose_trajectory()
+        elif self.eval_number == 3:
+            self.generate_pose_trajectory_ee()
         self.goal_pub = rospy.Publisher('/relaxed_ik/debug_goals', DebugGoals, queue_size=10)
         self.dpa_sub = rospy.Subscriber('/relaxed_ik/debug_pose_angles',
                                         DebugPoseAngles,
@@ -106,32 +108,6 @@ class Eval(object):
                }
         return Pose.from_eulerpose_dict(info)
 
-    # def generate_pose_trajectory(self):
-    #     poses = [Pose.from_pose_dict({'position':{'x':-0.12590331808269600,
-    #                                               'y':0.23734846974527900,
-    #                                               'z':0.3734423326681300},
-    #                                   'quaternion':{'w':0.5046115849968640,
-    #                                                 'x':-0.4993768344058750,
-    #                                                 'y':0.5065220290165270,
-    #                                                 'z':0.48931110723822800}
-    #                                   })
-    #             ]
-    #     times = [0.5]
-    #     self.last_time = 0.5
-    #     previous_pose = poses[0]
-    #     print('num poses: {}'.format(self.num_poses))
-    #     for pose_index in range(self.num_poses):
-    #         pose = self.generate_goal_pose()
-    #         time = 4*StateController.time_to_pose(previous_pose, pose)
-    #
-    #         times.append(time)
-    #         self.last_time += time
-    #
-    #         poses.append(pose)
-    #         previous_pose = pose
-    #
-    #     self.pose_trajectory = PoseTrajectory([{'time': times[i], 'pose': poses[i]} for i in range(len(poses))])
-
     def generate_pose_trajectory(self):
         poses = [Pose.from_pose_dict({'position':{'x':-0.12590331808269600,
                                                   'y':0.23734846974527900,
@@ -147,19 +123,67 @@ class Eval(object):
         previous_pose = poses[0]
         for pose_index in range(self.num_poses):
             pose = self.generate_goal_pose()
-            time = self.last_time + .25 * StateController.time_to_pose(previous_pose, pose)
+            time = self.last_time +  StateController.time_to_pose(previous_pose, pose)
 
             times.append(time)
-            self.last_time += time
+            self.last_time = time
             poses.append(pose)
             previous_pose = pose
+        print('set to joints')
+        self.pose_trajectory = PoseTrajectory([{'time': times[i], 'pose': poses[i]} for i in range(len(poses))])
+
+    def generate_goal_pose_ee(self):
+        # d = radius_squared + 1
+        # while(d > radius_squared):
+        #     x = random.uniform(-radius, radius)
+        #     y = random.uniform(-radius, radius)
+        #     z = random.uniform(0 , radius)
+        #     d = x**2 + y**2 + z**2
+        radius = 0.25
+        phi = random.uniform(0,2*math.pi)
+        costheta = random.uniform(-1,1)
+        u = random.uniform(0,1)
+
+        theta = math.acos( costheta )
+        r = radius * u**(1/3)
+
+        x = r * math.sin( theta) * math.cos( phi )
+        y = r * math.sin( theta) * math.sin( phi )
+        z = abs(r * math.cos( theta ))+0.25
+
+        position = Position(x, y, z)
+
+        orientation = Quaternion.from_euler_dict({'r': random.uniform(0, 2 * math.pi), 'p': random.uniform(0, 2 * math.pi), 'y': random.uniform(0, 2 * math.pi)})
+
+        return Pose(position, orientation)
+
+    def generate_pose_trajectory_ee(self):
+        poses = [Pose.from_pose_dict({'position':{'x':-0.12590331808269600,
+                                                  'y':0.23734846974527900,
+                                                  'z':0.3734423326681300},
+                                      'quaternion':{'w':0.5046115849968640,
+                                                    'x':-0.4993768344058750,
+                                                    'y':0.5065220290165270,
+                                                    'z':0.48931110723822800}
+                                      })
+                ]
+        times = [0.25]
+        self.last_time = 0.25
+        previous_pose = poses[0]
+        for pose_index in range(self.num_poses):
+            pose = self.generate_goal_pose_ee()
+            time = self.last_time + StateController.time_to_pose(previous_pose, pose)
+
+            times.append(time)
+            self.last_time = time
+            poses.append(pose)
+            previous_pose = pose
+        print('set to ee')
         self.pose_trajectory = PoseTrajectory([{'time': times[i], 'pose': poses[i]} for i in range(len(poses))])
 
     def start(self):
         rospy.loginfo("Initializing Driver")
         if self.eval_number == 2:
-            self.driver.start()
-        if self.eval_number == 3:
             self.driver.start()
 
         self.start_time = rospy.get_time()
@@ -238,8 +262,6 @@ class Eval(object):
     def run(self):
         if self.eval_number == 2:
             self.stochastic_collision()
-        elif self.eval_number == 3:
-            self.continuous()
         else:
             time = rospy.get_time() - self.start_time
 
@@ -259,7 +281,7 @@ class Eval(object):
             self.seq += 1
 
 if __name__ == '__main__':
-    eval_number = 3
+    eval_number = 1
     rospy.init_node('eval_lively_ik')
 
     parser = ArgumentParser(description='Eval of Lively IK')

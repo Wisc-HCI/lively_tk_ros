@@ -73,16 +73,10 @@ class Driver(object):
 
         self.pose_trajectory = PoseTrajectory([{'time': times[i], 'pose': poses[i]} for i in range(len(poses))])
 
-        if continuous:
-            print('interpolating')
-            self.pose_trajectory.__interpolate__()
-
         self.goal_pub = rospy.Publisher('/relaxed_ik/debug_goals', DebugGoals, queue_size=10)
         self.seq = 0
         self.start_time = None
         self.running = False
-
-        print('last time: {}'.format(self.last_time))
 
     def start(self):
         rospy.loginfo("Initializing Driver")
@@ -91,9 +85,6 @@ class Driver(object):
 
     def run(self):
         time = rospy.get_time() - self.start_time
-
-        # print('time: {}'.format(time))
-        # print(self.pose_trajectory[time])
 
         debug_goal = DebugGoals()
         debug_goal.header.seq =self.seq
