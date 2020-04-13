@@ -29,11 +29,111 @@ import random
 from argparse import ArgumentParser
 import math
 
-from pub_to_lively_ik import Driver
+UR3E_INITIAL_POSE = Pose.from_pose_dict({'position':{'x':-0.12590331808269600,
+                                                     'y':0.23734846974527900,
+                                                     'z':0.3734423326681300},
+                                         'quaternion':{'w':0.5046115849968640,
+                                                       'x':-0.4993768344058750,
+                                                       'y':0.5065220290165270,
+                                                       'z':0.48931110723822800}
+                                        })
+
+def generate_goal_pose(robot,joint_limits,ee_space=False):
+    if ee_space:
+        radius = 0.5
+        phi = random.uniform(0,2*math.pi)
+        costheta = random.uniform(-1,1)
+        u = random.uniform(0,1)
+
+        theta = math.acos( costheta )
+        r = radius * u**(1/3)
+
+        x = r * math.sin( theta) * math.cos( phi )
+        y = r * math.sin( theta) * math.sin( phi )
+        z = abs(r * math.cos( theta ))+0.25
+
+        position = Position(x, y, z)
+
+        orientation = Quaternion.from_euler_dict({'r': random.uniform(0, 2 * math.pi), 'p': random.uniform(0, 2 * math.pi), 'y': random.uniform(0, 2 * math.pi)})
+
+        pose = Pose(position, orientation)
+    else:
+        joint_values = [random.uniform(limit[0],limit[1]) for limit in joint_limits]
+        f = robot.getFrames(joint_values)[0]
+        pos = f[0][-1]
+        position = Position(pos[0],pos[1],pos[2])
+        new_mat = np.zeros((4, 4))
+        new_mat[0:3, 0:3] = f[1][-1]
+        new_mat[3, 3] = 1
+        rotation = Tf.euler_from_matrix(new_mat, 'szxy')
+        info = {'position':{'x':pos[0],'y':pos[1],'z':pos[2]},
+                'rotation':{'r':rotation[0],'p':rotation[1],'y':rotation[2]}
+               }
+        pose = Pose.from_eulerpose_dict(info)
+    return pose
+
+def generate_pose_trajectory(robot,joint_limits,num_poses,ee_space=False):
+    poses = [UR3E_INITIAL_POSE]
+    times = [0.25]
+
+    last_pose = poses[0]
+    last_time = times[0]
+
+    for pose_index in range(num_poses):
+        pose = generate_goal_pose(robot,joint_limits,ee_space)
+        time = last_time +  StateController.time_to_pose(last_pose, pose)
+
+        times.append(time)
+        last_time = time
+        poses.append(pose)
+        last_pose = pose
+
+    return PoseTrajectory([{'time': times[i], 'pose': poses[i]} for i in range(len(poses))]), last_time
+
+class Test(object):
+    def __init__(self,name,robot,joint_limits):
+        self.name = name
+        self.robot = robot
+        self.joint_limits = joint_limits
+        self.running = False
+
+    def start(self):
+        rospy.loginfo("{0} Test Initializing".format(self.name))
+        self.running = True
+
+    @property
+    def command(self):
+        self.running = False
+        dc = [0,0,0,0,0,0]
+        bias = Position(1,1,1)
+        weights = [25.0, 10.0, 25.0, 10.0, 5.0, 2.0, 0.1, 1.0, 2.0]
+        return UR3E_INITIAL_POSE,dc,bias,weights
+
+class ContinuousTest(Test):
+    def __init__(self,robot,joint_limits,num_poses):
+        super(ContinuousTest,self).__init__('Continuous',robot,joint_limits)
+        self.num_poses = num_poses
+        self.pose_trajectory, self.last_time = generate_pose_trajectory(robot,joint_limits,self.num_poses)
+        self.start_time = 0
+
+    def start(self):
+        super(ContinuousTest,self).start()
+        rospy.loginfo("Executing Continuous Trajectory with {0} waypoints, {1} seconds long".format(len(self.pose_trajectory.wps),self.last_time))
+        self.start_time = rospy.get_time()
+
+    @property
+    def command(self):
+        time = rospy.get_time() - self.start_time
+        pose = self.pose_trajectory[time]
+        if time > self.last_time:
+            self.running = False
+        dc = [0,0,0,0,0,0]
+        bias = Position(1,1,1)
+        weights = [25.0, 10.0, 25.0, 10.0, 5.0, 2.0, 0.1, 1.0, 2.0]
+        return pose,dc,bias,weights
 
 class Eval(object):
-    def __init__(self,path_to_src,root="./noise",num_poses=10,eval_number=0):
-        self.num_poses = num_poses
+    def __init__(self,path_to_src,root="./noise"):
         self.fixed_frame = rospy.get_param('fixed_frame')
         self.ee_fixed_joints = rospy.get_param('ee_fixed_joints')
         self.starting_config = rospy.get_param('starting_config')
@@ -51,10 +151,6 @@ class Eval(object):
         self.last_time = 0
         self.running = False
         self.seq = 0
-        self.eval_number = eval_number
-
-        if self.eval_number == 2:
-            self.driver = Driver(continuous = False)
 
         # Clear the current contents if they exist
         with open(root+"_joints.csv","w") as js_file:
@@ -84,109 +180,22 @@ class Eval(object):
                                    path_to_src=path_to_src)
         self.robot = self.vars.robot
         self.collision_graph = self.vars.collision_graph
-        if self.eval_number == 1:
-            self.generate_pose_trajectory()
-        elif self.eval_number == 3:
-            self.generate_pose_trajectory_ee()
+
+        self.tests = [
+            ContinuousTest(self.robot,self.joint_limits,10),
+        ]
+
         self.goal_pub = rospy.Publisher('/relaxed_ik/debug_goals', DebugGoals, queue_size=10)
         self.dpa_sub = rospy.Subscriber('/relaxed_ik/debug_pose_angles',
                                         DebugPoseAngles,
                                         self.dpa_sub_cb,
                                         queue_size=5)
 
-    def generate_goal_pose(self):
-        joint_values = [random.uniform(limit[0],limit[1]) for limit in self.joint_limits]
-        f = self.robot.getFrames(joint_values)[0]
-        pos = f[0][-1]
-        position = Position(pos[0],pos[1],pos[2])
-        new_mat = np.zeros((4, 4))
-        new_mat[0:3, 0:3] = f[1][-1]
-        new_mat[3, 3] = 1
-        rotation = Tf.euler_from_matrix(new_mat, 'szxy')
-        info = {'position':{'x':pos[0],'y':pos[1],'z':pos[2]},
-                'rotation':{'r':rotation[0],'p':rotation[1],'y':rotation[2]}
-               }
-        return Pose.from_eulerpose_dict(info)
-
-    def generate_pose_trajectory(self):
-        poses = [Pose.from_pose_dict({'position':{'x':-0.12590331808269600,
-                                                  'y':0.23734846974527900,
-                                                  'z':0.3734423326681300},
-                                      'quaternion':{'w':0.5046115849968640,
-                                                    'x':-0.4993768344058750,
-                                                    'y':0.5065220290165270,
-                                                    'z':0.48931110723822800}
-                                      })
-                ]
-        times = [0.25]
-        self.last_time = 0.25
-        previous_pose = poses[0]
-        for pose_index in range(self.num_poses):
-            pose = self.generate_goal_pose()
-            time = self.last_time +  StateController.time_to_pose(previous_pose, pose)
-
-            times.append(time)
-            self.last_time = time
-            poses.append(pose)
-            previous_pose = pose
-        print('set to joints')
-        self.pose_trajectory = PoseTrajectory([{'time': times[i], 'pose': poses[i]} for i in range(len(poses))])
-
-    def generate_goal_pose_ee(self):
-        # d = radius_squared + 1
-        # while(d > radius_squared):
-        #     x = random.uniform(-radius, radius)
-        #     y = random.uniform(-radius, radius)
-        #     z = random.uniform(0 , radius)
-        #     d = x**2 + y**2 + z**2
-        radius = 0.25
-        phi = random.uniform(0,2*math.pi)
-        costheta = random.uniform(-1,1)
-        u = random.uniform(0,1)
-
-        theta = math.acos( costheta )
-        r = radius * u**(1/3)
-
-        x = r * math.sin( theta) * math.cos( phi )
-        y = r * math.sin( theta) * math.sin( phi )
-        z = abs(r * math.cos( theta ))+0.25
-
-        position = Position(x, y, z)
-
-        orientation = Quaternion.from_euler_dict({'r': random.uniform(0, 2 * math.pi), 'p': random.uniform(0, 2 * math.pi), 'y': random.uniform(0, 2 * math.pi)})
-
-        return Pose(position, orientation)
-
-    def generate_pose_trajectory_ee(self):
-        poses = [Pose.from_pose_dict({'position':{'x':-0.12590331808269600,
-                                                  'y':0.23734846974527900,
-                                                  'z':0.3734423326681300},
-                                      'quaternion':{'w':0.5046115849968640,
-                                                    'x':-0.4993768344058750,
-                                                    'y':0.5065220290165270,
-                                                    'z':0.48931110723822800}
-                                      })
-                ]
-        times = [0.25]
-        self.last_time = 0.25
-        previous_pose = poses[0]
-        for pose_index in range(self.num_poses):
-            pose = self.generate_goal_pose_ee()
-            time = self.last_time + StateController.time_to_pose(previous_pose, pose)
-
-            times.append(time)
-            self.last_time = time
-            poses.append(pose)
-            previous_pose = pose
-        print('set to ee')
-        self.pose_trajectory = PoseTrajectory([{'time': times[i], 'pose': poses[i]} for i in range(len(poses))])
-
     def start(self):
         rospy.loginfo("Initializing Driver")
-        if self.eval_number == 2:
-            self.driver.start()
-
         self.start_time = rospy.get_time()
+        if len(self.tests) > 0:
+            self.tests[0].start()
         self.running = True
 
     def dpa_sub_cb(self,dpa_msg):
@@ -256,19 +265,38 @@ class Eval(object):
         debug_goal.header.seq =self.seq
         debug_goal.header.stamp = rospy.get_rostime()
 
-        debug_goal.ee_poses.append(self.pose_trajectory[time].ros_pose)
-        if time > self.last_time:
-            debug_goal.eval_type = "exit"
+        if self.tests[0].running:
+            pose,dc,bias,weights = self.tests[0].command
+            test_name = self.tests[0].name
         else:
-            debug_goal.eval_type = "continuous"
-        debug_goal.dc_values = [0,0,0,0,0,0]
-        debug_goal.bias = Position(1,1,1).ros_point
+            rospy.loginfo("Test Finished. Clearing Test...")
+            self.tests.pop(0)
+            if len(self.tests) == 0:
+                rospy.loginfo("No more tests to run. Exiting...")
+                self.running = False
+                pose = UR3E_INITIAL_POSE
+                dc = [0,0,0,0,0,0]
+                bias = Position(1,1,1)
+                weights = [25.0, 10.0, 25.0, 10.0, 5.0, 2.0, 0.1, 1.0, 2.0]
+                test_name = 'exit'
+            else:
+                rospy.loginfo("More tests to run. Starting...")
+                self.tests[0].start()
+                pose,dc,bias,weights = self.tests[0].command
+                test_name = self.tests[0].name
+
+
+
+
+        debug_goal.ee_poses.append(pose.ros_pose)
+        debug_goal.eval_type = test_name
+        debug_goal.dc_values = dc
+        debug_goal.bias = bias.ros_point
 
         self.goal_pub.publish(debug_goal)
         self.seq += 1
 
 if __name__ == '__main__':
-    eval_number = 3
     rospy.init_node('eval_lively_ik')
 
     parser = ArgumentParser(description='Eval of Lively IK')
@@ -287,7 +315,7 @@ if __name__ == '__main__':
     except Exception as e:
         rospy.logerr('Could not retrieve/apply required parameters!')
         rospy.logerr(str(e))
-    evaluator = Eval(path_to_src,args.file_root,eval_number = eval_number)
+    evaluator = Eval(path_to_src,args.file_root)
     initialized = True
 
     while not rospy.get_param("ready"):
