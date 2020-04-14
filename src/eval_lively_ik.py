@@ -19,6 +19,7 @@ from sensor_msgs.msg import JointState
 from wisc_msgs.msg import DebugPoseAngles, DebugGoals
 from wisc_tools.structures import Pose, Quaternion, Position, PoseTrajectory
 from wisc_tools.control import StateController
+from wisc_tools.convenience import ProgressBar
 
 import rospy
 import itertools
@@ -88,7 +89,7 @@ def generate_pose_trajectory(robot,joint_limits,num_poses,ee_space=False):
         poses.append(pose)
         last_pose = pose
 
-    return PoseTrajectory([{'time': times[i], 'pose': poses[i]} for i in range(len(poses))]), last_time
+    return PoseTrajectory([{'time': times[i], 'pose': poses[i]} for i in range(len(poses))],kind='cubic'), last_time
 
 class Test(object):
     def __init__(self,name,robot,joint_limits):
@@ -96,18 +97,25 @@ class Test(object):
         self.robot = robot
         self.joint_limits = joint_limits
         self.running = False
+        self.started = False
 
     def start(self):
         rospy.loginfo("{0} Test Initializing".format(self.name))
         self.running = True
+        self.started = True
+
+    @property
+    def initial(self):
+        return self.command
 
     @property
     def command(self):
         self.running = False
         dc = [0,0,0,0,0,0]
         bias = Position(1,1,1)
-        weights = [25.0, 10.0, 25.0, 10.0, 5.0, 2.0, 0.1, 1.0, 2.0]
-        return UR3E_INITIAL_POSE,dc,bias,weights
+        normal_weights = [50.0, 40.0,  0.0,  0.0, 5.0, 3.0, 0.2, 1.0, 2.0]
+        lively_weights = [25.0, 20.0, 25.0, 20.0, 5.0, 3.0, 0.2, 1.0, 2.0]
+        return UR3E_INITIAL_POSE,dc,bias,normal_weights,lively_weights
 
 class ContinuousTest(Test):
     def __init__(self,robot,joint_limits,num_poses):
@@ -118,22 +126,67 @@ class ContinuousTest(Test):
 
     def start(self):
         super(ContinuousTest,self).start()
-        rospy.loginfo("Executing Continuous Trajectory with {0} waypoints, {1} seconds long".format(len(self.pose_trajectory.wps),self.last_time))
+        rospy.loginfo("Executing Continuous Trajectory with {0} waypoints for {1} seconds.".format(len(self.pose_trajectory.wps),self.last_time))
         self.start_time = rospy.get_time()
+
+    @property
+    def initial(self):
+        pose = self.pose_trajectory[0]
+        dc = [0,0,0,0,0,0]
+        bias = Position(1,1,1)
+        normal_weights = [50.0, 40.0,  0.0,  0.0, 5.0, 3.0, 0.2, 1.0, 2.0]
+        lively_weights = [25.0, 20.0, 25.0, 20.0, 5.0, 3.0, 0.2, 1.0, 2.0]
+        return pose,dc,bias,normal_weights,lively_weights
 
     @property
     def command(self):
         time = rospy.get_time() - self.start_time
+        if time > self.last_time:
+            self.running = False
+        ProgressBar(time, self.last_time, prefix = self.name, suffix = '', decimals = 1, length = 100, fill = '=')
         pose = self.pose_trajectory[time]
+        dc = [0,0,0,0,0,0]
+        bias = Position(1,1,1)
+        normal_weights = [50.0, 40.0,  0.0,  0.0, 5.0, 3.0, 0.2, 1.0, 2.0]
+        lively_weights = [25.0, 20.0, 25.0, 20.0, 5.0, 3.0, 0.2, 1.0, 2.0]
+        return pose,dc,bias,normal_weights,lively_weights
+
+class StaticDescriptiveTest(Test):
+    def __init__(self,robot,joint_limits,duration):
+        super(StaticDescriptiveTest,self).__init__('StaticDescriptive',robot,joint_limits)
+        self.pose = generate_goal_pose(self.robot,self.joint_limits)
+        self.last_time = duration
+        self.start_time = 0
+        self.in_buffer = True
+
+    def start(self):
+        super(StaticDescriptiveTest,self).start()
+        rospy.loginfo("Executing Static Descriptive Test for {0} seconds.".format(self.last_time))
+        self.start_time = rospy.get_time()
+
+    @property
+    def initial(self):
+        pose = self.pose
+        dc = [0,0,0,0,0,0]
+        bias = Position(1,1,1)
+        normal_weights = [50.0, 40.0,  0.0,  0.0, 5.0, 3.0, 0.2, 1.0, 2.0]
+        lively_weights = [25.0, 20.0, 25.0, 20.0, 5.0, 3.0, 0.2, 1.0, 2.0]
+        return pose,dc,bias,normal_weights,lively_weights
+
+    @property
+    def command(self):
+        time = rospy.get_time() - self.start_time
+        ProgressBar(time, self.last_time, prefix = self.name, suffix = '', decimals = 1, length = 100, fill = '=')
         if time > self.last_time:
             self.running = False
         dc = [0,0,0,0,0,0]
         bias = Position(1,1,1)
-        weights = [25.0, 10.0, 25.0, 10.0, 5.0, 2.0, 0.1, 1.0, 2.0]
-        return pose,dc,bias,weights
+        normal_weights = [50.0, 40.0,  0.0,  0.0, 5.0, 3.0, 0.2, 1.0, 2.0]
+        lively_weights = [25.0, 20.0, 25.0, 20.0, 5.0, 3.0, 0.2, 1.0, 2.0]
+        return self.pose,dc,bias,normal_weights,lively_weights
 
 class Eval(object):
-    def __init__(self,path_to_src,root="./noise"):
+    def __init__(self,path_to_src,root="./noise", buffer_time=40):
         self.fixed_frame = rospy.get_param('fixed_frame')
         self.ee_fixed_joints = rospy.get_param('ee_fixed_joints')
         self.starting_config = rospy.get_param('starting_config')
@@ -150,6 +203,9 @@ class Eval(object):
         self.algorithms = ['relaxed','lively','joint_perlin','joint_random_normal_ewma']
         self.last_time = 0
         self.running = False
+        self.buffering = False
+        self.buffer_time = buffer_time
+        self.buffer_start_time = 0
         self.seq = 0
 
         # Clear the current contents if they exist
@@ -183,6 +239,11 @@ class Eval(object):
 
         self.tests = [
             ContinuousTest(self.robot,self.joint_limits,10),
+            StaticDescriptiveTest(self.robot,self.joint_limits,300),
+            StaticDescriptiveTest(self.robot,self.joint_limits,300),
+            StaticDescriptiveTest(self.robot,self.joint_limits,300),
+            StaticDescriptiveTest(self.robot,self.joint_limits,300),
+            StaticDescriptiveTest(self.robot,self.joint_limits,300),
         ]
 
         self.goal_pub = rospy.Publisher('/relaxed_ik/debug_goals', DebugGoals, queue_size=10)
@@ -194,14 +255,17 @@ class Eval(object):
     def start(self):
         rospy.loginfo("Initializing Driver")
         self.start_time = rospy.get_time()
-        if len(self.tests) > 0:
-            self.tests[0].start()
         self.running = True
+        self.buffering = True
+        self.buffer_start_time = self.start_time
+        rospy.loginfo("Starting Buffer...")
 
     def dpa_sub_cb(self,dpa_msg):
         # rospy.loginfo("Got Update!")
-        if dpa_msg.eval_type == 'exit':
+        if dpa_msg.eval_type == 'exit' or not self.running:
             self.running = False
+        elif dpa_msg.eval_type == 'buffer':
+            pass
         elif dpa_msg.eval_type != 'null':
             time = dpa_msg.header.stamp.to_sec()
 
@@ -210,7 +274,6 @@ class Eval(object):
             # the poses that would result
             joints = self.n_joints*5*[0]
             perlin_noise = [(noise1D(time/4,self.joint_seeds[i]))*self.joint_scaling[i] for i in range(self.n_joints)]
-            #print(perlin_noise)
             normal_delta = [random.normalvariate(-1*self.last_random[i]*.01, self.joint_scaling[i]*.03) for i in range(self.n_joints)]
             self.last_random = [normal_delta[i]+self.last_random[i] for i in range(self.n_joints)]
             self.last_random_ewma = self.ewma_filter.filter(self.last_random)
@@ -259,16 +322,35 @@ class Eval(object):
                     self.pose_file_writer.write(",".join([str(d) for d in info])+"\n")
 
     def run(self):
-        time = rospy.get_time() - self.start_time
+        rostime = rospy.get_time()
+        time = rostime - self.start_time
+        #print("Time {0}".format(time))
+        publish_initial = False
 
-        debug_goal = DebugGoals()
-        debug_goal.header.seq =self.seq
-        debug_goal.header.stamp = rospy.get_rostime()
+        if self.buffering:
+            buffer_time = rostime - self.buffer_start_time
+            #print("Buffer Time {0}".format(buffer_time))
+            ProgressBar(buffer_time, self.buffer_time, prefix = "Buffer", suffix = '', decimals = 1, length = 100, fill = '=')
+            if buffer_time > self.buffer_time:
+                # Buffer is over, so begin the next test
+                self.buffering = False
+                print()
+                rospy.loginfo("Buffer Finished. Beginning Next Test...")
+                self.tests[0].start()
+            else:
+                # Publish the start point of the next test
+                publish_initial = True
 
-        if self.tests[0].running:
-            pose,dc,bias,weights = self.tests[0].command
-            test_name = self.tests[0].name
+
+        if publish_initial:
+            pose,dc,bias,normal_weights,lively_weights = self.tests[0].initial
+            test_name = "buffer"
         else:
+            pose,dc,bias,normal_weights,lively_weights = self.tests[0].command
+            test_name = self.tests[0].name
+
+        if not self.tests[0].running and self.tests[0].started:
+            print()
             rospy.loginfo("Test Finished. Clearing Test...")
             self.tests.pop(0)
             if len(self.tests) == 0:
@@ -277,21 +359,28 @@ class Eval(object):
                 pose = UR3E_INITIAL_POSE
                 dc = [0,0,0,0,0,0]
                 bias = Position(1,1,1)
-                weights = [25.0, 10.0, 25.0, 10.0, 5.0, 2.0, 0.1, 1.0, 2.0]
+                normal_weights = [50.0, 40.0,  0.0,  0.0, 5.0, 3.0, 0.2, 1.0, 2.0]
+                lively_weights = [25.0, 20.0, 25.0, 20.0, 5.0, 3.0, 0.2, 1.0, 2.0]
                 test_name = 'exit'
             else:
-                rospy.loginfo("More tests to run. Starting...")
-                self.tests[0].start()
-                pose,dc,bias,weights = self.tests[0].command
-                test_name = self.tests[0].name
+                rospy.loginfo("More tests to run. Starting Buffer...")
+                self.buffering = True
+                self.buffer_start_time = rostime
+                pose,dc,bias,normal_weights,lively_weights = self.tests[0].initial
+                if self.tests[0].in_buffer:
+                    test_name = 'buffer'
+                else:
+                    test_name = self.tests[0].name
 
-
-
-
-        debug_goal.ee_poses.append(pose.ros_pose)
+        debug_goal = DebugGoals()
+        debug_goal.header.seq =self.seq
+        debug_goal.header.stamp = rospy.get_rostime()
         debug_goal.eval_type = test_name
+        debug_goal.ee_poses.append(pose.ros_pose)
         debug_goal.dc_values = dc
         debug_goal.bias = bias.ros_point
+        debug_goal.normal_weights = normal_weights
+        debug_goal.lively_weights = lively_weights
 
         self.goal_pub.publish(debug_goal)
         self.seq += 1
@@ -315,13 +404,13 @@ if __name__ == '__main__':
     except Exception as e:
         rospy.logerr('Could not retrieve/apply required parameters!')
         rospy.logerr(str(e))
-    evaluator = Eval(path_to_src,args.file_root)
+    evaluator = Eval(path_to_src,args.file_root,buffer_time=60)
     initialized = True
 
     while not rospy.get_param("ready"):
         rospy.sleep(1)
 
-    rate = rospy.Rate(40)
+    rate = rospy.Rate(60)
     evaluator.start()
 
     while not rospy.is_shutdown() and evaluator.running:

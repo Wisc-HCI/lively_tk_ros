@@ -32,7 +32,6 @@ end
 
 eepg = Nothing
 dcpg = Nothing
-priority = 0
 bias = [1.0,1.0,1.0]
 
 function goals_cb(data::DebugGoals)
@@ -78,12 +77,13 @@ end
 for i = 1:num_dc
     push!(goal_info.dc_values,0.5)
 end
-goal_info.priority = 0
 goal_info.eval_type = "null"
 goal_info.bias = Point(1,1,1)
+goal_info.normal_weights = [50.0, 20.0, 0.00, 0.00, 5.0, 3.0, 0.2, 1.0, 2.0]
+goal_info.lively_weights = [25.0, 10.0, 25.0, 10.0, 5.0, 3.0, 0.2, 1.0, 2.0]
 empty_goal_info = goal_info
 
-loop_rate = Rate(40)
+loop_rate = Rate(60)
 quit = false
 loginfo("starting")
 started = false
@@ -137,13 +137,13 @@ while !is_shutdown()
     time = to_sec(goal_info.header.stamp)/4
 
     bias = [goal_info.bias.x,goal_info.bias.y,goal_info.bias.z]
-    normal_weights = [50.0, 20.0, 0.00, 0.00, 5.0, 2.0, 0.1, 1.0, 2.0]
-    lively_weights = [25.0, 10.0, 25.0, 10.0, 5.0, 2.0, 0.1, 1.0, 2.0]
+    # normal_weights = [50.0, 20.0, 0.00, 0.00, 5.0, 3.0, 0.2, 1.0, 2.0]
+    # lively_weights = [25.0, 10.0, 25.0, 10.0, 5.0, 3.0, 0.2, 1.0, 2.0]
 
-    rxopt, rtry_idx, rvalid_sol, rpos_error, rrot_error = solve_precise(relaxedIK, pos_goals, quat_goals, dc_goals, time, [0,0,0], normal_weights)
-    lxopt, ltry_idx, lvalid_sol, lpos_error, lrot_error = solve_precise(livelyIK,  pos_goals, quat_goals, dc_goals, time, bias,    lively_weights)
-    # rxopt = solve(relaxedIK, pos_goals, quat_goals, dc_goals, time, 1, [0,0,0])
-    # lxopt = solve(livelyIK,  pos_goals, quat_goals, dc_goals, time, 0, bias   )
+    # rxopt, rtry_idx, rvalid_sol, rpos_error, rrot_error = solve_precise(relaxedIK, pos_goals, quat_goals, dc_goals, time, [0,0,0], normal_weights)
+    # lxopt, ltry_idx, lvalid_sol, lpos_error, lrot_error = solve_precise(livelyIK,  pos_goals, quat_goals, dc_goals, time, bias,    lively_weights)
+    rxopt = solve(relaxedIK, pos_goals, quat_goals, dc_goals, time, [0,0,0], goal_info.normal_weights)
+    lxopt = solve(livelyIK,  pos_goals, quat_goals, dc_goals, time, bias,    goal_info.lively_weights)
     ideal_noise = livelyIK.relaxedIK_vars.noise.arm_noise
 
     ideal_goals = []
