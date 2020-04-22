@@ -47,10 +47,12 @@ function perlinsnoise(x, y, z)
                                      grad(p[BB + 2], x - 1, y - 1, z - 1))))
 end
 
-function noise1D(x, seed)
-    return perlinsnoise(x, seed, 10*sin((x+seed)/500))
+function noise1D(x, seed, freq)
+    return perlinsnoise(x/freq, seed, 500*sin((x/freq+seed)/500))
 end
 
-function noise3D(x, seed)
-    return [perlinsnoise(x, seed[1], 10*sin((x+seed[1])/500)),perlinsnoise(x, seed[2], 10*sin((x+seed[2])/500)),perlinsnoise(x, seed[3], 10*sin((x+seed[3])/500))]
+function noise3D(x, seed, freq)
+    return [perlinsnoise(x/freq, seed[1], 500*sin((x/freq+seed[1])/500)),
+            perlinsnoise(x/freq, seed[2], 500*sin((x/freq+seed[2])/500)),
+            perlinsnoise(x/freq, seed[3], 500*sin((x/freq+seed[3])/500))]
 end

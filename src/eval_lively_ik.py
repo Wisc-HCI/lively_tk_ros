@@ -30,6 +30,13 @@ import random
 from argparse import ArgumentParser
 import math
 
+JOINT_SCALES = {'elbow_joint': 0.017351484443726466,
+                'shoulder_lift_joint': 0.0143959270733612,
+                'shoulder_pan_joint': 0.016634272938059663,
+                'wrist_1_joint': 0.029213377278518766,
+                'wrist_2_joint': 0.02671317755209775,
+                'wrist_3_joint': 0.0358804628491595}
+
 UR3E_INITIAL_POSE = Pose.from_pose_dict({'position':{'x':-0.12590331808269600,
                                                      'y':0.23734846974527900,
                                                      'z':0.3734423326681300},
@@ -92,8 +99,9 @@ def generate_pose_trajectory(robot,joint_limits,num_poses,ee_space=False):
     return PoseTrajectory([{'time': times[i], 'pose': poses[i]} for i in range(len(poses))],kind='cubic'), last_time
 
 class Test(object):
-    def __init__(self,name,robot,joint_limits):
+    def __init__(self,name,i,robot,joint_limits):
         self.name = name
+        self.i = i
         self.robot = robot
         self.joint_limits = joint_limits
         self.running = False
@@ -118,15 +126,15 @@ class Test(object):
         return UR3E_INITIAL_POSE,dc,bias,normal_weights,lively_weights
 
 class ContinuousTest(Test):
-    def __init__(self,robot,joint_limits,num_poses):
-        super(ContinuousTest,self).__init__('Continuous',robot,joint_limits)
+    def __init__(self,i,robot,joint_limits,num_poses):
+        super(ContinuousTest,self).__init__('Continuous',i,robot,joint_limits)
         self.num_poses = num_poses
         self.pose_trajectory, self.last_time = generate_pose_trajectory(robot,joint_limits,self.num_poses)
         self.start_time = 0
 
     def start(self):
         super(ContinuousTest,self).start()
-        rospy.loginfo("Executing Continuous Trajectory with {0} waypoints for {1} seconds.".format(len(self.pose_trajectory.wps),self.last_time))
+        rospy.loginfo("Executing Continuous Trajectory Test {0} with {1} waypoints for {2} seconds.".format(self.i,len(self.pose_trajectory.wps),self.last_time))
         self.start_time = rospy.get_time()
 
     @property
@@ -152,8 +160,8 @@ class ContinuousTest(Test):
         return pose,dc,bias,normal_weights,lively_weights
 
 class StaticDescriptiveTest(Test):
-    def __init__(self,robot,joint_limits,duration):
-        super(StaticDescriptiveTest,self).__init__('StaticDescriptive',robot,joint_limits)
+    def __init__(self,i,robot,joint_limits,duration):
+        super(StaticDescriptiveTest,self).__init__('StaticDescriptive',i,robot,joint_limits)
         self.pose = generate_goal_pose(self.robot,self.joint_limits)
         self.last_time = duration
         self.start_time = 0
@@ -161,7 +169,41 @@ class StaticDescriptiveTest(Test):
 
     def start(self):
         super(StaticDescriptiveTest,self).start()
-        rospy.loginfo("Executing Static Descriptive Test for {0} seconds.".format(self.last_time))
+        rospy.loginfo("Executing Static Descriptive Test {0} for {1} seconds.".format(self.i,self.last_time))
+        self.start_time = rospy.get_time()
+
+    @property
+    def initial(self):
+        pose = self.pose
+        dc = [0,0,0,0,0,0]
+        bias = Position(1,1,1)
+        normal_weights = [50.0, 40.0,  0.0,  0.0, 5.0, 3.0, 0.2, 1.0, 2.0]
+        lively_weights = [25.0, 20.0, 25.0, 20.0, 5.0, 3.0, 0.2, 1.0, 2.0]
+        return pose,dc,bias,normal_weights,lively_weights
+
+    @property
+    def command(self):
+        time = rospy.get_time() - self.start_time
+        ProgressBar(time, self.last_time, prefix = self.name, suffix = '', decimals = 1, length = 100, fill = '=')
+        if time > self.last_time:
+            self.running = False
+        dc = [0,0,0,0,0,0]
+        bias = Position(1,1,1)
+        normal_weights = [50.0, 40.0,  0.0,  0.0, 5.0, 3.0, 0.2, 1.0, 2.0]
+        lively_weights = [25.0, 20.0, 25.0, 20.0, 5.0, 3.0, 0.2, 1.0, 2.0]
+        return self.pose,dc,bias,normal_weights,lively_weights
+
+class DynamicFrequencyTest(Test):
+    def __init__(self,i,robot,joint_limits,duration):
+        super(DynamicFrequencyTest,self).__init__('DynamicFrequency',i,robot,joint_limits)
+        self.pose = generate_goal_pose(self.robot,self.joint_limits)
+        self.last_time = duration
+        self.start_time = 0
+        self.in_buffer = True
+
+    def start(self):
+        super(StaticDescriptiveTest,self).start()
+        rospy.loginfo("Executing Dynamic Frequency Test {0} for {1} seconds.".format(self.i,self.last_time))
         self.start_time = rospy.get_time()
 
     @property
@@ -195,7 +237,7 @@ class Eval(object):
         self.joint_limits = rospy.get_param('joint_limits')
         self.n_joints = len(self.joint_ordering)
         self.n_arms = len(self.ee_fixed_joints)
-        self.joint_scaling = [.001*abs(val[1]-val[0]) for val in self.joint_limits]
+        self.joint_scaling = [JOINT_SCALES[joint] for joint in self.joint_ordering]
         self.joint_seeds = [random.randint(0,10240) for joint in self.joint_ordering]
         self.last_random = [0]*self.n_joints
         self.last_random_ewma = [0]*self.n_joints
@@ -210,13 +252,13 @@ class Eval(object):
 
         # Clear the current contents if they exist
         with open(root+"_joints.csv","w") as js_file:
-            header = ['time','algorithm','collision','eval']+self.joint_ordering
+            header = ['time','algorithm','collision','eval','i']+self.joint_ordering
             # for group in ['relaxed','lively','joint_perlin','joint_random_normal','joint_random_normal_ewma']:
             #     header.extend([j+"_"+group for j in self.joint_ordering])
             js_file.write(",".join(header)+"\n")
         with open(root+"_poses.csv","w") as pose_file:
             values = ['x','y','z','qx','qy','qz','qw']
-            header = ['time','algorithm','collision','eval']
+            header = ['time','algorithm','collision','eval','i']
             # for group in ['goal','relaxed','lively','joint_perlin','joint_random_normal','joint_random_normal_ewma']:
             #     header.extend(["{0}_{1}_{2}".format(pair[0],pair[1],group) for pair in itertools.product(self.ee_fixed_joints,values)])
             pose_file.write(",".join(header+values)+"\n")
@@ -238,12 +280,12 @@ class Eval(object):
         self.collision_graph = self.vars.collision_graph
 
         self.tests = [
-            ContinuousTest(self.robot,self.joint_limits,10),
-            StaticDescriptiveTest(self.robot,self.joint_limits,300),
-            StaticDescriptiveTest(self.robot,self.joint_limits,300),
-            StaticDescriptiveTest(self.robot,self.joint_limits,300),
-            StaticDescriptiveTest(self.robot,self.joint_limits,300),
-            StaticDescriptiveTest(self.robot,self.joint_limits,300),
+            # ContinuousTest(self.robot,self.joint_limits,10),
+            StaticDescriptiveTest(0,self.robot,self.joint_limits,300),
+            # StaticDescriptiveTest(self.robot,self.joint_limits,300),
+            # StaticDescriptiveTest(self.robot,self.joint_limits,300),
+            # StaticDescriptiveTest(self.robot,self.joint_limits,300),
+            # StaticDescriptiveTest(self.robot,self.joint_limits,300),
         ]
 
         self.goal_pub = rospy.Publisher('/relaxed_ik/debug_goals', DebugGoals, queue_size=10)
@@ -273,8 +315,8 @@ class Eval(object):
             # and Use forward finematics to deduce
             # the poses that would result
             joints = self.n_joints*5*[0]
-            perlin_noise = [(noise1D(time/4,self.joint_seeds[i]))*self.joint_scaling[i] for i in range(self.n_joints)]
-            normal_delta = [random.normalvariate(-1*self.last_random[i]*.01, self.joint_scaling[i]*.03) for i in range(self.n_joints)]
+            perlin_noise = [(noise1D(time,self.joint_seeds[i],4))*(self.joint_scaling[i]/11.81) for i in range(self.n_joints)]
+            normal_delta = [random.normalvariate(-1*self.last_random[i]*.01, self.joint_scaling[i]) for i in range(self.n_joints)]
             self.last_random = [normal_delta[i]+self.last_random[i] for i in range(self.n_joints)]
             self.last_random_ewma = self.ewma_filter.filter(self.last_random)
 
@@ -291,21 +333,21 @@ class Eval(object):
             for algorithm in self.algorithms:
                 frames[algorithm] = self.robot.getFrames(joints[algorithm])
                 collision[algorithm] = self.collision_graph.get_collision_score(frames[algorithm])
-                self.js_file_writer.write(",".join([str(time),algorithm,str(collision[algorithm]),dpa_msg.eval_type]+\
+                self.js_file_writer.write(",".join([str(time),algorithm,str(collision[algorithm]),dpa_msg.eval_type,str(dpa_msg.i)]+\
                                                    [str(j) for j in joints[algorithm]])+"\n")
 
             # Transfer the poses from the actual goal
             for i in range(self.n_arms):
                 pos = dpa_msg.ee_poses[i].position
                 ori = dpa_msg.ee_poses[i].orientation
-                info = [time,'goal',None,dpa_msg.eval_type,pos.x,pos.y,pos.z,ori.x,ori.y,ori.z,ori.w]
+                info = [time,'goal',None,dpa_msg.eval_type,dpa_msg.i,pos.x,pos.y,pos.z,ori.x,ori.y,ori.z,ori.w]
             self.pose_file_writer.write(",".join([str(d) for d in info])+"\n")
 
             # Transfer the "ideal" noise
             for i in range(self.n_arms):
                 pos = dpa_msg.ideal_noise[i].position
                 ori = dpa_msg.ideal_noise[i].orientation
-                info = [time,'ideal',None,dpa_msg.eval_type,pos.x,pos.y,pos.z,ori.x,ori.y,ori.z,ori.w]
+                info = [time,'ideal',None,dpa_msg.eval_type,dpa_msg.i,pos.x,pos.y,pos.z,ori.x,ori.y,ori.z,ori.w]
             self.pose_file_writer.write(",".join([str(d) for d in info])+"\n")
 
             # Solve the positions that result for relaxed_ik and lively_k
@@ -318,7 +360,7 @@ class Eval(object):
                     rotation = Tf.euler_from_matrix(new_mat, 'szxy')
                     info = {'r':rotation[0],'p':rotation[1],'y':rotation[2]}
                     ori = Quaternion.from_euler_dict(info).ros_quaternion
-                    info = [time,algorithm,collision[algorithm],dpa_msg.eval_type,pos[0],pos[1],pos[2],ori.x,ori.y,ori.z,ori.w]
+                    info = [time,algorithm,collision[algorithm],dpa_msg.eval_type,dpa_msg.i,pos[0],pos[1],pos[2],ori.x,ori.y,ori.z,ori.w]
                     self.pose_file_writer.write(",".join([str(d) for d in info])+"\n")
 
     def run(self):
@@ -334,7 +376,7 @@ class Eval(object):
             if buffer_time > self.buffer_time:
                 # Buffer is over, so begin the next test
                 self.buffering = False
-                print()
+                print('')
                 rospy.loginfo("Buffer Finished. Beginning Next Test...")
                 self.tests[0].start()
             else:
@@ -344,19 +386,22 @@ class Eval(object):
 
         if publish_initial:
             pose,dc,bias,normal_weights,lively_weights = self.tests[0].initial
+            i = self.tests[0].i
             test_name = "buffer"
         else:
             pose,dc,bias,normal_weights,lively_weights = self.tests[0].command
             test_name = self.tests[0].name
+            i = self.tests[0].i
 
         if not self.tests[0].running and self.tests[0].started:
-            print()
+            print('')
             rospy.loginfo("Test Finished. Clearing Test...")
             self.tests.pop(0)
             if len(self.tests) == 0:
                 rospy.loginfo("No more tests to run. Exiting...")
                 self.running = False
                 pose = UR3E_INITIAL_POSE
+                i = 0
                 dc = [0,0,0,0,0,0]
                 bias = Position(1,1,1)
                 normal_weights = [50.0, 40.0,  0.0,  0.0, 5.0, 3.0, 0.2, 1.0, 2.0]
@@ -371,11 +416,13 @@ class Eval(object):
                     test_name = 'buffer'
                 else:
                     test_name = self.tests[0].name
+                i = self.tests[0].i
 
         debug_goal = DebugGoals()
         debug_goal.header.seq =self.seq
         debug_goal.header.stamp = rospy.get_rostime()
         debug_goal.eval_type = test_name
+        debug_goal.i = i
         debug_goal.ee_poses.append(pose.ros_pose)
         debug_goal.dc_values = dc
         debug_goal.bias = bias.ros_point

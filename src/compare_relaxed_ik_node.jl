@@ -134,7 +134,7 @@ while !is_shutdown()
         push!(quat_goals, Quat(quat_w, quat_x, quat_y, quat_z))
     end
 
-    time = to_sec(goal_info.header.stamp)/4
+    time = to_sec(goal_info.header.stamp)
 
     bias = [goal_info.bias.x,goal_info.bias.y,goal_info.bias.z]
     # normal_weights = [50.0, 20.0, 0.00, 0.00, 5.0, 3.0, 0.2, 1.0, 2.0]
@@ -176,6 +176,7 @@ while !is_shutdown()
     dpa.header.stamp = get_rostime()#goal_info.header.stamp
     dpa.header.frame_id = goal_info.header.frame_id
     dpa.eval_type = goal_info.eval_type
+    dpa.i = goal_info.i
     # println(ja.angles)
 
     if started

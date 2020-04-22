@@ -77,8 +77,11 @@ permutation = [151,160,137,91,90,15,
 for i in range(256):
     p[256+i] = p[i] = permutation[i]
 
-def noise1D(x, seed):
-    return perlinsnoise(x, seed, 10*math.sin((x+seed)/500))
+def noise1D(x, seed, freq):
+    #return noise.pnoise3(x/freq, seed, 500*math.sin((x/freq+seed)/500))
+    return perlinsnoise(x/freq, seed, 500*math.sin((x/freq+seed)/500))
 
-def noise3D(x, seed):
-    return [perlinsnoise(x, seed[1], 10*math.sin((x+seed[1])/500)),perlinsnoise(x, seed[2], 10*math.sin((x+seed[2])/500)),perlinsnoise(x, seed[3], 10*math.sin((x+seed[3])/500))]
+def noise3D(x, seed, freq):
+    return [perlinsnoise(x/freq, seed[1], 500*math.sin((x/freq+seed[1])/500)),
+            perlinsnoise(x/freq, seed[2], 500*math.sin((x/freq+seed[2])/500)),
+            perlinsnoise(x/freq, seed[3], 500*math.sin((x/freq+seed[3])/500))]
