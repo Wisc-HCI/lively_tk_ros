@@ -32,7 +32,6 @@ rostypegen()
 using .std_msgs.msg
 
 
-
 function state_to_joint_pts(x, vars)
     # return x
     joint_pts = []

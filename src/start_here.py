@@ -3,12 +3,15 @@
 author: Danny Rakita
 website: http://pages.cs.wisc.edu/~rakita/
 email: rakita@cs.wisc.edu
-last update: 8/16/18
+author: Andrew Schoen
+website: http://pages.cs.wisc.edu/~schoen/
+email: schoen@cs.wisc.edu
+last update: 5/29/20
 DEVELOPMENT BRANCH
-Intro: Welcome to RelaxedIK! RelaxedIK is an inverse kinematics (IK) solver designed for robot platforms such that the conversion
+Intro: Welcome to LivelyIK! LivelyIK is an inverse kinematics (IK) solver designed for robot platforms such that the conversion
 between Cartesian end-effector pose goals (such as "move the robot's right arm end-effector to position X, while maintaining an end-effector
 orientation Y") to Joint-Space (i.e., the robot's rotation values for each joint degree-of-freedom at a particular time-point) is
-done both ACCURATELY and FEASIBLY.  By this, we mean that RelaxedIK attempts to find the closest possible solution to the
+done both ACCURATELY and FEASIBLY.  By this, we mean that LivelyIK attempts to find the closest possible solution to the
 desired end-effector pose goals without exhibiting negative effects such as self-collisions, environment collisions,
 kinematic-singularities, or joint-space discontinuities.
 To get started, just follow the instructions found here.
@@ -23,7 +26,7 @@ or negative experiences in using it.
 
 
 ######################################################################################################
-# Step 0: The RelaxedIK project should be included as a package within a catkin workspace
+# Step 0: The LivelyIK project should be included as a package within a catkin workspace
 #   for more info on this step, see http://wiki.ros.org/catkin/workspaces
 #   Make sure the package builds correctly (using catkin_make in the workspace root directory)
 #   and source the workspace such that the package is visible to the ROS environment
@@ -44,21 +47,21 @@ or negative experiences in using it.
 # Step 1b: Please set the following variable to the file name of your robot urdf.  For example, for the
 #   ur5 robot urdf already in the urdfs folder, this variable would read 'ur5.urdf'
 #   ex: urdf_file_name = 'ur5.urdf'
-urdf_file_name = 'ur3e.urdf'
+urdf_file_name = 'nao_v5.urdf'
 ######################################################################################################
 
 
 ######################################################################################################
 # Step 1c: Please provide the fixed frame name.  This will be the root link name in the urdf
 #   ex: fixed_frame  = 'base_link'
-fixed_frame = 'world'
+fixed_frame = 'base_link'
 ######################################################################################################
 
 ######################################################################################################
 # Step 1d: At the end of this walk-through, there will be a central yaml file automatically generated that
 #   will contain information about your robot setup.  Please provide a name for that file.
 #   ex: info_file_name = 'ur5_info.yaml'
-info_file_name = 'info_ur3e.yaml'
+info_file_name = 'info_nao5.yaml'
 ######################################################################################################
 
 
@@ -85,9 +88,11 @@ info_file_name = 'info_ur3e.yaml'
 #                'LEFT_WRIST_PITCH', 'LEFT_WRIST_YAW_2'] ]
 #   example 2 shows what this would be for a single end-effector robot, specifically using the UR5 robot
 #   ex2: [ ['shoulder_pan_joint', 'shoulder_lift_joint', 'elbow_joint', 'wrist_1_joint', 'wrist_2_joint', 'wrist_3_joint'] ]
-joint_names = [
-	[ 'shoulder_pan_joint', 'shoulder_lift_joint', 'elbow_joint', 'wrist_1_joint', 'wrist_2_joint', 'wrist_3_joint' ]
-]
+joint_names = [ [ "HeadYaw", "HeadPitch" ],
+				[ "LShoulderPitch", "LShoulderRoll", "LElbowYaw", "LElbowRoll", "LWristYaw", "LHand" ],
+				[ "RShoulderPitch", "RShoulderRoll", "RElbowYaw", "RElbowRoll", "RWristYaw", "RHand" ],
+				[ "LHipYawPitch", "LHipRoll", "LHipPitch", "LKneePitch", "LAnklePitch", "LAnkleRoll" ],
+				[ "RHipYawPitch", "RHipRoll", "RHipPitch", "RKneePitch", "RAnklePitch", "RAnkleRoll" ] ]
 ######################################################################################################
 
 
@@ -107,9 +112,13 @@ joint_names = [
 #   ex1: [ 'WAIST', 'RIGHT_SHOULDER_PITCH', 'RIGHT_SHOULDER_ROLL', 'RIGHT_SHOULDER_YAW', 'RIGHT_ELBOW', 'RIGHT_WRIST_YAW',
 #               'RIGHT_WRIST_PITCH', 'RIGHT_WRIST_YAW_2','LEFT_SHOULDER_PITCH', 'LEFT_SHOULDER_ROLL', 'LEFT_SHOULDER_YAW',
 #               'LEFT_ELBOW', 'LEFT_WRIST_YAW', 'LEFT_WRIST_PITCH', 'LEFT_WRIST_YAW_2' ]
-joint_ordering =  [
- 	'shoulder_pan_joint', 'shoulder_lift_joint', 'elbow_joint', 'wrist_1_joint', 'wrist_2_joint', 'wrist_3_joint'
-]
+joint_ordering =  [ "HeadYaw", "HeadPitch",
+					"LShoulderPitch", "LShoulderRoll", "LElbowYaw", "LElbowRoll", "LWristYaw",
+					"RShoulderPitch", "RShoulderRoll", "RElbowYaw", "RElbowRoll", "RWristYaw",
+					"LHipYawPitch", "LHipRoll", "LHipPitch", "LKneePitch", "LAnklePitch", "LAnkleRoll",
+					"RHipYawPitch", "RHipRoll", "RHipPitch", "RKneePitch", "RAnklePitch", "RAnkleRoll",
+					"LHand", "RHand" ]
+
 ######################################################################################################
 
 
@@ -124,9 +133,7 @@ joint_ordering =  [
 #   ex1: ee_fixed_joints = ['RIGHT_HAND', 'LEFT_HAND']
 #   For example 2, using the UR5, this is a single chain robot, so it will only have a single end-effector joint
 #   ex2: ee_fixed_joints = ['ee_fixed_joint']
-ee_fixed_joints = [
-	'ee_fixed_joint'
-]
+ee_fixed_joints = [ "gaze_joint", "LArm_effector_fixedjoint", "RArm_effector_fixedjoint", "LLeg_effector_fixedjoint", "RLeg_effector_fixedjoint" ]
 ######################################################################################################
 
 
@@ -135,12 +142,16 @@ ee_fixed_joints = [
 #   The configuration should be a single list of values for each joint's rotation (in radians) adhering
 #   to the joint order you specified in Step 3b
 #   ex: starting_config = [ 3.12769839, -0.03987385, -2.07729916, -1.03981438, -1.58652782, -1.5710159 ]
-starting_config = [
-	1.55, -1.77, 1.40, -1.19, -1.57, 0.00
-]
+starting_config = [0,0, 1.5, 0.15,0,-0.04,-1.3, 1.5,-0.15,0,0.04, 1.3, 0,0,0,0,0,0, 0,0,0,0,0,0,.4,.4]
 ######################################################################################################
 
-
+ee_joint_noise = []
+fixed_frame_noise = 0
+dc_joint_noise = []
+dc_joint_weight = []
+ee_position_weight = []
+ee_rotation_weight = []
+match_objectives = []
 
 
 ######################################################################################################
@@ -210,16 +221,16 @@ def joint_state_define(x):
 
 
 ######################################################################################################
-# Step 5a: We will now set up collision information.  RelaxedIK avoids self-collisions by
+# Step 5a: We will now set up collision information.  LivelyIK avoids self-collisions by
 #   first receiving a potential function for "how close" it is to a collision state,
 #   then learning this potential function using a neural network such that it can be quickly run
-#   in the context of a real-time optimization.  RelaxedIK uses fcl (flexible
+#   in the context of a real-time optimization.  LivelyIK uses fcl (flexible
 #   collision library) to do distance checking between links and any environment objects.  Collision objects
 #   will automatically envelope the robot's links based on its geometry defined in the urdf, but you
 #   must supply a few other pieces of information for collision avoidance to work well.
 #
-#   To start, duplicate the collision_example.yaml file found in the RelaxedIK/Config/collision_files directory, and rename the duplicate.
-#   The renamed file should retain its yaml file extension and should also be in the RelaxedIK/Config/collision_files
+#   To start, duplicate the collision_example.yaml file found in the LivelyIK/Config/collision_files directory, and rename the duplicate.
+#   The renamed file should retain its yaml file extension and should also be in the LivelyIK/Config/collision_files
 #   directory.
 #
 #   Now, we'll work in this new file and make some adjustments to tailor the collision information to your robot platform.
@@ -284,9 +295,9 @@ def joint_state_define(x):
 #       strategy is to tightly envelope your end effector using an ellipsoid or box object in the yaml file
 #       so collisions with the end-effector are avoided as best as possible.
 #
-#   Please provide the name of the collision file that you have been filling out in the RelaxedIK/Config directory:
+#   Please provide the name of the collision file that you have been filling out in the LivelyIK/Config directory:
 #   ex: collision_file_name = 'collision.yaml'
-collision_file_name = 'collision_ur3e.yaml'
+collision_file_name = 'collision_nao_v4.yaml'
 ###########################################################################################################
 
 
@@ -302,7 +313,7 @@ collision_file_name = 'collision_ur3e.yaml'
 
 ######################################################################################################
 # Step 5c: There should now be a robot info file corresponding to the robot you are currently setting up
-#   in the RelaxedIK/Config/info_files directory.  From now on, the solver will get all information directly
+#   in the LivelyIK/Config/info_files directory.  From now on, the solver will get all information directly
 #   from this file upon initialization
 ######################################################################################################
 
@@ -337,7 +348,7 @@ collision_file_name = 'collision_ur3e.yaml'
 
 
 ######################################################################################################
-# Step 8a: If this is your first time setting up the RelaxedIK solver for a particular robot platform,
+# Step 8a: If this is your first time setting up the LivelyIK solver for a particular robot platform,
 #   the solver will need to go through a one-time pre-processing step.  In this process, our method
 #   trains a neural network so that the robot can learn about its own geometry so that it avoids
 #   collisions with itself and other items defined in your collision yaml file, as well as learns
@@ -362,7 +373,7 @@ collision_file_name = 'collision_ur3e.yaml'
 
 
 ######################################################################################################
-# Step 8b (optional): If you would also like the option of running the python or julia variants of RelaxedIK,
+# Step 8b (optional): If you would also like the option of running the python or julia variants of LivelyIK,
 #   you will have to run separate preprocessing steps to learn neural networks in those environments.
 #   The python and julia versions of the solver run considerably slower than the default Rust version; however,
 #   we still want to support these versions going forward in case people would still like to use them.

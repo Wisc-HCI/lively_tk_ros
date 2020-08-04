@@ -77,28 +77,27 @@ function RelaxedIK_vars(path_to_src, info_file_name, objectives, grad_types, wei
 
     arm_position_scale = zeros(num_chains)
     arm_rotation_scale = zeros(num_chains)
-    arm_position_freq = zeros(num_chains)
-    arm_rotation_freq = zeros(num_chains)
     dc_scale = zeros(num_dc)
-    dc_freq = zeros(num_dc)
+    arm_position_freq = ones(num_chains)
+    arm_rotation_freq = ones(num_chains)
+    dc_freq = ones(num_dc)
 
     objectives = y["objectives"]
 
-    for i in 1:length(objectives)
-        if objectives[i]["type"] == "positional_noise"
-            arm_position_scale[objectives[i]["index"]] = objectives[i]["scale"]
-            arm_position_freq[objectives[i]["index"]] = objectives[i]["frequency"]
-        elseif objectives[i]["type"] == "rotational_noise"
-            arm_rotation_scale[objectives[i]["index"]] = objectives[i]["scale"]
-            arm_rotation_freq[objectives[i]["index"]] = objectives[i]["frequency"]
-        elseif objectives[i]["type"] == "dc_noise"
-            dc_scale[objectives[i]["index"]] = objectives[i]["scale"]
-            dc_freq[objectives[i]["index"]] = objectives[i]["frequency"]
-        end
-    end
+    # for i in 1:length(objectives)
+    #     if objectives[i]["type"] == "positional_noise"
+    #         arm_position_scale[objectives[i]["index"]] = objectives[i]["scale"]
+    #         arm_position_freq[objectives[i]["index"]] = objectives[i]["frequency"]
+    #     elseif objectives[i]["type"] == "rotational_noise"
+    #         arm_rotation_scale[objectives[i]["index"]] = objectives[i]["scale"]
+    #         arm_rotation_freq[objectives[i]["index"]] = objectives[i]["frequency"]
+    #     elseif objectives[i]["type"] == "dc_noise"
+    #         dc_scale[objectives[i]["index"]] = objectives[i]["scale"]
+    #         dc_freq[objectives[i]["index"]] = objectives[i]["frequency"]
+    #     end
+    # end
 
-    noise = NoiseGenerator(arm_position_scale, arm_rotation_scale, y["fixed_frame_noise_scale"], dc_scale,
-                           arm_position_freq,  arm_rotation_freq,  y["fixed_frame_noise_frequency"], dc_freq)
+    noise = NoiseGenerator(objectives, y["fixed_frame_noise_scale"], y["fixed_frame_noise_frequency"])
 
     # noise = NoiseGenerator(y["ee_joint_noise"],y["fixed_frame_noise"],y["dc_joint_noise"],y["dc_joint_weight"])
     joint_goal = zeros(length(vars.init_state))

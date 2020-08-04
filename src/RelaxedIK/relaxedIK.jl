@@ -2,6 +2,7 @@
 
 
 include("GROOVE_RelaxedIK_Julia/relaxedIK_objective.jl")
+include("GROOVE_RelaxedIK_Julia/livelyIK_objective.jl")
 include("GROOVE_RelaxedIK_Julia/relaxedIK_vars.jl")
 include("GROOVE_Julia/groove.jl")
 include("GROOVE_RelaxedIK_Julia/relaxedIK_objective.jl")
@@ -24,12 +25,12 @@ end
 
 function get_standard(path_to_src, info_file_name; solver_name = "slsqp", preconfigured=false)
     y = info_file_name_to_yaml_block(path_to_src, info_file_name)
-    ee_position_weight = y["ee_position_weight"]
-    ee_rotation_weight = y["ee_rotation_weight"]
-    dc_joint_weight = y["dc_joint_weight"]
+    # ee_position_weight = y["ee_position_weight"]
+    # ee_rotation_weight = y["ee_rotation_weight"]
+    # dc_joint_weight = y["dc_joint_weight"]
     joint_ordering = y["joint_ordering"]
     joint_names = y["joint_names"]
-    match_objectives = y["match_objectives"]
+    # match_objectives = y["match_objectives"]
     objective_info = y["objectives"]
     objectives =    []
     grad_types =    []
@@ -61,7 +62,8 @@ function get_standard(path_to_src, info_file_name; solver_name = "slsqp", precon
             push!(grad_types, objective_info[i]["gradient"])
             push!(weight_priors, objective_info[i]["weight"])
         elseif objective_info[i]["type"] == "positional_noise"
-            push!(objectives,(x,vars)->positional_noise_obj(x,vars,objective_info[i]["index"]))
+            #println("adding pos obj $i")
+            push!(objectives,(x,vars)->positional_noise_obj(x,vars,i,objective_info[i]["index"]))
             push!(grad_types, objective_info[i]["gradient"])
             push!(weight_priors, objective_info[i]["weight"])
         elseif objective_info[i]["type"] == "rotation"
@@ -69,7 +71,8 @@ function get_standard(path_to_src, info_file_name; solver_name = "slsqp", precon
             push!(grad_types, objective_info[i]["gradient"])
             push!(weight_priors, objective_info[i]["weight"])
         elseif objective_info[i]["type"] == "rotational_noise"
-            push!(objectives,(x,vars)->rotational_noise_obj(x,vars,objective_info[i]["index"]))
+            #println("adding rot obj $i")
+            push!(objectives,(x,vars)->rotational_noise_obj(x,vars,i,objective_info[i]["index"]))
             push!(grad_types, objective_info[i]["gradient"])
             push!(weight_priors, objective_info[i]["weight"])
         elseif objective_info[i]["type"] == "dc"
@@ -77,23 +80,28 @@ function get_standard(path_to_src, info_file_name; solver_name = "slsqp", precon
             push!(grad_types, objective_info[i]["gradient"])
             push!(weight_priors, objective_info[i]["weight"])
         elseif objective_info[i]["type"] == "dc_noise"
-            push!(objectives,(x,vars)->dc_noise_obj(x,vars,objective_info[i]["index"]))
+            #println("adding dc obj $i")
+            push!(objectives,(x,vars)->dc_noise_obj(x,vars,i,objective_info[i]["index"]))
             push!(grad_types, objective_info[i]["gradient"])
             push!(weight_priors, objective_info[i]["weight"])
         elseif objective_info[i]["type"] == "x_match_position"
-            push!(objectives,(x,vars)->x_match_obj(x,vars,objective_info[i]["index_1"],objective_info[i]["index_2"],objective_info[i]["delta"]))
+            push!(objectives,(x,vars)->x_match_obj(x,vars,objective_info[i]["index_1"],objective_info[i]["index_2"]))
             push!(grad_types, objective_info[i]["gradient"])
             push!(weight_priors, objective_info[i]["weight"])
-        elseif objective["type"] == "y_match_position"
-            push!(objectives,(x,vars)->y_match_obj(x,vars,objective_info[i]["index_1"],objective_info[i]["index_2"],objective_info[i]["delta"]))
+        elseif objective_info[i]["type"] == "y_match_position"
+            push!(objectives,(x,vars)->y_match_obj(x,vars,objective_info[i]["index_1"],objective_info[i]["index_2"]))
             push!(grad_types, objective_info[i]["gradient"])
             push!(weight_priors, objective_info[i]["weight"])
-        elseif objective["type"] == "z_match_position"
-            push!(objectives,(x,vars)->x_match_obj(x,vars,objective_info[i]["index_1"],objective_info[i]["index_2"],objective_info[i]["delta"]))
+        elseif objective_info[i]["type"] == "z_match_position"
+            push!(objectives,(x,vars)->x_match_obj(x,vars,objective_info[i]["index_1"],objective_info[i]["index_2"]))
             push!(grad_types, objective_info[i]["gradient"])
             push!(weight_priors, objective_info[i]["weight"])
-        elseif objective["type"] == "orientation_match"
+        elseif objective_info[i]["type"] == "orientation_match"
             push!(objectives,(x,vars)->orientation_match_obj(x,vars,objective_info[i]["index_1"],objective_info[i]["index_2"]))
+            push!(grad_types, objective_info[i]["gradient"])
+            push!(weight_priors, objective_info[i]["weight"])
+        elseif objective_info[i]["type"] == "joint_match"
+            push!(objectives,(x,vars)->joint_match_obj(x,vars,objective_info[i]["index_1"],objective_info[i]["index_2"]))
             push!(grad_types, objective_info[i]["gradient"])
             push!(weight_priors, objective_info[i]["weight"])
         end

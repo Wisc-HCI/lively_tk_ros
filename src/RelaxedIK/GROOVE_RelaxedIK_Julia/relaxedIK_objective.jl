@@ -26,19 +26,10 @@ function dc_obj(x, vars, idx)
     return groove_loss(  x_val, 0.0, 2, 0.3295051144911304, 0.1, 2)
 end
 
-function dc_noise_obj(x, vars, idx)
-    # Calculate the delta between goal and state
-    goal = vars.joint_goal[idx]+vars.noise.dc_noise[idx]
-    x_val = abs(x[idx]-goal)
-
-    # return groove_loss(  x_val, 0.0, 2.0, 2.3, 0.003, 2.0 )
-    return groove_loss(  x_val, 0.0, 2, 0.3295051144911304, 0.1, 2)
-end
-
 function position_obj(x, vars, idx)
     #println("POS IDX: $idx")
     vars.robot.arms[idx].getFrames(x[vars.robot.subchain_indices[idx]])
-    goal = vars.goal_positions[idx] + vars.noise.base_noise.position
+    goal = vars.goal_positions[idx] + vars.noise.base.value
     x_val = norm(vars.robot.arms[idx].out_pts[end] - goal)
 
     return groove_loss(x_val, 0., 2, .1, 10., 2)
@@ -60,50 +51,6 @@ function rotation_obj(x, vars, idx)
     x_val = min(disp, disp2)
 
     return groove_loss(x_val, 0., 2, .1, 10., 2)
-end
-
-function positional_noise_obj(x, vars, idx)
-    #println("POS NOISE IDX: $idx")
-    vars.robot.arms[idx].getFrames(x[vars.robot.subchain_indices[idx]])
-    goal = vars.goal_positions[idx] + vars.noise.arm_noise[idx].position + vars.noise.base_noise.position
-    x_val = norm(vars.robot.arms[idx].out_pts[end] - goal)
-    return groove_loss(x_val, 0., 2, .1, 10., 2)
-end
-
-function rotational_noise_obj(x, vars, idx)
-    #println("ROT NOISE IDX: $idx")
-    vars.robot.arms[idx].getFrames(x[vars.robot.subchain_indices[idx]])
-    eeMat = vars.robot.arms[idx].out_frames[end]
-    orilog = quaternion_log(vars.goal_quats[idx])
-    goal_ori = orilog + vars.noise.arm_noise[idx].rotation
-    goal_quat = quaternion_exp(goal_ori)
-    ee_quat = Quat(eeMat)
-
-    ee_quat2 = Quat(-ee_quat.w, -ee_quat.x, -ee_quat.y, -ee_quat.z)
-
-    disp = norm(quaternion_disp(goal_quat, ee_quat))
-    disp2 = norm(quaternion_disp(goal_quat, ee_quat2))
-
-    x_val = min(disp, disp2)
-
-    # return groove_loss(x_val, 0.,2.,.1,10.,2.)
-    return groove_loss(x_val, 0., 2, .1, 10., 2)
-end
-
-function position_obj_std(x,vars)
-    return position_obj(x,vars,1)
-end
-
-function positional_noise_obj_std(x,vars)
-    return positional_noise_obj(x,vars,1)
-end
-
-function rotation_obj_std(x,vars)
-    return rotation_obj(x,vars,1)
-end
-
-function rotational_noise_obj_std(x,vars)
-    return rotational_noise_obj(x,vars,1)
 end
 
 function joint_goal_obj(x, vars)
@@ -197,56 +144,4 @@ function bimanual_line_seg_collision_avoid_obj(x, vars)
     end
 
     return groove_loss(x_val, 0.,2.,.2, .4, 2.)
-end
-
-function orientation_match_obj(x, vars, idx1, idx2)
-
-    vars.robot.arms[idx1].getFrames(x[vars.robot.subchain_indices[idx1]])
-    vars.robot.arms[idx2].getFrames(x[vars.robot.subchain_indices[idx2]])
-    eeMat1 = vars.robot.arms[idx1].out_frames[end]
-    eeMat2 = vars.robot.arms[idx2].out_frames[end]
-    ee_quat1 = Quat(eeMat1)
-    ee_quat2 = Quat(eeMat2)
-    ee_quat3 = Quat(-ee_quat2.w,-ee_quat2.x,-ee_quat2.y,-ee_quat2.z)
-    disp1 = norm(quaternion_disp(ee_quat1, ee_quat2))
-    disp2 = norm(quaternion_disp(ee_quat1, ee_quat3))
-    x_val = min(disp1, disp2)
-
-    return groove_loss(x_val, 0., 2, .1, 10., 2)
-end
-
-function x_match_obj(x, vars, idx1, idx2, goal_dist)
-
-    vars.robot.arms[idx1].getFrames(x[vars.robot.subchain_indices[idx1]])
-    vars.robot.arms[idx2].getFrames(x[vars.robot.subchain_indices[idx2]])
-    x_1 = vars.robot.arms[idx1].out_pts[end][1]
-    x_2 = vars.robot.arms[idx2].out_pts[end][1]
-    dist = abs(x_1 - x_2)
-    x_val = abs(goal_dist-dist)
-
-    return groove_loss(x_val, 0., 2, .1, 10., 2)
-end
-
-function y_match_obj(x, vars, idx1, idx2, goal_dist)
-
-    vars.robot.arms[idx1].getFrames(x[vars.robot.subchain_indices[idx1]])
-    vars.robot.arms[idx2].getFrames(x[vars.robot.subchain_indices[idx2]])
-    y_1 = vars.robot.arms[idx1].out_pts[end][2]
-    y_2 = vars.robot.arms[idx2].out_pts[end][2]
-    dist = abs(y_1 - y_2)
-    x_val = abs(goal_dist-dist)
-
-    return groove_loss(x_val, 0., 2, .1, 10., 2)
-end
-
-function z_match_obj(x, vars, idx1, idx2, goal_dist)
-
-    vars.robot.arms[idx1].getFrames(x[vars.robot.subchain_indices[idx1]])
-    vars.robot.arms[idx2].getFrames(x[vars.robot.subchain_indices[idx2]])
-    z_1 = vars.robot.arms[idx1].out_pts[end][3]
-    z_2 = vars.robot.arms[idx2].out_pts[end][3]
-    dist = abs(z_1 - z_2)
-    x_val = abs(goal_dist-dist)
-
-    return groove_loss(x_val, 0., 2, .1, 10., 2)
 end

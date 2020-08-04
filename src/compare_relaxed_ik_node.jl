@@ -5,10 +5,8 @@ include("RelaxedIK/Utils_Julia/solver_output.jl")
 using YAML
 using RobotOS
 using Rotations
-# using BenchmarkTools
 using ForwardDiff
-# using Knet
-# using Dates
+
 @rosimport wisc_msgs.msg: DCPoseGoals, EEPoseGoals, JointAngles, DebugGoals, DebugPoseAngles
 @rosimport std_msgs.msg: Float64MultiArray, Bool, Float32
 @rosimport geometry_msgs.msg: Point, Quaternion, Pose
@@ -18,29 +16,17 @@ using .wisc_msgs.msg
 using .std_msgs.msg
 using .geometry_msgs.msg
 
-quit = false
-function quit_cb(data::BoolMsg)
-    global quit
-    quit = data.data
-end
+global goal_info = nothing
+global solution = nothing
 
-reset_solver = false
-function reset_cb(data::BoolMsg)
-    global reset_solver
-    reset_solver = data.data
-end
-
-eepg = Nothing
-dcpg = Nothing
-bias = [1.0,1.0,1.0]
-
-function goals_cb(data::DebugGoals)
-    global goal_info
-    #loginfo("$data")
-    goal_info = data
+function set_goal_info(data)
+    global goal_info = data
 end
 
 init_node("lively_ik_node")
+
+
+global angles_pub = Publisher("/relaxed_ik/debug_pose_angles", DebugPoseAngles, queue_size = 3)
 
 path_to_src = Base.source_dir()
 
@@ -50,19 +36,25 @@ close(loaded_robot_file)
 relaxedIK = get_standard(path_to_src, loaded_robot)
 livelyIK = get_standard(path_to_src, loaded_robot)
 num_chains = relaxedIK.relaxedIK_vars.robot.num_chains
-num_dc = relaxedIK.relaxedIK_vars.noise.num_dc
 
 println("loaded robot: $loaded_robot")
 
+objectives = get_param("objectives")
+starting_config = get_param("starting_config")
+joint_limits = get_param("joint_limits")
+println(joint_limits)
 
-Subscriber{DebugGoals}("/relaxed_ik/debug_goals", goals_cb)
-Subscriber{BoolMsg}("/relaxed_ik/quit", quit_cb, queue_size=1)
-Subscriber{BoolMsg}("/relaxed_ik/reset", reset_cb)
-angles_pub = Publisher("/relaxed_ik/debug_pose_angles", DebugPoseAngles, queue_size = 3)
+function limit(value,lower,upper)
+    if upper >= value >= lower
+        return value
+    elseif upper < value
+        return upper
+    elseif lower > value
+        return lower
+    end
+end
 
-sleep(0.5)
-
-goal_info = DebugGoals()
+goal = DebugGoals()
 pose = Pose()
 pose.position.x = 0
 pose.position.y = 0
@@ -72,48 +64,27 @@ pose.orientation.x = 0
 pose.orientation.y = 0
 pose.orientation.z = 0
 for i = 1:num_chains
-    push!(goal_info.ee_poses, pose)
+    push!(goal.ee_poses, pose)
 end
-for i = 1:num_dc
-    push!(goal_info.dc_values,0.5)
+for i = 1:length(starting_config)
+    push!(goal.dc_values,starting_config[i])
 end
-goal_info.eval_type = "null"
-goal_info.bias = Point(1,1,1)
-goal_info.normal_weights = [50.0, 20.0, 0.00, 0.00, 5.0, 3.0, 0.2, 1.0, 2.0]
-goal_info.lively_weights = [25.0, 10.0, 25.0, 10.0, 5.0, 3.0, 0.2, 1.0, 2.0]
-empty_goal_info = goal_info
+goal.eval_type = "null"
+goal.bias = Point(1,1,1)
+goal.header.stamp = get_rostime()
 
-loop_rate = Rate(60)
-quit = false
-loginfo("starting")
-started = false
-
-while !is_shutdown()
-    global quit
-    global reset_solver
-    global relaxedIK
-    global livelyIK
-    global xopt
-    global goal_info
-    global empty_goal_info
-    global started
-
-    if quit == true
-        println("quitting")
-        quit = false
-        return
+for i=1:length(objectives)
+    push!(goal.lively_weights,objectives[i]["weight"])
+    if occursin("noise",objectives[i]["type"])
+        push!(goal.normal_weights,0.0)
+    else
+        push!(goal.normal_weights,objectives[i]["weight"])
     end
+end
 
-    if reset_solver == true
-        println("resetting")
-        reset_solver = false
-        relaxedIK = get_standard(path_to_src, loaded_robot)
-        livelyIK = get_standard(path_to_src, loaded_robot)
-        goal_info = empty_goal_info
-    end
-
-    pose_goals = goal_info.ee_poses
-    dc_goals = goal_info.dc_values
+function solve_with_goal(data, livelyIK, relaxedIK)
+    pose_goals = data.ee_poses
+    dc_goals = data.dc_values
 
     pos_goals = []
     quat_goals = []
@@ -134,21 +105,54 @@ while !is_shutdown()
         push!(quat_goals, Quat(quat_w, quat_x, quat_y, quat_z))
     end
 
-    time = to_sec(goal_info.header.stamp)
+    t = to_sec(data.header.stamp)
 
-    bias = [goal_info.bias.x,goal_info.bias.y,goal_info.bias.z]
-    # normal_weights = [50.0, 20.0, 0.00, 0.00, 5.0, 3.0, 0.2, 1.0, 2.0]
-    # lively_weights = [25.0, 10.0, 25.0, 10.0, 5.0, 3.0, 0.2, 1.0, 2.0]
+    bias = [data.bias.x,data.bias.y,data.bias.z]
 
-    # rxopt, rtry_idx, rvalid_sol, rpos_error, rrot_error = solve_precise(relaxedIK, pos_goals, quat_goals, dc_goals, time, [0,0,0], normal_weights)
-    # lxopt, ltry_idx, lvalid_sol, lpos_error, lrot_error = solve_precise(livelyIK,  pos_goals, quat_goals, dc_goals, time, bias,    lively_weights)
-    rxopt = solve(relaxedIK, pos_goals, quat_goals, dc_goals, time, [0,0,0], goal_info.normal_weights)
-    lxopt = solve(livelyIK,  pos_goals, quat_goals, dc_goals, time, bias,    goal_info.lively_weights)
-    ideal_noise = livelyIK.relaxedIK_vars.noise.arm_noise
+    rxopt = solve(relaxedIK, pos_goals, quat_goals, dc_goals, t, [0,0,0], data.normal_weights)
+    lxopt = solve(livelyIK,  pos_goals, quat_goals, dc_goals, t, bias,    data.lively_weights)
+
+    ## Remove for simple execution
+    # Try to determine an "Ideal" Noise, and also the Direct Perlin Noise
+    weights = [[0] for i=1:length(objectives)]
+    for i = 1:length(objectives)
+        if objectives[i]["type"] == "dc_noise"
+            # Assume equal weighting
+            push!(weights[i],1)
+        elseif objectives[i]["type"] == "positional_noise"
+            push!(weights[i],data.lively_weights[i])
+        end
+    end
+
+    relative_weights = zeros(length(objectives))
+
+    for i = 1:length(objectives)
+        if sum(weights[i]) == 0
+            relative_weights[i] = 0
+        elseif objectives[i]["type"] == "dc_noise"
+            relative_weights[i] = 1 / sum(weights[i])
+        elseif objectives[i]["type"] == "positional_noise"
+            relative_weights[i] = data.lively_weights[i] / sum(weights[i])
+        end
+    end
+
+    # Calculate Direct-Perlin (outside optimization)
+    dc_noise = zeros(length(starting_config))
+    ee_noise = [[0.0,0.0,0.0] for i=1:length(starting_config)]
+
+    for i = 1:length(objectives)
+        if objectives[i]["type"] == "dc_noise"
+            dc_noise[objectives[i]["index"]] = dc_noise[objectives[i]["index"]] + livelyIK.relaxedIK_vars.noise.generators[i].value * relative_weights[i]
+        elseif objectives[i]["type"] == "positional_noise"
+            ee_noise[objectives[i]["index"]] = ee_noise[objectives[i]["index"]] + livelyIK.relaxedIK_vars.noise.generators[i].value * relative_weights[i]
+        end
+    end
+
+    ## Remove above for simple exection
 
     ideal_goals = []
     for i = 1:num_chains
-        pos_goal = pos_goals[i] .+ ideal_noise[i].position
+        pos_goal = pos_goals[i] .+ ee_noise[i]
         pos_noise_goal = Point(pos_goal[1],pos_goal[2],pos_goal[3])
         # Ignoring orientation for now
         pose = Pose()
@@ -165,27 +169,44 @@ while !is_shutdown()
     dpa = DebugPoseAngles()
     for i = 1:length(rxopt)
         push!(dpa.angles_relaxed, rxopt[i])
+        push!(dpa.angles_perlin, limit(rxopt[i]+dc_noise[i],joint_limits[i,1],joint_limits[i,2]))
     end
     for i = 1:length(lxopt)
         push!(dpa.angles_lively, lxopt[i])
     end
+
+    dpa.collision_relaxed = in_collision_groundtruth(relaxedIK,rxopt)
+    dpa.collision_lively = in_collision_groundtruth(relaxedIK,lxopt)
+    dpa.collision_perlin = in_collision_groundtruth(relaxedIK,dpa.angles_perlin)
+
     dpa.ideal_noise = ideal_goals
-    dpa.dc_values = goal_info.dc_values
-    dpa.ee_poses  = goal_info.ee_poses
-    dpa.header.seq = goal_info.header.seq
-    dpa.header.stamp = get_rostime()#goal_info.header.stamp
-    dpa.header.frame_id = goal_info.header.frame_id
-    dpa.eval_type = goal_info.eval_type
-    dpa.i = goal_info.i
-    # println(ja.angles)
+    dpa.dc_values = data.dc_values
+    dpa.ee_poses  = data.ee_poses
+    dpa.header.seq = data.header.seq
+    dpa.header.stamp = get_rostime()
+    dpa.header.frame_id = data.header.frame_id
+    dpa.eval_type = data.eval_type
+    dpa.i = data.i
+    return dpa
 
-    if started
-        publish(angles_pub, dpa)
-    else
-        started = true
-        println("Lively_IK Ready!")
-        set_param("ready",true)
-    end
-
-    rossleep(loop_rate)
 end
+
+function handle_goals(data)
+    global relaxedIK
+    global livelyIK
+    global angles_pub
+    sol = solve_with_goal(data, livelyIK, relaxedIK)
+    publish(angles_pub,sol)
+end
+
+
+loop_rate = Rate(60)
+quit = false
+loginfo("Finalizing JIT Compilation")
+set_goal_info(goal)
+dpa = solve_with_goal(goal_info, livelyIK, relaxedIK)
+loginfo("Finished")
+Subscriber{DebugGoals}("/relaxed_ik/debug_goals", handle_goals)
+set_param("ready",true)
+
+spin()

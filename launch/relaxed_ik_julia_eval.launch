@@ -11,6 +11,7 @@
   </include>
 
   <node pkg="lively_ik" type="compare_relaxed_ik_node.jl" name="lively_ik_node" output="screen"/>
+  <!-- <node pkg="lively_ik" type="show_debug_node.jl" name="show_debug_node" output="screen"/> -->
   <!-- <node pkg="lively_ik_orig" type="relaxed_ik_node.jl" name="lively_ik_node" output="screen"/> -->
   <node pkg="lively_ik" type="eval_lively_ik.py" name="eval_lively_ik" output="screen"
         args="--file_root $(arg out_file_root)"/>

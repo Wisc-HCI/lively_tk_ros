@@ -79,9 +79,9 @@ for i in range(256):
 
 def noise1D(x, seed, freq):
     #return noise.pnoise3(x/freq, seed, 500*math.sin((x/freq+seed)/500))
-    return perlinsnoise(x/freq, seed, 500*math.sin((x/freq+seed)/500))
+    return 2*(perlinsnoise(x/freq, seed, 500*math.sin((x/freq+seed)/500))-0.5)
 
 def noise3D(x, seed, freq):
-    return [perlinsnoise(x/freq, seed[1], 500*math.sin((x/freq+seed[1])/500)),
-            perlinsnoise(x/freq, seed[2], 500*math.sin((x/freq+seed[2])/500)),
-            perlinsnoise(x/freq, seed[3], 500*math.sin((x/freq+seed[3])/500))]
+    return [2*(perlinsnoise(x/freq, seed[1], 500*math.sin((x/freq+seed[1])/500))-0.5),
+            2*(perlinsnoise(x/freq, seed[2], 500*math.sin((x/freq+seed[2])/500))-0.5),
+            2*(perlinsnoise(x/freq, seed[3], 500*math.sin((x/freq+seed[3])/500))-0.5)]
