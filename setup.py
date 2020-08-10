@@ -1,10 +1,34 @@
-from distutils.core import setup
-from catkin_pkg.python_setup import generate_distutils_setup
+from setuptools import setup
+import glob
+import os
 
-d = generate_distutils_setup(
-    packages=['RelaxedIK'],
-    scripts=[''],
-    package_dir={'': 'src'}
+package_name = 'lively_ik'
+config_files = glob.glob(os.path.join('config', '*', '*'))
+
+data_files = [
+    ('share/ament_index/resource_index/packages',['resource/' + package_name]),
+    ('share/' + package_name, ['package.xml']),
+]
+for config_file in config_files:
+    data_files.append(('share/'+config_file,[config_file]))
+
+setup(
+    name=package_name,
+    version='0.0.0',
+    packages=[package_name],
+    data_files=data_files,
+    install_requires=['setuptools'],
+    zip_safe=True,
+    maintainer='schoen',
+    maintainer_email='schoen.andrewj@gmail.com',
+    description='TODO: Package description',
+    license='TODO: License declaration',
+    tests_require=['pytest'],
+    entry_points={
+        'console_scripts': [
+            'manager = lively_ik.manager:main'
+        ],
+    },
 )
 
-setup(**d)
+# TODO figure out Julia stuff

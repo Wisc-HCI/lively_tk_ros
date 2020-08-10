@@ -1,0 +1,103 @@
+axis_types:
+- [z, y]
+- [y, z, x, z, x, x]
+- [y, z, x, z, x, x]
+- [x, y, y]
+collision_file_name: collision_pepper.yaml
+collision_nn_file: pepper_modified_nn
+dc_joint_noise: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+  0.0, 0.0, 0.45, 0.45]
+dc_joint_weight: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5]
+disp_offsets:
+- [-0.038, 0.0, 0.1699]
+- [-0.057, 0.14974, 0.08682]
+- [-0.057, -0.14974, 0.08682]
+- [2.0e-05, 0.0, -0.139]
+displacements:
+- - [0.0, 0.0, 0.0]
+  - [0.05871, 0.0, 0.06364]
+- - [0.0, 0.0, 0.0]
+  - [0.1812, 0.015, 0.00013]
+  - [0.0, 0.0, 0.0]
+  - [0.15, 0.0, 0.0]
+  - [0.025, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+- - [0.0, 0.0, 0.0]
+  - [0.1812, -0.015, 0.00013]
+  - [0.0, 0.0, 0.0]
+  - [0.15, 0.0, 0.0]
+  - [0.025, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+- - [0.0, 0.0, -0.079]
+  - [0.0, 0.0, -0.268]
+  - [0.0, 0.0, -0.334]
+  - [0.0, 0.0, -0.334]
+ee_fixed_joints: [gaze_joint, LArm_effector_fixedjoint, RArm_effector_fixedjoint,
+  base_footprint_joint]
+ee_joint_noise: [0.5, 0.5, 0.5, 0.0]
+ee_position_weight: [0, 6, 6, 1]
+ee_rotation_weight: [2, 5, 5, 1]
+fixed_frame: base_link
+fixed_frame_noise: 0.02
+joint_limits:
+- [-2.08567, 2.08567]
+- [-0.706858, 0.637045]
+- [-2.08567, 2.08567]
+- [0.00872665, 1.56207]
+- [-2.08567, 2.08567]
+- [-1.56207, -0.00872665]
+- [-1.82387, 1.82387]
+- [-2.08567, 2.08567]
+- [-1.56207, -0.00872665]
+- [-2.08567, 2.08567]
+- [0.00872665, 1.56207]
+- [-1.82387, 1.82387]
+- [-0.514872, 0.514872]
+- [-1.03847, 1.03847]
+- [-0.514872, 0.514872]
+- [0.02, 0.98]
+- [0.02, 0.98]
+joint_names:
+- [HeadYaw, HeadPitch]
+- [LShoulderPitch, LShoulderRoll, LElbowYaw, LElbowRoll, LWristYaw, LHand]
+- [RShoulderPitch, RShoulderRoll, RElbowYaw, RElbowRoll, RWristYaw, RHand]
+- [HipRoll, HipPitch, KneePitch, base_footprint_joint]
+joint_ordering: [HeadYaw, HeadPitch, LShoulderPitch, LShoulderRoll, LElbowYaw, LElbowRoll,
+  LWristYaw, RShoulderPitch, RShoulderRoll, RElbowYaw, RElbowRoll, RWristYaw, HipRoll,
+  HipPitch, KneePitch, LHand, RHand]
+joint_state_define_func_file: pepper_modified_joint_state_define
+joint_types:
+- [revolute, revolute]
+- [revolute, revolute, revolute, revolute, revolute, revolute]
+- [revolute, revolute, revolute, revolute, revolute, revolute]
+- [revolute, revolute, revolute, fixed]
+match_objectives: []
+path_to_src: /vagrant/src/lively_ik/src
+rot_offsets:
+- - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+- - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+  - [0.0, -0.157079, 0.0]
+  - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+- - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+  - [0.0, -0.157079, 0.0]
+  - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+- - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+starting_config: [0.0, -0.2, 1.58, 0.13, -1.24, -0.5, 0.02, 1.57, -0.14, 1.23, 0.51,
+  -0.02, -0.0, -0.03, -0.0, 0.55, 0.58]
+urdf_file_name: pepper_modified.urdf
+velocity_limits: [7.33998, 9.22756, 7.33998, 9.22756, 7.33998, 9.22756, 17.3835, 7.33998,
+  9.22756, 7.33998, 9.22756, 17.3835, 2.27032, 2.93276, 2.93276, 12.56, 12.56]
