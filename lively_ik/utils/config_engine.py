@@ -1,5 +1,5 @@
 import numpy as np
-from colors import bcolors
+from lively_ik.utils.colors import bcolors
 from os import listdir
 # from sklearn.externals import joblib
 import joblib

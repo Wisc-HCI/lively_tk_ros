@@ -1,10 +1,7 @@
 module LivelyIK
-using Rcl
 
+include("relaxed_ik/relaxed_ik.jl")
 
-greet() = print("Hello World!")
-
-init() = rcl_init()
-
+export RelaxedIK, get_standard, solve
 
 end # module
