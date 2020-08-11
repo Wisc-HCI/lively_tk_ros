@@ -11,7 +11,7 @@ mutable struct RelaxedIK
     ema_filter
 end
 
-function test
+function test()
     println("Test Passed")
 end
 
