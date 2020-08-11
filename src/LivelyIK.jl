@@ -1,5 +1,4 @@
 module LivelyIK
-using Lib
 
 include("relaxed_ik/relaxed_ik.jl")
 
