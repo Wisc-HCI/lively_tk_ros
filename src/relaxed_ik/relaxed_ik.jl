@@ -11,6 +11,10 @@ mutable struct RelaxedIK
     ema_filter
 end
 
+function test
+    println("Test Passed")
+end
+
 
 function RelaxedIK(info, objectives, grad_types, weight_priors, inequality_constraints, ineq_grad_types, equality_constraints, eq_grad_types; position_mode = "absolute", rotation_mode = "absolute", solver_name="slsqp", preconfigured=false, groove_iter = 11, max_time=0.0)
     relaxedIK_vars = RelaxedIK_vars(info, objectives, grad_types, weight_priors, inequality_constraints, ineq_grad_types, equality_constraints, eq_grad_types, position_mode = position_mode, rotation_mode = rotation_mode, preconfigured=preconfigured)
