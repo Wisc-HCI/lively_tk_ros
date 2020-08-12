@@ -177,13 +177,13 @@ function update_relaxedIK_vars!(relaxedIK_vars, xopt)
     update!(relaxedIK_vars.vars, xopt)
 end
 
-function yaml_block_to_robot(y)
-    arms = yaml_block_to_arms(y)
+function yaml_block_to_robot(info)
+    arms = yaml_block_to_arms(info)
     robot = Robot(arms, info["joint_names"], info["joint_ordering"], info["joint_limits"], info["velocity_limits"])
     return robot
 end
 
-function yaml_block_to_arms(y)
+function yaml_block_to_arms(info)
     num_chains = length(info["joint_names"])
 
     arms = []

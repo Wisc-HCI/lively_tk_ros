@@ -1,8 +1,8 @@
-using LivelyIK
 using YAML
 using ArgParse
 using Sockets
 using JSON
+using LivelyIK
 
 s = ArgParseSettings()
 @add_arg_table! s begin
