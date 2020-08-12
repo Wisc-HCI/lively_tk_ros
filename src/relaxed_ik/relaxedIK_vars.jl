@@ -73,6 +73,8 @@ function RelaxedIK_vars(info, objectives, grad_types, weight_priors, inequality_
 
     if preconfigured == false
         collision_nn_file_name = info["collision_nn_file"]
+        lively_ik_folder = lively_ik.BASE
+        println("LIK FOLDER: "*lively_ik_folder)
         folder = lively_ik_folder * "/config/collision_nn/"
         w = BSON.load(folder * collision_nn_file_name)[:w]
         w_ = Array{Array{Float64,2},1}()
