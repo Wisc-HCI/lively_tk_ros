@@ -1,6 +1,3 @@
-using BenchmarkTools
-include("arm.jl")
-
 
 mutable struct Robot
     arms

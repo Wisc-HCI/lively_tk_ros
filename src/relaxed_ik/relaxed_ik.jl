@@ -1,9 +1,6 @@
 include("relaxedIK_objective.jl")
 include("livelyIK_objective.jl")
 include("relaxedIK_vars.jl")
-include("../groove/groove.jl")
-include("../utils/transformations.jl")
-include("../utils/ema_filter.jl")
 
 mutable struct RelaxedIK
     relaxedIK_vars

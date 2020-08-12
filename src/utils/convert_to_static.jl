@@ -1,4 +1,3 @@
-using StaticArrays
 
 function convert_to_static200(arr)
     l = length(arr)
@@ -409,7 +408,7 @@ function convert_to_static30(arr)
         return arr
     end
 
-    
+
     if l == 2
         return SVector{2}(arr)
     elseif l == 3

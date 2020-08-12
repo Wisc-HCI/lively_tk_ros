@@ -1,5 +1,12 @@
 using NLopt
+using ForwardDiff
+using Calculus
+using ReverseDiff
+
+include("gradient.jl")
+include("constraint.jl")
 include("objective.jl")
+include("vars.jl")
 
 mutable struct Groove
     vars

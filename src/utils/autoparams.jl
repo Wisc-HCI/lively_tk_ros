@@ -1,9 +1,3 @@
-using NLopt
-using LinearAlgebra
-include("../groove/vars.jl")
-include("../groove/groove.jl")
-# include("../GROOVE_Julia/gradient.jl")
-
 
 mutable struct Autoparam_vars
     vars

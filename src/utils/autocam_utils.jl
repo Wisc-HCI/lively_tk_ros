@@ -1,4 +1,4 @@
-using LinearAlgebra
+
 
 function get_camera_goal_location(x, vars, camera_arm_idx; Δ=1.0)
     vars.robot.arms[camera_arm_idx].getFrames(x[vars.robot.subchain_indices[camera_arm_idx]])

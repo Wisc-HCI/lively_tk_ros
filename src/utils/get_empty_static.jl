@@ -1,4 +1,4 @@
-using StaticArrays
+
 
 function get_empty_static_vector(n)
     if n == 2

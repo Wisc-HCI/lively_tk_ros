@@ -1,4 +1,3 @@
-using Rotations, StaticArrays, LinearAlgebra
 
 q = Quat(1.0,0.0,0.0,0.0)
 q2 = Quat(0.0,1.0,0.0,0.0)

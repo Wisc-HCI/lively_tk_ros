@@ -1,6 +1,4 @@
-using ForwardDiff
-using Calculus
-using ReverseDiff
+
 
 function get_∇(func, grad_method)
     # func needs to already be a function just with respect to x

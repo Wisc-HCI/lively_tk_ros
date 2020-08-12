@@ -1,7 +1,4 @@
 
-import LinearAlgebra, Rotations, StaticArrays
-using BenchmarkTools
-
 mutable struct Arm
     joint_names
     axis_types

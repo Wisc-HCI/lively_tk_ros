@@ -1,7 +1,5 @@
 # note: contraints are of the form f(x) <= 0, so allowable outputs are NEGATIVE (opposite of scipy)
 
-include("gradient.jl")
-
 
 function get_constraint_closure(func, grad_method, vars)
     func_closure = x->func(x, vars)

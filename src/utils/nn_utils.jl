@@ -1,4 +1,4 @@
-using Knet
+
 
 function state_to_joint_pts_withreturn(x, vars)
     joint_pts = Array{Float64, 1}()

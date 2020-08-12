@@ -1,6 +1,4 @@
-using NearestNeighbors
-using LinearAlgebra
-include("geometry_utils.jl")
+
 
 function get_point_cloud_from_files(path_to_src, file_names)
     pts = []

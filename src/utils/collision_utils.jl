@@ -1,11 +1,4 @@
-include("autoparams.jl")
-# include("../relaxedIK.jl")
-include("nn_utils.jl")
-using PyCall
-@pyimport RelaxedIK.Utils.collision_transfer as c
-using BSON
-import Distributions: Uniform
-using Statistics
+
 
 
 function get_rand_state_with_bounds(bounds)

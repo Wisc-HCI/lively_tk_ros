@@ -1,5 +1,3 @@
-using LinearAlgebra
-using Distances
 
 function closest_point_on_2_lines(u1, u2, v1, v2)
     u = u2 - u1

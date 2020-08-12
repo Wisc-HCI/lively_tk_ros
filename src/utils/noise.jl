@@ -1,4 +1,3 @@
-include("noise_utils.jl")
 
 mutable struct scalarNoise
     scale
