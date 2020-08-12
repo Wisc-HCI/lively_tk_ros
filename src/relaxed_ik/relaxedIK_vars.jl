@@ -34,6 +34,7 @@ mutable struct RelaxedIK_vars
 end
 
 function RelaxedIK_vars(info, objectives, grad_types, weight_priors, inequality_constraints, ineq_grad_types, equality_constraints, eq_grad_types; position_mode = "relative", rotation_mode = "relative", preconfigured=false)
+    lively_ik = pyimport("lively_ik")
     robot = yaml_block_to_robot(info)
     vars = Vars(info["starting_config"], objectives, grad_types, weight_priors, inequality_constraints, [], equality_constraints, [], info["joint_limits"])
 
