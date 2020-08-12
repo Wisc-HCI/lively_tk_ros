@@ -155,10 +155,10 @@ function RelaxedIK_vars(info, objectives, grad_types, weight_priors, inequality_
             end
         end
 
-        cv = c.CollisionVars(info)
+        cv = collision_transfer.CollisionVars(info)
 
         function in_collision_groundtruth(cv, x)
-            score = c.get_score(x, cv)
+            score = collision_transfer.get_score(x, cv)
             if score >= 5.0
                 return true
             else

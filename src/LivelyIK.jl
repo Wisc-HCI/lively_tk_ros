@@ -1,7 +1,7 @@
 module LivelyIK
 
 using PyCall
-@pyimport lively_ik.utils.collision_transfer as c
+collision_transfer = pyimport("lively_ik.utils.collision_transfer")
 
 include("groove/groove.jl")
 include("spacetime/spacetime.jl")

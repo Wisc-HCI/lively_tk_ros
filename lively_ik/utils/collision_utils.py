@@ -1,8 +1,8 @@
 import fcl
 import numpy as np
-from lively_ik.utils.colors import bcolors as bc
+from .colors import bcolors as bc
 from visualization_msgs.msg import Marker
-from lively_ik.utils.transformations import quaternion_from_euler, quaternion_from_matrix, quaternion_multiply
+from .transformations import quaternion_from_euler, quaternion_from_matrix, quaternion_multiply
 import rclpy
 from rclpy.node import Node
 

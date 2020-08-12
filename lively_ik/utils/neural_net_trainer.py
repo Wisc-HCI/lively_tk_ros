@@ -1,5 +1,5 @@
 import numpy as np
-from lively_ik.utils.collision_graph import CollisionGraph
+from .collision_graph import CollisionGraph
 from sklearn.neural_network import MLPClassifier, MLPRegressor
 # from sklearn.externals import joblib
 import joblib

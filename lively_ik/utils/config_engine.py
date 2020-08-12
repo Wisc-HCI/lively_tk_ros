@@ -1,10 +1,10 @@
 import numpy as np
-from lively_ik.utils.colors import bcolors
+from .colors import bcolors
 from os import listdir
 # from sklearn.externals import joblib
 import joblib
 from os.path import isfile, join
-from lively_ik.utils.neural_net_trainer import CollisionNNTrainer
+from .neural_net_trainer import CollisionNNTrainer
 import os
 
 

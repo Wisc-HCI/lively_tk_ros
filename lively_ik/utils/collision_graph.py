@@ -1,7 +1,7 @@
 import numpy as np
 import itertools
 import math
-from lively_ik.utils.collision_utils import CollisionObjectContainer
+from .collision_utils import CollisionObjectContainer
 
 class CollisionGraph:
     def __init__(self, info, robot, link_exclusion_list = []):

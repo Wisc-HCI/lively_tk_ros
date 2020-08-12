@@ -1,5 +1,4 @@
-# from RelaxedIK.GROOVE_RelaxedIK.relaxedIK_vars import RelaxedIK_vars
-from lively_ik.groove.relaxed_ik_container import RelaxedIKContainer
+from ..groove.relaxed_ik_container import RelaxedIKContainer
 import os
 import yaml
 import numpy.random as r
