@@ -36,7 +36,7 @@ end
 function RelaxedIK_vars(info, objectives, grad_types, weight_priors, inequality_constraints, ineq_grad_types, equality_constraints, eq_grad_types; position_mode = "relative", rotation_mode = "relative", preconfigured=false)
     lively_ik = pyimport("lively_ik")
     collision_transfer = pyimport("lively_ik.utils.collision_transfer")
-    
+
     robot = yaml_block_to_robot(info)
     vars = Vars(info["starting_config"], objectives, grad_types, weight_priors, inequality_constraints, [], equality_constraints, [], info["joint_limits"])
 
@@ -76,7 +76,7 @@ function RelaxedIK_vars(info, objectives, grad_types, weight_priors, inequality_
 
     if preconfigured == false
         collision_nn_file_name = info["collision_nn_file"]
-        lively_ik_folder = lively_ik.get_base()
+        lively_ik_folder = lively_ik.BASE
         folder = lively_ik_folder * "/config/collision_nn/"
         w = BSON.load(folder * collision_nn_file_name)[:w]
         w_ = Array{Array{Float64,2},1}()

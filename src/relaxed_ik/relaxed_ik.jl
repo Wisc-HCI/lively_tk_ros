@@ -100,7 +100,7 @@ function get_standard(info; solver_name = "slsqp", preconfigured=false)
         end
 
     end
-    println("Created Objectives")
+    
     inequality_constraints = []
     ineq_grad_types = []
     equality_constraints = []
