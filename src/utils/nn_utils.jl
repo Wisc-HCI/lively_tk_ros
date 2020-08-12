@@ -72,7 +72,7 @@ function get_gradient_wrt_input(w, x)
     return ∇, x
 end
 
-function get_rand_state_with_bounds(bounds::Array{Array{Float64}})
+function get_rand_state_from_bounds(bounds)
     sample = []
     for b in bounds
         push!(sample, rand(Uniform(b[1], b[2])))
@@ -81,7 +81,7 @@ function get_rand_state_with_bounds(bounds::Array{Array{Float64}})
 end
 
 
-function get_rand_state_with_bounds(relaxedIK_vars::RelaxedIK_vars)
+function get_rand_state_from_vars(relaxedIK_vars::RelaxedIK_vars)
     sample = Array{Float64,1}()
     bounds = relaxedIK_vars.vars.bounds
     for b in bounds

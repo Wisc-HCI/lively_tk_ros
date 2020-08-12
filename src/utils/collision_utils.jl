@@ -1,15 +1,5 @@
 
 
-
-function get_rand_state_with_bounds(bounds)
-    sample = []
-    for b in bounds
-        push!(sample, rand(Uniform(b[1], b[2])))
-    end
-    return sample
-end
-
-
 function get_t_c_and_f_values(w, collision_check_py_object, relaxedIK)
     model_scores = []
     ground_truth_scores = []
@@ -17,7 +7,7 @@ function get_t_c_and_f_values(w, collision_check_py_object, relaxedIK)
     nn_model = (x) -> predict(w, x)[1]
 
     for i = 1:7000
-        r = get_rand_state_with_bounds(relaxedIK.relaxedIK_vars.vars.bounds)
+        r = get_rand_state_from_bounds(relaxedIK.relaxedIK_vars.vars.bounds)
         state = state_to_joint_pts_withreturn(r, relaxedIK.relaxedIK_vars)
         push!(model_scores, nn_model(state))
         push!(ground_truth_scores, c.get_score(r, collision_check_py_object))
