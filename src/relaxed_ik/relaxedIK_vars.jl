@@ -189,8 +189,8 @@ function yaml_block_to_arms(info)
     arms = []
 
     for i=1:num_chains
-        a = Arm(info["joint_names"][i], info["axis_types"][i], info["displacements"][i],  y["disp_offsets"][i],
-            y["rot_offsets"][i], y["joint_types"][i], true)
+        a = Arm(info["joint_names"][i], info["axis_types"][i], info["displacements"][i],  info["disp_offsets"][i],
+            info["rot_offsets"][i], info["joint_types"][i], true)
         push!(arms, a)
     end
 
