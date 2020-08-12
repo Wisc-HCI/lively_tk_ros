@@ -1,8 +1,4 @@
 
-using StaticArrays
-
-
-
 function get_ik_task(path_to_src, task_name; scaling_factor=1.0)
     pos_goals = []
     quat_goals = []

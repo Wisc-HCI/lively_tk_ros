@@ -1,6 +1,15 @@
+using YAML
+using Rotations
+using StaticArrays
+using Flux
+using BSON
+using PyCall
+using Base
+
 include("relaxedIK_objective.jl")
 include("livelyIK_objective.jl")
 include("relaxedIK_vars.jl")
+
 
 mutable struct RelaxedIK
     relaxedIK_vars

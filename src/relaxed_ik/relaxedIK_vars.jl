@@ -1,19 +1,3 @@
-include("../groove/vars.jl")
-include("../spacetime/arm.jl")
-include("../spacetime/robot.jl")
-include("../utils/nn_utils.jl")
-include("../utils/noise.jl")
-
-using YAML
-using Rotations
-using StaticArrays
-using Flux
-using BSON
-using PyCall
-using Base
-
-#@pyimport RelaxedIK.Utils.collision_transfer as c
-@pyimport lively_ik.utils.collision_transfer as c
 
 mutable struct RelaxedIK_vars
     vars

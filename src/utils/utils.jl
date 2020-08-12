@@ -12,8 +12,6 @@ using Statistics
 using DSP
 using Distances
 
-@pyimport RelaxedIK.Utils.collision_transfer as c
-
 include("autocam_utils.jl")
 include("transformations.jl")
 include("subscribers.jl")
