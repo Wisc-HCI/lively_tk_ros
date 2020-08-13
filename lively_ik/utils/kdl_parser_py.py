@@ -4,7 +4,7 @@ import urdf_parser_py.urdf as urdf
 # Grabbed from here: https://github.com/ros/kdl_parser
 ###
 
-import PyKDL as kdl
+from PyKDL import PyKDL as kdl
 
 def treeFromFile(filename):
     """

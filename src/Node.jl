@@ -3,6 +3,9 @@ using ArgParse
 using Sockets
 using JSON
 using LivelyIK
+using PyCall
+
+rclpy = pyimport("rclpy")
 
 s = ArgParseSettings()
 @add_arg_table! s begin
@@ -13,7 +16,7 @@ s = ArgParseSettings()
 end
 
 parsed_args = parse_args(ARGS, s)
-
+rclpy.init()
 info_path = parsed_args["info_file"]
 info_data = YAML.load(open(info_path))
 
