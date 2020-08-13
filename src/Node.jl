@@ -1,5 +1,11 @@
-using YAML
-using ArgParse
+#!/bin/bash
+# -*- mode: julia -*-
+#=
+exec julia --color=yes --startup-file=no "${BASH_SOURCE[0]}" "$@"
+=#
+
+# using YAML
+# using ArgParse
 using LivelyIK
 using PyCall
 using Rotations
@@ -9,13 +15,13 @@ rclpy_node = pyimport("rclpy.node")
 rclpy_time = pyimport("rclpy.time")
 wisc_msgs = pyimport("wisc_msgs.msg")
 
-s = ArgParseSettings()
-@add_arg_table! s begin
-    "--info_file", "-i"
-        arg_type = String
-        help = "Full path to the info file"
-        required = true
-end
+# s = ArgParseSettings()
+# @add_arg_table! s begin
+#     "--info_file", "-i"
+#         arg_type = String
+#         help = "Full path to the info file"
+#         required = true
+# end
 
 function msg_to_args(goal_msg)
     goal_positions = []
@@ -89,16 +95,21 @@ function xopt_to_msg(time, xopt)
     return solution_msg
 end
 
-parsed_args = parse_args(ARGS, s)
+# parsed_args = parse_args(ARGS, s)
 
-info_path = parsed_args["info_file"]
-info_data = YAML.load(open(info_path))
+# info_path = parsed_args["info_file"]
+# info_data = YAML.load(open(info_path))
 
 # ROS and LivelyIK Setup
 rclpy.init()
+node = rclpy_node.Node("lively_ik_node")
+
+info_data = node.get_parameter("/lively_ik")
+println(info_data)
+
 lik = LivelyIK.get_standard(info_data)
 
-node = rclpy_node.Node("lively_ik_node")
+
 solutions_pub = node.create_publisher(wisc_msgs.JointAngles,"/relaxed_ik/joint_angles",5)
 
 function goal_cb(goal_msg)
