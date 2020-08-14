@@ -4,7 +4,7 @@
 exec julia --color=yes --startup-file=no "${BASH_SOURCE[0]}" "$@"
 =#
 
-# using YAML
+using YAML
 # using ArgParse
 using LivelyIK
 using PyCall
@@ -98,16 +98,16 @@ end
 # parsed_args = parse_args(ARGS, s)
 
 # info_path = parsed_args["info_file"]
-# info_data = YAML.load(open(info_path))
+info_data = YAML.load(open("/Users/schoen/ROS/ros2_lik/install/lively_ik/share/lively_ik/config/info_files/info_ur3e.yaml"))
 
 # ROS and LivelyIK Setup
 rclpy.init()
 node = rclpy_node.Node("lively_ik_node")
 
-info_data = node.get_parameter("/lively_ik")
-println(info_data)
+#info_data2 = node.get_parameter("/lively_ik/info")
+#println(info_data2)
 
-lik = LivelyIK.get_standard(info_data)
+lik = LivelyIK.get_standard(info_data,rcl_node=node)
 
 
 solutions_pub = node.create_publisher(wisc_msgs.JointAngles,"/relaxed_ik/joint_angles",5)

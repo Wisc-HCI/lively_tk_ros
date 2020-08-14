@@ -7,10 +7,10 @@ import rclpy
 from rclpy.node import Node
 
 
-class CollisionObjectContainer(Node):
-    def __init__(self, info):
-        super(CollisionObjectContainer,self).__init__('collision_objects')
-        self.collision_object_publisher = self.create_publisher(Marker,'visualization_marker',10)
+class CollisionObjectContainer(object):
+    def __init__(self, info, rcl_node):
+        self.rcl_node = rcl_node
+        self.collision_object_publisher = self.rcl_node.create_publisher(Marker,'visualization_marker',10)
         self.collision_objects = []
 
         keys = info.keys()

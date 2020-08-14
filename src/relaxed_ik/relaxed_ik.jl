@@ -17,14 +17,14 @@ mutable struct RelaxedIK
     ema_filter
 end
 
-function RelaxedIK(info, objectives, grad_types, weight_priors, inequality_constraints, ineq_grad_types, equality_constraints, eq_grad_types; position_mode = "absolute", rotation_mode = "absolute", solver_name="slsqp", preconfigured=false, groove_iter = 11, max_time=0.0)
-    relaxedIK_vars = RelaxedIK_vars(info, objectives, grad_types, weight_priors, inequality_constraints, ineq_grad_types, equality_constraints, eq_grad_types, position_mode = position_mode, rotation_mode = rotation_mode, preconfigured=preconfigured)
+function RelaxedIK(info, rcl_node, objectives, grad_types, weight_priors, inequality_constraints, ineq_grad_types, equality_constraints, eq_grad_types; position_mode = "absolute", rotation_mode = "absolute", solver_name="slsqp", preconfigured=false, groove_iter = 11, max_time=0.0)
+    relaxedIK_vars = RelaxedIK_vars(info, rcl_node, objectives, grad_types, weight_priors, inequality_constraints, ineq_grad_types, equality_constraints, eq_grad_types, position_mode = position_mode, rotation_mode = rotation_mode, preconfigured=preconfigured)
     groove = get_groove(relaxedIK_vars.vars, solver_name, max_iter = groove_iter, max_time=max_time)
     ema_filter = EMA_filter(relaxedIK_vars.vars.init_state)
     return RelaxedIK(relaxedIK_vars, groove, ema_filter)
 end
 
-function get_standard(info; solver_name = "slsqp", preconfigured=false)
+function get_standard(info, rcl_node, solver_name = "slsqp", preconfigured=false)
     joint_ordering = info["joint_ordering"]
     joint_names = info["joint_names"]
     objective_info = info["objectives"]
@@ -100,12 +100,16 @@ function get_standard(info; solver_name = "slsqp", preconfigured=false)
         end
 
     end
-    
+
     inequality_constraints = []
     ineq_grad_types = []
     equality_constraints = []
     eq_grad_types = []
-    return RelaxedIK(info, objectives, grad_types, weight_priors, inequality_constraints, ineq_grad_types, equality_constraints, eq_grad_types, solver_name = solver_name, preconfigured=preconfigured)
+    return RelaxedIK(info, rcl_node, objectives, grad_types, weight_priors, inequality_constraints, ineq_grad_types, equality_constraints, eq_grad_types, solver_name = solver_name, preconfigured=preconfigured)
+end
+
+function get_standard(info, solver_name = "slsqp", preconfigured=false)
+    return get_standard(info, nothing, solver_name = "slsqp", preconfigured=false)
 end
 
 function get_joint_positions(relaxedIK, x)

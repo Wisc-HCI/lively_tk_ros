@@ -11,10 +11,11 @@ data_files = [
     ('share/' + package_name, ['package.xml'])
 ]
 for config_file in config_files:
-    data_files.append(('share/' + package_name + '/' + config_file,[config_file]))
+    base = os.path.dirname(config_file)
+    data_files.append(('share/' + package_name + '/' + base,[config_file]))
 
 for launch_file in launch_files:
-    data_files.append(('share/' + package_name + '/' + launch_file,[launch_file]))
+    data_files.append(('share/' + package_name + '/',[launch_file]))
 
 setup(
     name=package_name,
@@ -25,10 +26,10 @@ setup(
     zip_safe=True,
     maintainer='schoen',
     maintainer_email='schoen.andrewj@gmail.com',
-    description='TODO: Package description',
+    description='The LivelyIK Package',
     license='TODO: License declaration',
     tests_require=['pytest'],
-    scripts=['src/Node.jl'],
+    scripts=['lively_ik/Node.jl'],
     entry_points={
         'console_scripts': [
             'manager = lively_ik.manager:main'
