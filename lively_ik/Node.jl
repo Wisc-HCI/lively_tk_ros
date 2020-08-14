@@ -107,7 +107,7 @@ node = rclpy_node.Node("lively_ik_node")
 #info_data2 = node.get_parameter("/lively_ik/info")
 #println(info_data2)
 
-lik = LivelyIK.get_standard(info_data,rcl_node=node)
+lik = LivelyIK.get_standard(info_data,node)
 
 
 solutions_pub = node.create_publisher(wisc_msgs.JointAngles,"/relaxed_ik/joint_angles",5)

@@ -108,10 +108,6 @@ function get_standard(info, rcl_node, solver_name = "slsqp", preconfigured=false
     return RelaxedIK(info, rcl_node, objectives, grad_types, weight_priors, inequality_constraints, ineq_grad_types, equality_constraints, eq_grad_types, solver_name = solver_name, preconfigured=preconfigured)
 end
 
-function get_standard(info, solver_name = "slsqp", preconfigured=false)
-    return get_standard(info, nothing, solver_name = "slsqp", preconfigured=false)
-end
-
 function get_joint_positions(relaxedIK, x)
     positions = []
     for i = 1:length(relaxedIK.relaxedIK_vars.robot.subchain_indices)
