@@ -19,7 +19,7 @@ rcl_srv = pyimport("rcl_interfaces.srv")
 
 # ROS and LivelyIK Setup
 rclpy.init()
-node = rclpy_node.Node("ik_node")
+global node = rclpy_node.Node("ik_node")
 
 # Get parameters (info data)
 param_client = node.create_client(rcl_srv.GetParameters, "/global_params/get_parameters")
@@ -98,21 +98,31 @@ end
 # Create JS Publisher
 global solutions_pub = node.create_publisher(sensor_msgs.JointState,output_topic,5)
 
-# Publish initial state for other nodes
-initial_msg = sensor_msgs.JointState(name=info_data["joint_ordering"],position=info_data["starting_config"])
-solutions_pub.publish(initial_msg)
+global xopt = info_data["starting_config"]
+
+function publish()
+    global xopt
+    global solutions_pub
+    global node
+    println("In Publish: $xopt")
+    msg = sensor_msgs.JointState(name=info_data["joint_ordering"],position=xopt)
+    msg.header.stamp = node.get_clock().now().to_msg()
+    solutions_pub.publish(msg)
+end
+
+timer = node.create_timer(0.05,publish)
 
 # LivelyIK Setup
 global lik = LivelyIK.get_standard(info_data,node)
 
 function goal_cb(goal_msg)
     global lik
-    global solutions_pub
+    global xopt
     # Handle the goal message and publish the solution from lively_ik
     goal_positions, goal_quats, dc_goals, time, bias, weights = msg_to_args(goal_msg)
+    println("POS: $time $goal_positions")
     xopt = LivelyIK.solve(lik, goal_positions, goal_quats, dc_goals, time, bias, weights)
-    msg = sensor_msgs.JointState(header=goal_msg.header,name=info_data["joint_ordering"],position=xopt)
-    solutions_pub.publish(msg)
+    # println("In CB: $xopt")
 end
 
 # Solve once

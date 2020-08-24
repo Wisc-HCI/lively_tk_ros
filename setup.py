@@ -1,6 +1,7 @@
 from setuptools import setup
 import glob
 import os
+from julia import Pkg
 
 package_name = 'lively_ik'
 config_files = glob.glob(os.path.join('config', '*', '*'))
@@ -46,3 +47,5 @@ setup(
 )
 
 # TODO figure out Julia stuff
+Pkg.add(PackageSpec(path="lively_ik"))
+J.call()

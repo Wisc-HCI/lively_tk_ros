@@ -24,7 +24,8 @@ class ControllerNode(Node):
         self.info = yaml.safe_load(self.get_lik_param('info'))
 
         self.ims = InteractiveMarkerServer(self,'control')
-        self.js_pub = self.create_publisher(LivelyGoals,'/robot_goals',5)
+        self.goal_pub = self.create_publisher(LivelyGoals,'robot_goals',5)
+        self.temp_js_pub = self.create_publisher(JointState,'joint_states',5)
         self.rik_container = RelaxedIKContainer(self.info,self)
         ee_positions = self.rik_container.robot.get_ee_positions(self.info['starting_config'])
         ee_rotations = self.rik_container.robot.get_ee_rotations(self.info['starting_config'])
@@ -58,13 +59,17 @@ class ControllerNode(Node):
 
         self.ims.applyChanges()
         self.create_timer(0.05,self.publisher)
+        js_msg = JointState(name=self.info['joint_ordering'],position=self.info['starting_config'])
+        js_msg.header.stamp = self.get_clock().now().to_msg()
+        self.temp_js_pub.publish(js_msg)
+        self.destroy_publisher(self.temp_js_pub)
 
     def feedback_cb(self,idx,msg):
-        self.goals.header.stamp = msg.header.stamp
         self.goals.ee_poses[idx] = msg.pose
 
     def publisher(self):
-        self.js_pub.publish(self.goals)
+        self.goals.header.stamp = self.get_clock().now().to_msg()
+        self.goal_pub.publish(self.goals)
 
     def get_lik_param(self, param):
         request = GetParameters.Request()
