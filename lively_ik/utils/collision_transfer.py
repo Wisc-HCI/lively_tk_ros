@@ -7,7 +7,7 @@ import sys
 
 
 class CollisionVars:
-    def __init__(self, info, rcl_node=None):
+    def __init__(self, info, rcl_node):
         self.vars = RelaxedIKContainer(info,rcl_node,config_override=False, pre_config=True)
 
 

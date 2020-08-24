@@ -5,7 +5,6 @@ exec julia --color=yes --startup-file=no "${BASH_SOURCE[0]}" "$@"
 =#
 
 using YAML
-# using ArgParse
 using LivelyIK
 using PyCall
 using Rotations
@@ -14,14 +13,24 @@ rclpy = pyimport("rclpy")
 rclpy_node = pyimport("rclpy.node")
 rclpy_time = pyimport("rclpy.time")
 wisc_msgs = pyimport("wisc_msgs.msg")
+std_msgs = pyimport("std_msgs.msg")
+sensor_msgs = pyimport("sensor_msgs.msg")
+rcl_srv = pyimport("rcl_interfaces.srv")
 
-# s = ArgParseSettings()
-# @add_arg_table! s begin
-#     "--info_file", "-i"
-#         arg_type = String
-#         help = "Full path to the info file"
-#         required = true
-# end
+# ROS and LivelyIK Setup
+rclpy.init()
+node = rclpy_node.Node("ik_node")
+
+# Get parameters (info data)
+param_client = node.create_client(rcl_srv.GetParameters, "/global_params/get_parameters")
+request = rcl_srv.GetParameters.Request()
+request.names = ["info","output_topic"]
+future = param_client.call_async(request)
+rclpy.spin_until_future_complete(node, future)
+response = future.result()
+info_string = response.values[1].string_value
+output_topic = response.values[2].string_value
+global info_data = YAML.load(info_string)
 
 function msg_to_args(goal_msg)
     goal_positions = []
@@ -59,7 +68,7 @@ function msg_to_args(goal_msg)
     return goal_positions, goal_quats, dc_goals, time, bias, weights
 end
 
-function get_initial_goals(lively_ik,info)
+function get_initial_goals(lively_ik,info_data)
     num_chains = lively_ik.relaxedIK_vars.robot.num_chains
 
     goal_positions = []
@@ -72,7 +81,7 @@ function get_initial_goals(lively_ik,info)
     end
 
     # Create DC Goals from DC Values
-    dc_goals = info["starting_config"]
+    dc_goals = info_data["starting_config"]
 
     # Get Time from Header
     time = 0
@@ -86,46 +95,27 @@ function get_initial_goals(lively_ik,info)
     return goal_positions, goal_quats, dc_goals, time, bias, weights
 end
 
-function xopt_to_msg(time, xopt)
-    solution_msg = wisc_msgs.JointAngles()
-    solution_msg.header.stamp = time
-    for i = 1:length(xopt)
-        push!(solution_msg.angles,xopt[i])
-    end
-    return solution_msg
-end
+# LivelyIK Setup
 
-# parsed_args = parse_args(ARGS, s)
-
-# info_path = parsed_args["info_file"]
-info_data = YAML.load(open("/Users/schoen/ROS/ros2_lik/install/lively_ik/share/lively_ik/config/info_files/info_ur3e.yaml"))
-
-# ROS and LivelyIK Setup
-rclpy.init()
-node = rclpy_node.Node("lively_ik_node")
-
-#info_data2 = node.get_parameter("/lively_ik/info")
-#println(info_data2)
-
-lik = LivelyIK.get_standard(info_data,node)
-
-
-solutions_pub = node.create_publisher(wisc_msgs.JointAngles,"/relaxed_ik/joint_angles",5)
+global lik = LivelyIK.get_standard(info_data,node)
+global solutions_pub = node.create_publisher(sensor_msgs.JointState,output_topic,5)
 
 function goal_cb(goal_msg)
+    global lik
+    global solutions_pub
     # Handle the goal message and publish the solution from lively_ik
     goal_positions, goal_quats, dc_goals, time, bias, weights = msg_to_args(goal_msg)
-    xopt = solve(lik, goal_positions, goal_quats, dc_goals, time, bias, weights)
-    solutions_pub.publish(xopt_to_msg(time,xopt))
+    xopt = LivelyIK.solve(lik, goal_positions, goal_quats, dc_goals, time, bias, weights)
+    msg = sensor_msgs.JointState(header=goal_msg.header,name=info_data["joint_ordering"],position=xopt)
+    solutions_pub.publish(msg)
 end
-
-goal_sub = node.create_subscription(wisc_msgs.LivelyGoals,"/relaxed_ik/goals",goal_cb,5)
 
 # Solve once
 println("Finishing Compilation")
 goal_positions, goal_quats, dc_goals, time, bias, weights = get_initial_goals(lik,info_data)
 sol = LivelyIK.solve(lik, goal_positions, goal_quats, dc_goals, time, bias, weights)
-println(sol)
+
+goal_sub = node.create_subscription(wisc_msgs.LivelyGoals,"/robot_goals",goal_cb,5)
 
 # Process Until Interrupted
 println("Running LivelyIK Node")

@@ -13,11 +13,13 @@ CONFIG_DIR = lively_ik.BASE + '/config'
 class RelaxedIKContainer(object):
     def __init__(self,
                  info,
+                 rcl_node,
                  collision_link_exclusion_list=[],
                  config_override=False,
                  pre_config=False
                  ):
         self.info = info
+        self.rcl_node = rcl_node
         self.full_joint_lists = info['joint_names']
         self.fixed_ee_joints = info['ee_fixed_joints']
         self.joint_order = info['joint_ordering']
@@ -53,15 +55,11 @@ class RelaxedIKContainer(object):
 
         self.bounds = self.robot.bounds
 
-        self.collision_graph = CollisionGraph(self.collision_info, self.robot, collision_link_exclusion_list)
+        self.collision_graph = CollisionGraph(self.collision_info, self.rcl_node, self.robot, collision_link_exclusion_list)
 
         if not self.numDOF == len(info['starting_config']):
-            # self.init_state = self.numDOF * [0]
-            # print bcolors.WARNING + 'WARNING: Length of init_state does not match number of robot DOFs.  Automatically ' \
-            #                         'initializing init_state as {}.  This may cause errors.'.format(
-            #    str(self.init_state)) + bcolors.ENDC
             print(bcolors.WARNING + 'WARNING: Length of init_state does not match number of robot DOFs.  Is this what you intended?' + bcolors.ENDC)
 
         if not pre_config:
-            self.ce = ConfigEngine(self.collision_graph, self, path_to_src,collision_nn_file,config_fn=config_file_name, override=config_override)
+            self.ce = ConfigEngine(self.info, self.collision_graph, self, override=config_override)
             self.collision_nn = self.ce.collision_nn

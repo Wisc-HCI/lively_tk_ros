@@ -4,8 +4,8 @@ import math
 from .collision_utils import CollisionObjectContainer
 
 class CollisionGraph:
-    def __init__(self, info, robot, link_exclusion_list = []):
-        self.c = CollisionObjectContainer(info)
+    def __init__(self, info, rcl_node, robot, link_exclusion_list = []):
+        self.c = CollisionObjectContainer(info, rcl_node)
         self.c.add_collision_objects_from_robot(robot, link_exclusion_list)
         self.robot = robot
         self.sample_states = self.c.sample_states

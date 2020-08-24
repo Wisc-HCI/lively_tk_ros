@@ -12,7 +12,7 @@ displacements:
   - [-0.000204644187552, 0.0919106284329, -0.000101802119305]
   - [0.0, 0.0, 0.0]
 ee_fixed_joints: [ee_fixed_joint]
-fixed_frame: world
+fixed_frame: base_link
 fixed_frame_noise_scale: 0.0
 fixed_frame_noise_frequency: 1
 joint_limits:

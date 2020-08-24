@@ -38,7 +38,7 @@ class CollisionNNTrainer:
         self.robot = self.cg.robot
         self.bounds = self.cg.robot.bounds
 
-        for i in xrange(num_samples):
+        for i in range(num_samples):
             rvec = rand_vec(self.bounds)
             frames = self.robot.getFrames(rvec)
             score = self.cg.get_collision_score(frames)
@@ -60,7 +60,7 @@ class CollisionNNTrainer:
 
     def output_comparisons(self, num_samples=100):
         print('output comparisons...')
-        for i in xrange(num_samples):
+        for i in range(num_samples):
             rand = rand_vec(self.robot.bounds)
             frames = self.robot.getFrames(rand)
             jt_pt_vec = frames_to_jt_pt_vec(frames)

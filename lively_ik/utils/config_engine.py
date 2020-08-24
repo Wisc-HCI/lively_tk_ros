@@ -3,69 +3,39 @@ from .colors import bcolors
 from os import listdir
 # from sklearn.externals import joblib
 import joblib
-from os.path import isfile, join
+import bson
 from .neural_net_trainer import CollisionNNTrainer
 import os
+from lively_ik import BASE
 
 
 class ConfigEngine:
     def __init__(self, info, collision_graph, vars, override=False):
         self.info = info
         self.collision_graph = collision_graph
-        self.config_fn = config_fn
-        self.path_to_src = path_to_src
-        self.nn_file_name = nn_file_name
+        self.config_fn = BASE+'/config/collision_files/'+info['collision_file_name']
+        self.nn_file_name = BASE+'/config/collision_nn/'+info['collision_nn_file']+'_python'
         self.vars = vars
-        self.path = path_to_src + '/RelaxedIK/Config/collision_nn_python/'
 
-        if override:
+        if not os.path.exists(self.nn_file_name) or override:
+            print(bcolors.OKBLUE + 'Config file not found at ' +self.nn_file_name+ ', generating a new one!  This will take some time.' + bcolors.ENDC)
             self.robot_name, self.collision_nn, self.init_state, self.full_joint_lists, self.fixed_ee_joints, \
-               self.joint_order, self.urdf_path, self.collision_file = self.generate_config_file()
+               self.joint_order, self.urdf_path, self.collision_file = self.generate_nn_file()
         else:
-            config_file = self.check_for_config_file()
-            if config_file == None:
+            try:
+                self.collision_nn = joblib.load(self.nn_file_name)
+            except:
+                print(bcolors.OKBLUE + 'Config file at ' + self.nn_file_name + ' could not be opened; generating a new one!  This will take some time.' + bcolors.ENDC)
                 self.robot_name, self.collision_nn, self.init_state, self.full_joint_lists, self.fixed_ee_joints, \
-                self.joint_order, self.urdf_path, self.collision_file = self.generate_config_file()
+                   self.joint_order, self.urdf_path, self.collision_file = self.generate_nn_file()
 
-            else:
-                # self.collision_file = joblib.load(self.path + config_file)
-                # self.robot_name = self.config_data[0]
-                self.collision_nn = joblib.load(self.path + config_file)
-                # self.init_state = self.config_data[2]
-                # self.full_joint_lists = self.config_data[3]
-                # self.fixed_ee_joints = self.config_data[4]
-                # self.joint_order = self.config_data[5]
-                # self.urdf_path = self.config_data[6]
-                # self.collision_file = self.config_data[7]
-
-    def check_for_config_file(self):
-        files = [f for f in listdir(self.path) if isfile(join(self.path, f))]
-
-        for f in files:
-            if f == self.nn_file_name:
-                return f
-
-        response = raw_input(bcolors.OKBLUE + 'Config file not found, generating a new one!  This will take some time.  Continue?  (y or n): ' + bcolors.ENDC)
-        if response == 'y':
-            return None
-        else:
-            exit(1)
-
-    def generate_config_file(self):
+    def generate_nn_file(self):
         trainer = CollisionNNTrainer(self.collision_graph)
         collision_nn = trainer.clf
         # robot_name = trainer.robot.__name__
         robot_name = 'robot'
 
-        # file_vars = [robot_name, collision_nn, self.vars.init_state, self.vars.full_joint_lists, self.vars.fixed_ee_joints, \
-        #        self.vars.joint_order, self.vars.urdf_path, self.vars.collision_file]
+        joblib.dump(collision_nn, self.nn_file_name)
 
-        print(self.nn_file_name)
-        joblib.dump(collision_nn, self.path + self.nn_file_name)
-
-        return robot_name, collision_nn, self.vars.init_state, self.vars.full_joint_lists, self.vars.fixed_ee_joints, \
-               self.vars.joint_order, self.vars.urdf_path, self.vars.collision_file
-
-if __name__ == '__main__':
-    ce = ConfigEngine()
-    print(ce.check_for_config_file())
+        return robot_name, collision_nn, self.info['starting_config'], self.info['joint_names'], self.info['ee_fixed_joints'], \
+               self.info['joint_ordering'], self.info['urdf_file_name'], self.info['collision_file_name']

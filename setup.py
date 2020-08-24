@@ -5,6 +5,7 @@ import os
 package_name = 'lively_ik'
 config_files = glob.glob(os.path.join('config', '*', '*'))
 launch_files = glob.glob(os.path.join('launch', '*'))
+rviz_files = glob.glob(os.path.join('rviz', '*'))
 
 data_files = [
     ('share/ament_index/resource_index/packages',['resource/' + package_name]),
@@ -16,6 +17,9 @@ for config_file in config_files:
 
 for launch_file in launch_files:
     data_files.append(('share/' + package_name + '/',[launch_file]))
+
+for rviz_file in rviz_files:
+    data_files.append(('share/' + package_name + '/',[rviz_file]))
 
 setup(
     name=package_name,
@@ -32,7 +36,11 @@ setup(
     scripts=['lively_ik/Node.jl'],
     entry_points={
         'console_scripts': [
-            'manager = lively_ik.manager:main'
+            'manager = lively_ik.manager:main',
+            'visualize = lively_ik.visualize:main',
+            'control = lively_ik.control:main',
+            'param = lively_ik.param:main',
+            'simple = lively_ik.simple_pub:main'
         ],
     },
 )

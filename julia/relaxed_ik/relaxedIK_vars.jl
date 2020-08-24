@@ -78,6 +78,7 @@ function RelaxedIK_vars(info, rcl_node, objectives, grad_types, weight_priors, i
         collision_nn_file_name = info["collision_nn_file"]
         lively_ik_folder = lively_ik.BASE
         folder = lively_ik_folder * "/config/collision_nn/"
+        println(folder * collision_nn_file_name)
         w = BSON.load(folder * collision_nn_file_name)[:w]
         w_ = Array{Array{Float64,2},1}()
         for i = 1:length(w)
