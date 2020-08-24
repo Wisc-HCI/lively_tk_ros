@@ -95,10 +95,15 @@ function get_initial_goals(lively_ik,info_data)
     return goal_positions, goal_quats, dc_goals, time, bias, weights
 end
 
-# LivelyIK Setup
-
-global lik = LivelyIK.get_standard(info_data,node)
+# Create JS Publisher
 global solutions_pub = node.create_publisher(sensor_msgs.JointState,output_topic,5)
+
+# Publish initial state for other nodes
+initial_msg = sensor_msgs.JointState(name=info_data["joint_ordering"],position=info_data["starting_config"])
+solutions_pub.publish(initial_msg)
+
+# LivelyIK Setup
+global lik = LivelyIK.get_standard(info_data,node)
 
 function goal_cb(goal_msg)
     global lik
