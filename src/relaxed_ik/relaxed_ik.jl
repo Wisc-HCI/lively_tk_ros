@@ -145,7 +145,8 @@ function solve(relaxedIK, goal_positions, goal_quats, dc_goals, time, bias, weig
         vars.goal_positions = goal_positions
     end
 
-    # update!(vars.noise, time, bias)
+    update!(vars.noise, time, bias)
+    println(vars.noise)
 
     # Assign the dc_goals to the joint_goal in vars
     vars.joint_goal = dc_goals
