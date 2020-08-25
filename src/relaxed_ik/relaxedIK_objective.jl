@@ -31,6 +31,7 @@ function position_obj(x, vars, idx)
     vars.robot.arms[idx].getFrames(x[vars.robot.subchain_indices[idx]])
     goal = vars.goal_positions[idx] + vars.noise.base.value
     x_val = norm(vars.robot.arms[idx].out_pts[end] - goal)
+    println(x_val)
 
     return groove_loss(x_val, 0., 2, .1, 10., 2)
 end
