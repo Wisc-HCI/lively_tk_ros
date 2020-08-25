@@ -1,3 +1,4 @@
+<?xml version="1.0" ?>
 <robot name="fetch">
   <link name="base_link">
     <inertial>
@@ -251,7 +252,7 @@
     <child link="upperarm_roll_link" />
     <axis xyz="1 0 0" />
     <dynamics damping="5.0" />
-    <limit effort="76.94" velocity="1.571" />
+    <limit effort="76.94" lower="-15." upper="15.0" velocity="1.571" />
   </joint>
   <link name="elbow_flex_link">
     <inertial>
@@ -311,7 +312,7 @@
     <child link="forearm_roll_link" />
     <axis xyz="1 0 0" />
     <dynamics damping="5.0" />
-    <limit effort="29.35" velocity="1.571" />
+    <limit effort="29.35" lower="-15." upper="15.0" velocity="1.571" />
   </joint>
   <link name="wrist_flex_link">
     <inertial>
@@ -370,7 +371,7 @@
     <parent link="wrist_flex_link" />
     <child link="wrist_roll_link" />
     <axis xyz="1 0 0" />
-    <limit effort="7.36" velocity="2.268" />
+    <limit effort="7.36" lower="-15." upper="15.0" velocity="2.268" />
     <dynamics damping="5.0" />
   </joint>
   <link name="gripper_link">
@@ -518,7 +519,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0" />
       <geometry>
-        <mesh filename="package://fetch_description/meshes/estop_link.STL" />
+        <mesh filename="package://fetch_description/meshes/estop_link.dae" />
       </geometry>
       <material name="">
         <color rgba="0.8 0 0 1" />

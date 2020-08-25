@@ -5,8 +5,9 @@ import rclpy
 from rclpy.node import Node
 from rcl_interfaces.srv import GetParameters
 from sensor_msgs.msg import JointState
+from std_msgs.msg import Float64
 from wisc_msgs.msg import LivelyGoals
-from wisc_actions.elements.structures import Pose
+from wisc_actions.elements.structures import Position, Pose
 from argparse import ArgumentParser
 from lively_ik.groove.relaxed_ik_container import RelaxedIKContainer
 from interactive_markers.interactive_marker_server import *
@@ -30,8 +31,8 @@ class ControllerNode(Node):
         ee_positions = self.rik_container.robot.get_ee_positions(self.info['starting_config'])
         ee_rotations = self.rik_container.robot.get_ee_rotations(self.info['starting_config'])
 
-        self.goals = LivelyGoals()
-
+        # Specify the ee_poses and configre markers
+        ee_poses = []
         for ee_idx in range(len(self.info['joint_names'])):
             # Determine initial pose, and add the pose to the marker server.
             pos = ee_positions[ee_idx]
@@ -55,7 +56,20 @@ class ControllerNode(Node):
                     'z':rot[3]
                 }
             }
-            self.goals.ee_poses.append(Pose.from_pose_dict(pose_dict).ros_pose)
+            ee_poses.append(Pose.from_pose_dict(pose_dict).ros_pose)
+
+        # Specify joint goals as initial
+        dc_values = [Float64(data=d) for d in self.info['starting_config']]
+
+        # Specify the objective weights
+        objective_weights =  []
+        for obj in self.info['objectives']:
+            objective_weights.append(Float64(data=obj['weight']))
+
+        # Specify the bias
+        bias = Position(1.0,1.0,1.0).ros_point
+
+        self.goals = LivelyGoals(ee_poses=ee_poses,dc_values=dc_values,objective_weights=objective_weights,bias=bias)
 
         self.ims.applyChanges()
         self.create_timer(0.05,self.publisher)

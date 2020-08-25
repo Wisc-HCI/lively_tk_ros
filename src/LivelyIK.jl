@@ -40,13 +40,20 @@ function Goals(goal_msg,time::Float64)
     end
 
     # Create DC Goals from DC Values
-    dc = goal_msg.dc_values
+    dc = []
+    for i=1:length(goal_msg.dc_values)
+        push!(dc,goal_msg.dc_values[i].data)
+    println(dc)
 
     # Extract Bias
     bias = [goal_msg.bias.x,goal_msg.bias.y,goal_msg.bias.z]
+    println(bias)
 
     # Extract Weights
-    weights = goal_msg.objective_weights
+    weights = []
+    for i=1:length(goal_msg.objective_weights)
+        push!(weights,goal_msg.objective_weights[i].data)
+    println(weights)
 
     return Goals(positions, quats, dc, time, bias, weights)
 end
