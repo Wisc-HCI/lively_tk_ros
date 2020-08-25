@@ -43,6 +43,7 @@ function Goals(goal_msg,time::Float64)
     dc = []
     for i=1:length(goal_msg.dc_values)
         push!(dc,goal_msg.dc_values[i].data)
+    end
     println(dc)
 
     # Extract Bias
@@ -53,6 +54,7 @@ function Goals(goal_msg,time::Float64)
     weights = []
     for i=1:length(goal_msg.objective_weights)
         push!(weights,goal_msg.objective_weights[i].data)
+    end
     println(weights)
 
     return Goals(positions, quats, dc, time, bias, weights)
