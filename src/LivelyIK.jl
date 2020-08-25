@@ -83,7 +83,7 @@ function Goals(lively_ik,info_data)
     convert(Array{Any},quats)
     convert(Array{Float64},dc)
     convert(Float64,time)
-    convert(Array{Float64,3},bias)
+    convert(Array{Float64},bias)
     convert(Array{Float64},weights)
     println("$positions | $quats | $dc | $time | $bias | $weights")
 
