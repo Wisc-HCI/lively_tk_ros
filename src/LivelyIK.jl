@@ -78,6 +78,14 @@ function Goals(lively_ik,info_data)
     # Extract Weights
     weights = lively_ik.relaxedIK_vars.vars.weight_priors
 
+    println(positions, quats, dc, time, bias, weights)
+    convert(Array{Array{Float64,3}},positions)
+    convert(Array{Array{Float64,4}},quats)
+    convert(Array{Float64},dc)
+    convert(Float64,time)
+    convert(Array{Float64,3},bias)
+    convert(Array{Float64},weights)
+
     return Goals(positions, quats, dc, time, bias, weights)
 end
 
