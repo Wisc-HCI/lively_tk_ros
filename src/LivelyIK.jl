@@ -9,7 +9,7 @@ include("spacetime/spacetime.jl")
 include("utils/utils.jl")
 include("relaxed_ik/relaxed_ik.jl")
 
-struct Goals
+mutable struct Goals
     positions#::Array{Array{Float64}}
     quats    #::Array{Array{Float64}}
     dc       #::Array{Float64}

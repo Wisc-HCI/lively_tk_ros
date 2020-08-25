@@ -119,21 +119,28 @@ function goal_cb(goal_msg)
     # Handle the goal message and publish the solution from lively_ik
     time = rclpy_time.Time.from_msg(goal_msg.header.stamp).nanoseconds * 10^-9
     goals = LivelyIK.Goals(goal_msg,time)
-    goals_type = typeof(goals)
-    println("GP (CB): $goals \n$goals_type")
 end
 
 # Solve once
 println("\033[92mFinishing Compilation\033[0m")
 goals = LivelyIK.Goals(lik,info_data)
-goals.positions[1][2] += 0.5
-for i=1:5
+positions = []
+for i=1:length(goals.positions)
+    push!([positions,goals.positions[i][1],positions,goals.positions[i][2]+0.25,positions,goals.positions[i][3]])
+end
+goals.positions = positions
+for i=1:10
     println("GP (N): $goals")
     sol = LivelyIK.solve(lik, goals.positions, goals.quats, goals.dc, goals.time, goals.bias, goals.weights)
+    msg = sensor_msgs.JointState(name=info_data["joint_ordering"],position=sol)
+    msg.header.stamp = node.get_clock().now().to_msg()
+    solutions_pub.publish(msg)
     println("SOL: $sol")
 end
 
 exit()
+
+goal_sub = node.create_subscription(wisc_msgs.LivelyGoals,"/robot_goals",goal_cb,5)
 
 goal_sub = node.create_subscription(wisc_msgs.LivelyGoals,"/robot_goals",goal_cb,5)
 
