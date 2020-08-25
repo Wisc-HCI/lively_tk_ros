@@ -40,59 +40,59 @@ objectives:
   index: 1
   weight: 2.0
   gradient: forward_ad
-- type: positional_noise
-  index: 1
-  scale: 0.15
-  weight: 10.0
-  gradient: forward_ad
-  frequency: 4.0
-- type: rotational_noise
-  index: 1
-  scale: 0.05
-  weight: 1.0
-  gradient: forward_ad
-  frequency: 4.0
+# - type: positional_noise
+#   index: 1
+#   scale: 0.15
+#   weight: 10.0
+#   gradient: forward_ad
+#   frequency: 4.0
+# - type: rotational_noise
+#   index: 1
+#   scale: 0.05
+#   weight: 1.0
+#   gradient: forward_ad
+#   frequency: 4.0
 # - type: dc
 #   index: 2
 #   weight: 0.0
 #   gradient: forward_ad
 #   frequency: 4
-- type: dc_noise
-  index: 1
-  scale: 0.5371884221
-  weight: 0.0
-  gradient: forward_ad
-  frequency: 4
-- type: dc_noise
-  index: 2
-  scale: 0.52807446068
-  weight: 0.0
-  gradient: forward_ad
-  frequency: 4
-- type: dc_noise
-  index: 3
-  scale: 0.71847205049
-  weight: 0.0
-  gradient: forward_ad
-  frequency: 4
-- type: dc_noise
-  index: 4
-  scale: 0.59641281529
-  weight: 0.0
-  gradient: forward_ad
-  frequency: 4
-- type: dc_noise
-  index: 5
-  scale: 0.39374551588
-  weight: 0.0
-  gradient: forward_ad
-  frequency: 4
-- type: dc_noise
-  index: 6
-  scale: 0.45956975793
-  weight: 0.0
-  gradient: forward_ad
-  frequency: 4
+# - type: dc_noise
+#   index: 1
+#   scale: 0.5371884221
+#   weight: 0.0
+#   gradient: forward_ad
+#   frequency: 4
+# - type: dc_noise
+#   index: 2
+#   scale: 0.52807446068
+#   weight: 0.0
+#   gradient: forward_ad
+#   frequency: 4
+# - type: dc_noise
+#   index: 3
+#   scale: 0.71847205049
+#   weight: 0.0
+#   gradient: forward_ad
+#   frequency: 4
+# - type: dc_noise
+#   index: 4
+#   scale: 0.59641281529
+#   weight: 0.0
+#   gradient: forward_ad
+#   frequency: 4
+# - type: dc_noise
+#   index: 5
+#   scale: 0.39374551588
+#   weight: 0.0
+#   gradient: forward_ad
+#   frequency: 4
+# - type: dc_noise
+#   index: 6
+#   scale: 0.45956975793
+#   weight: 0.0
+#   gradient: forward_ad
+#   frequency: 4
 - type: min_jt_vel
   weight: 5.0
   gradient: forward_ad
@@ -107,12 +107,6 @@ objectives:
   gradient: forward_ad
 - type: collision_nn
   weight: 5.0
-  gradient: finite_diff
-- type: test
-  index: 1
-  weight: 5.0
-  scale: 0.05
-  frequency: 4.0
   gradient: finite_diff
 path_to_src: /vagrant/src/lively_ik/src
 rot_offsets:

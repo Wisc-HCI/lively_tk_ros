@@ -100,7 +100,6 @@ function get_standard(info, rcl_node, solver_name = "slsqp", preconfigured=false
         end
 
     end
-    println(objectives)
     inequality_constraints = []
     ineq_grad_types = []
     equality_constraints = []
@@ -145,11 +144,6 @@ function solve(relaxedIK, goal_positions, goal_quats, dc_goals, time, bias, weig
         vars.goal_positions = goal_positions
     end
 
-    update!(vars.noise, time, bias)
-
-    # Assign the dc_goals to the joint_goal in vars
-    vars.joint_goal = dc_goals
-
     if vars.rotation_mode == "relative"
         for i = 1:vars.robot.num_chains
             vars.goal_quats[i] = goal_quats[i] * copy(vars.init_ee_quats[i])
@@ -158,7 +152,17 @@ function solve(relaxedIK, goal_positions, goal_quats, dc_goals, time, bias, weig
         vars.goal_quats = goal_quats
     end
 
+    # Assign the dc_goals to the joint_goal in vars
+    vars.joint_goal = dc_goals
+
+    println("Updated Goals")
+
+    update!(vars.noise, time, bias)
+    println("Updated Noise")
+
     xopt = groove_solve(relaxedIK.groove, prev_state=prev_state, max_iter=max_iter, max_time = max_time)
+    println("Groove Solved")
+
     update_relaxedIK_vars!(relaxedIK.relaxedIK_vars, xopt)
     if filter
         xopt = ema_filter_signal(relaxedIK.ema_filter, xopt)

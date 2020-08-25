@@ -76,8 +76,8 @@ function get_initial_goals(lively_ik,info_data)
 
     # Create POS/QUAT Goals from EE Poses
     for i = 1:length(num_chains)
-        push!(goal_positions, [0, 0, 0])
-        push!(goal_quats, Quat(1, 0, 0, 0))
+        push!(goal_positions, [0.0, 0.0, 0.0])
+        push!(goal_quats, Quat(1.0, 0.0, 0.0, 0.0))
     end
 
     # Create DC Goals from DC Values
@@ -128,6 +128,14 @@ end
 # Solve once
 println("Finishing Compilation")
 goal_positions, goal_quats, dc_goals, time, bias, weights = get_initial_goals(lik,info_data)
+println("GP: $goal_positions")
+sol = LivelyIK.solve(lik, goal_positions, goal_quats, dc_goals, time, bias, weights)
+println(goal_positions[1][2])
+goal_positions[1][2] += Float64(0.25)
+println("GP: $goal_positions")
+sol = LivelyIK.solve(lik, goal_positions, goal_quats, dc_goals, time, bias, weights)
+goal_positions[1][2] -= Float64(0.45)
+println("GP: $goal_positions")
 sol = LivelyIK.solve(lik, goal_positions, goal_quats, dc_goals, time, bias, weights)
 
 goal_sub = node.create_subscription(wisc_msgs.LivelyGoals,"/robot_goals",goal_cb,5)

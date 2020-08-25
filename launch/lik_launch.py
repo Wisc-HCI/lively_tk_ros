@@ -50,10 +50,10 @@ def launch_setup(context, *args, **kwargs):
         Node(package='lively_ik',
              executable='Node.jl',
              output='screen'),
-        Node(package='rviz2',
-             executable='rviz2',
-             name='rviz2',
-             arguments=['-d',rviz_file])
+        # Node(package='rviz2',
+        #      executable='rviz2',
+        #      name='rviz2',
+        #      arguments=['-d',rviz_file])
     ]
 
     return nodes
