@@ -100,7 +100,7 @@ function get_standard(info, rcl_node, solver_name = "slsqp", preconfigured=false
         end
 
     end
-
+    println(objectives)
     inequality_constraints = []
     ineq_grad_types = []
     equality_constraints = []
@@ -146,7 +146,6 @@ function solve(relaxedIK, goal_positions, goal_quats, dc_goals, time, bias, weig
     end
 
     update!(vars.noise, time, bias)
-    println(vars.noise)
 
     # Assign the dc_goals to the joint_goal in vars
     vars.joint_goal = dc_goals

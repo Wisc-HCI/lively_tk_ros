@@ -104,7 +104,7 @@ function publish()
     global xopt
     global solutions_pub
     global node
-    println("In Publish: $xopt")
+    # println("In Publish: $xopt")
     msg = sensor_msgs.JointState(name=info_data["joint_ordering"],position=xopt)
     msg.header.stamp = node.get_clock().now().to_msg()
     solutions_pub.publish(msg)
@@ -120,7 +120,7 @@ function goal_cb(goal_msg)
     global xopt
     # Handle the goal message and publish the solution from lively_ik
     goal_positions, goal_quats, dc_goals, time, bias, weights = msg_to_args(goal_msg)
-    println("POS: $time $goal_positions")
+    # println("POS: $time $goal_positions")
     xopt = LivelyIK.solve(lik, goal_positions, goal_quats, dc_goals, time, bias, weights)
     # println("In CB: $xopt")
 end
