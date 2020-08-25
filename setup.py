@@ -1,12 +1,31 @@
 from setuptools import setup
 import glob
 import os
-from julia import Pkg
+
 
 package_name = 'lively_ik'
 config_files = glob.glob(os.path.join('config', '*', '*'))
 launch_files = glob.glob(os.path.join('launch', '*'))
 rviz_files = glob.glob(os.path.join('rviz', '*'))
+
+# TODO figure out Julia stuff
+from julia import Pkg
+import asyncio
+
+async def run(cmd):
+    proc = await asyncio.create_subprocess_shell(
+        cmd,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE)
+    stdout, stderr = await proc.communicate()
+
+    if stderr or stdout:
+        with open('install.out','w') as f:
+            f.write(f'[Output of LivelyIK Install]\n{stderr.decode()}')
+
+asyncio.run(run('julia install.jl'))
+
+# response = Pkg.add(Pkg.PackageSpec(path="./"))
 
 data_files = [
     ('share/ament_index/resource_index/packages',['resource/' + package_name]),
@@ -45,7 +64,3 @@ setup(
         ],
     },
 )
-
-# TODO figure out Julia stuff
-Pkg.add(PackageSpec(path="lively_ik"))
-J.call()

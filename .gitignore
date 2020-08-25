@@ -139,3 +139,4 @@ src/RelaxedIK/MP2/*
 src/RelaxedIK/MP3/*
 src/RelaxedIK/MP4/*
 point_cloud_pub.py
+install.out
