@@ -44,6 +44,7 @@ function Goals(goal_msg)
     dc = goal_msg.dc_values
 
     # Get Time from Header
+    println(goal_msg.header.stamp)
     time = rclpy_time.Time.from_msg(goal_msg.header.stamp).nanoseconds * 10^-9
 
     # Extract Bias

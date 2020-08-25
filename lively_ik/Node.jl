@@ -100,17 +100,15 @@ global solutions_pub = node.create_publisher(sensor_msgs.JointState,output_topic
 
 global xopt = info_data["starting_config"]
 
-function publish()
-    global xopt
-    global solutions_pub
-    global node
-    # println("In Publish: $xopt")
-    msg = sensor_msgs.JointState(name=info_data["joint_ordering"],position=xopt)
-    msg.header.stamp = node.get_clock().now().to_msg()
-    solutions_pub.publish(msg)
-end
-
-timer = node.create_timer(0.05,publish)
+# function publish()
+#     global xopt
+#     global solutions_pub
+#     global node
+#     # println("In Publish: $xopt")
+#
+# end
+#
+# timer = node.create_timer(0.05,publish)
 
 # LivelyIK Setup
 global lik = LivelyIK.get_standard(info_data,node)
@@ -137,4 +135,9 @@ goal_sub = node.create_subscription(wisc_msgs.LivelyGoals,"/robot_goals",goal_cb
 
 # Process Until Interrupted
 println("Running LivelyIK Node")
-rclpy.spin(node)
+while rclpy.ok()
+    msg = sensor_msgs.JointState(name=info_data["joint_ordering"],position=xopt)
+    msg.header.stamp = node.get_clock().now().to_msg()
+    solutions_pub.publish(msg)
+    rclpy.spin_once(node)
+end
