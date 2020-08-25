@@ -4,10 +4,6 @@
 using LinearAlgebra
 using StaticArrays
 using Rotations
-include("../utils/transformations.jl")
-include("../utils/joint_utils.jl")
-include("../utils/geometry_utils.jl")
-include("../utils/nn_utils.jl")
 
 function groove_loss(x_val, t, d, c, f, g)
     return (-2.718281828459^((-(x_val - t)^d) / (2.0 * c^2)) ) + f * (x_val - t)^g
@@ -29,9 +25,11 @@ end
 function position_obj(x, vars, idx)
     #println("POS IDX: $idx")
     vars.robot.arms[idx].getFrames(x[vars.robot.subchain_indices[idx]])
+    println("x: $x")
     goal = vars.goal_positions[idx] + vars.noise.base.value
+    println("goal: $goal")
     x_val = norm(vars.robot.arms[idx].out_pts[end] - goal)
-    println(x_val)
+    println("xval: $x_val")
 
     return groove_loss(x_val, 0., 2, .1, 10., 2)
 end

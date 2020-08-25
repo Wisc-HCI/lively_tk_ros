@@ -4,18 +4,6 @@
 using LinearAlgebra
 using StaticArrays
 using Rotations
-include("../utils/transformations.jl")
-include("../utils/joint_utils.jl")
-include("../utils/geometry_utils.jl")
-include("../utils/nn_utils.jl")
-
-function groove_loss(x_val, t, d, c, f, g)
-    return (-2.718281828459^((-(x_val - t)^d) / (2.0 * c^2)) ) + f * (x_val - t)^g
-end
-
-function groove_loss_derivative(x_val, t, d, c, f, g)
-    return -2.718281828459^((-(x_val - t)^d) / (2.0 * c^2)) * ( (-d*(x_val-t) ) / (2. * c^2) ) + g*f*(x_val-t)
-end
 
 function dc_noise_obj(x, vars, objidx, jointidx)
     # Calculate the delta between goal and state
