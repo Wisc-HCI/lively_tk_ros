@@ -133,7 +133,7 @@ end
 
 function solve(relaxedIK, goal_positions, goal_quats, dc_goals, time, bias, weights; prev_state = nothing, filter=true, max_iter = 0, max_time = 0.05)
     vars = relaxedIK.relaxedIK_vars
-    vars.vars.weight_priors = weights
+    # vars.vars.weight_priors = weights
 
     if vars.position_mode == "relative"
         vars.goal_positions = copy(vars.init_ee_positions)

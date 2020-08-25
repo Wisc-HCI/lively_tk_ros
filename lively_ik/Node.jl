@@ -134,8 +134,8 @@ goal_sub = node.create_subscription(wisc_msgs.LivelyGoals,"/robot_goals",goal_cb
 
 # Process Until Interrupted
 println("\033[92mRunning LivelyIK Node\033[0m")
-global executed = 0.0
-# while rclpy.ok() && executed < 100
+
+# while rclpy.ok()
 #     rclpy.spin_once(node)
 #     println("GP (LOOP): $goals")
 #     xopt = LivelyIK.solve(lik, goals.positions, goals.quats, goals.dc, goals.time, goals.bias, goals.weights)
@@ -144,8 +144,8 @@ global executed = 0.0
 #     solutions_pub.publish(msg)
 #     global executed += 1
 # end
-
-while rclpy.ok() && executed < 100
+global executed = 0.0
+while rclpy.ok()
     g = LivelyIK.Goals(lik,info_data)
     g.positions[1][2] += sin(executed)
     println("GP (LOOP): $goals")
@@ -153,5 +153,5 @@ while rclpy.ok() && executed < 100
     msg = sensor_msgs.JointState(name=info_data["joint_ordering"],position=xopt)
     msg.header.stamp = node.get_clock().now().to_msg()
     solutions_pub.publish(msg)
-    global executed += 1
+    global executed += .1
 end
