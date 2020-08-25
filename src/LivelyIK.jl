@@ -10,11 +10,11 @@ include("utils/utils.jl")
 include("relaxed_ik/relaxed_ik.jl")
 
 struct Goals
-    positions::Array{Array{Float64,3}}
-    quats    ::Array{Array{Float64,4}}
+    positions::Array{Float64}
+    quats    ::Array{Float64}
     dc       ::Array{Float64}
     time     ::Float64
-    bias     ::Array{Float64,3}
+    bias     ::Array{Float64}
     weights  ::Array{Float64}
 end
 
@@ -77,16 +77,7 @@ function Goals(lively_ik,info_data)
 
     # Extract Weights
     weights = lively_ik.relaxedIK_vars.vars.weight_priors
-
-    println("$positions | $quats | $dc | $time | $bias | $weights")
-    convert(Array{Any},positions)
-    convert(Array{Any},quats)
-    convert(Array{Float64},dc)
-    convert(Float64,time)
-    convert(Array{Float64},bias)
-    convert(Array{Float64},weights)
-    println("$positions | $quats | $dc | $time | $bias | $weights")
-
+    
     return Goals(positions, quats, dc, time, bias, weights)
 end
 
