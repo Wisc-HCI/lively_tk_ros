@@ -117,7 +117,8 @@ function goal_cb(goal_msg)
     global lik
     global xopt
     # Handle the goal message and publish the solution from lively_ik
-    goals = LivelyIK.Goals(goal_msg)
+    time = rclpy_time.Time.from_msg(goal_msg.header.stamp).nanoseconds * 10^-9
+    goals = LivelyIK.Goals(goal_msg,time)
     println("GP (CP): $goals")
     # println("POS: $time $goal_positions")
     xopt = LivelyIK.solve(lik, goals.positions, goals.quats, goals.dc, goals.time, goals.bias, goals.weights)

@@ -3,7 +3,6 @@ module LivelyIK
 using PyCall
 collision_transfer = pyimport("lively_ik.utils.collision_transfer")
 lively_ik = pyimport("lively_ik")
-rclpy_time = pyimport("rclpy.time")
 
 include("groove/groove.jl")
 include("spacetime/spacetime.jl")
@@ -19,7 +18,7 @@ struct Goals
     weights  ::Array{Float64}
 end
 
-function Goals(goal_msg)
+function Goals(goal_msg,time::Float64)
     positions = []
     quats = []
 
@@ -42,14 +41,6 @@ function Goals(goal_msg)
 
     # Create DC Goals from DC Values
     dc = goal_msg.dc_values
-
-    # Get Time from Header
-    println(goal_msg.header.stamp)
-    println(rclpy_time.Time)
-    println(rclpy_time.Time.from_msg)
-    println(rclpy_time.Time.from_msg(goal_msg.header.stamp))
-    println(rclpy_time.Time.from_msg(goal_msg.header.stamp).nanoseconds)
-    time = rclpy_time.Time.from_msg(goal_msg.header.stamp).nanoseconds * 10^-9
 
     # Extract Bias
     bias = [goal_msg.bias.x,goal_msg.bias.y,goal_msg.bias.z]
