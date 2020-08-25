@@ -98,8 +98,6 @@ global info_data = YAML.load(info_string)
 # Create JS Publisher
 global solutions_pub = node.create_publisher(sensor_msgs.JointState,output_topic,5)
 
-global xopt = info_data["starting_config"]
-
 # function publish()
 #     global xopt
 #     global solutions_pub
@@ -113,30 +111,32 @@ global xopt = info_data["starting_config"]
 # LivelyIK Setup
 global lik = LivelyIK.get_standard(info_data,node)
 
+global goals = LivelyIK.Goals(lik,info_data)
+
 function goal_cb(goal_msg)
     global lik
-    global xopt
+    global goals
     # Handle the goal message and publish the solution from lively_ik
     time = rclpy_time.Time.from_msg(goal_msg.header.stamp).nanoseconds * 10^-9
     goals = LivelyIK.Goals(goal_msg,time)
-    println("GP (CP): $goals")
-    # println("POS: $time $goal_positions")
-    xopt = LivelyIK.solve(lik, goals.positions, goals.quats, goals.dc, goals.time, goals.bias, goals.weights)
-    # println("In CB: $xopt")
+    goals_type = typeof(goals)
+    println("GP (CB): $goals \n$goals_type")
 end
 
 # Solve once
 println("Finishing Compilation")
-goals = LivelyIK.Goals(lik,info_data)
-println("GP (N): $goals")
+goals_type = typeof(goals)
+println("GP (N): $goals \n$goals_type")
 sol = LivelyIK.solve(lik, goals.positions, goals.quats, goals.dc, goals.time, goals.bias, goals.weights)
 println("SOL: $sol")
 
 goal_sub = node.create_subscription(wisc_msgs.LivelyGoals,"/robot_goals",goal_cb,5)
 
 # Process Until Interrupted
-println("Running LivelyIK Node")
+println("\033[92mRunning LivelyIK Node\033[0m")
 while rclpy.ok()
+    println("GP (LOOP): $goals")
+    xopt = LivelyIK.solve(lik, goals.positions, goals.quats, goals.dc, goals.time, goals.bias, goals.weights)
     msg = sensor_msgs.JointState(name=info_data["joint_ordering"],position=xopt)
     msg.header.stamp = node.get_clock().now().to_msg()
     solutions_pub.publish(msg)

@@ -40,18 +40,18 @@ objectives:
   index: 1
   weight: 2.0
   gradient: forward_ad
-# - type: positional_noise
-#   index: 1
-#   scale: 0.15
-#   weight: 10.0
-#   gradient: forward_ad
-#   frequency: 4.0
-# - type: rotational_noise
-#   index: 1
-#   scale: 0.05
-#   weight: 1.0
-#   gradient: forward_ad
-#   frequency: 4.0
+- type: positional_noise
+  index: 1
+  scale: 0.15
+  weight: 10.0
+  gradient: forward_ad
+  frequency: 4.0
+- type: rotational_noise
+  index: 1
+  scale: 0.05
+  weight: 1.0
+  gradient: forward_ad
+  frequency: 4.0
 # - type: dc
 #   index: 2
 #   weight: 0.0
