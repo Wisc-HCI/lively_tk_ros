@@ -10,12 +10,12 @@ include("utils/utils.jl")
 include("relaxed_ik/relaxed_ik.jl")
 
 struct Goals
-    positions::Array{Array{Float64}}
-    quats    ::Array{Array{Float64}}
-    dc       ::Array{Float64}
-    time     ::Float64
-    bias     ::Array{Float64}
-    weights  ::Array{Float64}
+    positions#::Array{Array{Float64}}
+    quats    #::Array{Array{Float64}}
+    dc       #::Array{Float64}
+    time     #::Float64
+    bias     #::Array{Float64}
+    weights  #::Array{Float64}
 end
 
 function Goals(goal_msg,time::Float64)

@@ -124,11 +124,16 @@ function goal_cb(goal_msg)
 end
 
 # Solve once
-# println("Finishing Compilation")
-# goals_type = typeof(goals)
-# println("GP (N): $goals \n$goals_type")
-# sol = LivelyIK.solve(lik, goals.positions, goals.quats, goals.dc, goals.time, goals.bias, goals.weights)
-# println("SOL: $sol")
+println("\033[92mFinishing Compilation\033[0m")
+goals = LivelyIK.Goals(lik,info_data)
+goals.positions[1][2] += 0.5
+for i=1:5
+    println("GP (N): $goals")
+    sol = LivelyIK.solve(lik, goals.positions, goals.quats, goals.dc, goals.time, goals.bias, goals.weights)
+    println("SOL: $sol")
+end
+
+exit()
 
 goal_sub = node.create_subscription(wisc_msgs.LivelyGoals,"/robot_goals",goal_cb,5)
 
