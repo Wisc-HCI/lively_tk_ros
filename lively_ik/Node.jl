@@ -124,21 +124,34 @@ function goal_cb(goal_msg)
 end
 
 # Solve once
-println("Finishing Compilation")
-goals_type = typeof(goals)
-println("GP (N): $goals \n$goals_type")
-sol = LivelyIK.solve(lik, goals.positions, goals.quats, goals.dc, goals.time, goals.bias, goals.weights)
-println("SOL: $sol")
+# println("Finishing Compilation")
+# goals_type = typeof(goals)
+# println("GP (N): $goals \n$goals_type")
+# sol = LivelyIK.solve(lik, goals.positions, goals.quats, goals.dc, goals.time, goals.bias, goals.weights)
+# println("SOL: $sol")
 
 goal_sub = node.create_subscription(wisc_msgs.LivelyGoals,"/robot_goals",goal_cb,5)
 
 # Process Until Interrupted
 println("\033[92mRunning LivelyIK Node\033[0m")
-while rclpy.ok()
+global executed = 0.0
+# while rclpy.ok() && executed < 100
+#     rclpy.spin_once(node)
+#     println("GP (LOOP): $goals")
+#     xopt = LivelyIK.solve(lik, goals.positions, goals.quats, goals.dc, goals.time, goals.bias, goals.weights)
+#     msg = sensor_msgs.JointState(name=info_data["joint_ordering"],position=xopt)
+#     msg.header.stamp = node.get_clock().now().to_msg()
+#     solutions_pub.publish(msg)
+#     global executed += 1
+# end
+
+while rclpy.ok() && executed < 100
+    g = LivelyIK.Goals(lik,info_data)
+    g.positions[1][2] += sin(executed)
     println("GP (LOOP): $goals")
-    xopt = LivelyIK.solve(lik, goals.positions, goals.quats, goals.dc, goals.time, goals.bias, goals.weights)
+    xopt = LivelyIK.solve(lik, g.positions, g.quats, g.dc, g.time, g.bias, g.weights)
     msg = sensor_msgs.JointState(name=info_data["joint_ordering"],position=xopt)
     msg.header.stamp = node.get_clock().now().to_msg()
     solutions_pub.publish(msg)
-    rclpy.spin_once(node)
+    global executed += 1
 end

@@ -65,8 +65,8 @@ function Goals(lively_ik,info_data)
 
     # Create POS/QUAT Goals from EE Poses
     for i = 1:length(num_chains)
-        push!(positions, [0.0, 0.0, 0.0])
-        push!(quats, Quat(1.0, 0.0, 0.0, 0.0))
+        push!(positions, lively_ik.relaxedIK_vars.init_ee_positions[i])
+        push!(quats, lively_ik.relaxedIK_vars.init_ee_quats[i])
     end
 
     # Create DC Goals from DC Values
