@@ -113,12 +113,12 @@ global lik = LivelyIK.get_standard(info_data,node)
 
 global goals = LivelyIK.Goals(lik,info_data)
 
-function goal_cb(goal_msg)
-    global lik
+function goal_cb(msg)
+    # Handle the goal message
     global goals
-    # Handle the goal message and publish the solution from lively_ik
-    time = rclpy_time.Time.from_msg(goal_msg.header.stamp).nanoseconds * 10^-9
-    goals = update!(goals,goal_msg,time)
+    time = rclpy_time.Time.from_msg(msg.header.stamp).nanoseconds * 10^-9
+    update!(goals,msg,time)
+    println("CB: $goals")
 end
 
 goal_sub = node.create_subscription(wisc_msgs.LivelyGoals,"/robot_goals",goal_cb,5)
@@ -126,11 +126,15 @@ goal_sub = node.create_subscription(wisc_msgs.LivelyGoals,"/robot_goals",goal_cb
 # Process Until Interrupted
 println("\033[92mRunning LivelyIK Node\033[0m")
 while rclpy.ok()
+    global node
     global goals
-    println(goals)
-    sol = LivelyIK.solve(lik, goals.positions, goals.quats, goals.dc, goals.time, goals.bias, goals.weights)
+    rclpy.spin_once(node)
+    #println("L: $goals")
+    time = node.get_clock().now().nanoseconds * 10^-9
+    sol = LivelyIK.solve(lik, goals.positions, goals.quats, goals.dc, time, goals.bias, goals.weights)
     msg = sensor_msgs.JointState(name=info_data["joint_ordering"],position=sol)
     msg.header.stamp = node.get_clock().now().to_msg()
     solutions_pub.publish(msg)
-    println("SOL: $sol")
+
+    #println("SOL: $sol")
 end
