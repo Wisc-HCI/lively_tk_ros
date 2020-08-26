@@ -47,7 +47,7 @@ function update!(vectornoise::vectorNoise,time,bias)
 end
 
 function update!(voidnoise::voidNoise,time,bias)
-
+    # Does nothing
 end
 
 function NoiseGenerator(objective_info,base_scale,base_freq)
@@ -79,6 +79,7 @@ end
 function update!(noisegen, time, bias)
     update!(noisegen.base,time,bias)
     for i in 1:length(noisegen.generators)
+        println("Updating noise generator $i")
         update!(noisegen.generators[i],time,bias)
     end
 end

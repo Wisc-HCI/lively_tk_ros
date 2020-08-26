@@ -129,7 +129,7 @@ while rclpy.ok()
     pos = [[-0.126, 0.237+.1*sin(t), 0.373]]
     noise = lik.relaxedIK_vars.noise.generators[3].value
     #pos = [[-0.126, 0.237, 0.373]]
-    println("GP (LOOP): $noise")
+    println("Noise (LOOP): $noise")
     sol = LivelyIK.solve(lik, pos, goals.quats, goals.dc, goals.time, goals.bias, goals.weights)
     msg = sensor_msgs.JointState(name=info_data["joint_ordering"],position=sol)
     msg.header.stamp = node.get_clock().now().to_msg()
