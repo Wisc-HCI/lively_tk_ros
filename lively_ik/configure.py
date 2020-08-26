@@ -1,9 +1,10 @@
 import rclpy
 from rclpy.node import Node
+from lively_ik.groove.relaxed_ik_container import RelaxedIKContainer
 
 class ConfigureNode(Node):
     def __init__(self):
-        super(ConfigureNode,self).__init__('simple_js_publisher')
+        super(ConfigureNode,self).__init__('configure')
         self.js_pub = self.create_publisher(JointState,'/joint_states',10)
         self.js_msg = JointState(name=JOINT_NAMES,position=JOINT_INITIAL)
         self.create_timer(0.05,self.send_js)
