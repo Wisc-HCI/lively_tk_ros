@@ -8,17 +8,13 @@ mutable struct Goals
     weights  #::Array{Float64}
 end
 
-function Goals(goal_msg,time::Float64)
-
-end
-
 function update!(goal,msg,time::Float64)
     positions = []
     quats = []
 
     # Create POS/QUAT Goals from EE Poses
-    for i = 1:length(goal_msg.ee_poses)
-        p = goal_msg.ee_poses[i]
+    for i = 1:length(msg.ee_poses)
+        p = msg.ee_poses[i]
 
         pos_x = p.position.x
         pos_y = p.position.y
@@ -37,8 +33,8 @@ function update!(goal,msg,time::Float64)
 
     # Create DC Goals from DC Values
     dc = []
-    for i=1:length(goal_msg.dc_values)
-        push!(dc,goal_msg.dc_values[i].data)
+    for i=1:length(msg.dc_values)
+        push!(dc,msg.dc_values[i].data)
     end
     goal.dc = dc
 
@@ -46,12 +42,12 @@ function update!(goal,msg,time::Float64)
     goal.time = time
 
     # Extract Bias
-    goal.bias = [goal_msg.bias.x,goal_msg.bias.y,goal_msg.bias.z]
+    goal.bias = [msg.bias.x,msg.bias.y,msg.bias.z]
 
     # Extract Weights
     weights = []
-    for i=1:length(goal_msg.objective_weights)
-        push!(weights,goal_msg.objective_weights[i].data)
+    for i=1:length(msg.objective_weights)
+        push!(weights,msg.objective_weights[i].data)
     end
     goal.weights = weights
 end

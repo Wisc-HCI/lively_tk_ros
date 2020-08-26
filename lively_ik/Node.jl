@@ -117,7 +117,7 @@ function goal_cb(msg)
     # Handle the goal message
     global goals
     time = rclpy_time.Time.from_msg(msg.header.stamp).nanoseconds * 10^-9
-    update!(goals,msg,time)
+    LivelyIK.update!(goals,msg,time)
     println("CB: $goals")
 end
 
