@@ -1,10 +1,6 @@
 
 # objectives should be written with respect to x and vars.  Closure will be made later automatically.
 
-using LinearAlgebra
-using StaticArrays
-using Rotations
-
 function groove_loss(x_val, t, d, c, f, g)
     return (-2.718281828459^((-(x_val - t)^d) / (2.0 * c^2)) ) + f * (x_val - t)^g
 end

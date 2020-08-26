@@ -81,5 +81,4 @@ function update!(noisegen, time, bias)
     for i in 1:length(noisegen.generators)
         update!(noisegen.generators[i],time,bias)
     end
-
 end

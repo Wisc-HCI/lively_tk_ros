@@ -1,10 +1,6 @@
 
 # objectives should be written with respect to x and vars.  Closure will be made later automatically.
 
-using LinearAlgebra
-using StaticArrays
-using Rotations
-
 function dc_noise_obj(x, vars, objidx, jointidx)
     # Calculate the delta between goal and state
     goal = vars.joint_goal[jointidx]+vars.noise.generators[objidx].value
