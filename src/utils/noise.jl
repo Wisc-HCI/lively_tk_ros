@@ -42,9 +42,6 @@ end
 
 function update!(vectornoise::vectorNoise,time,bias)
     if vectornoise.scale > 0
-        n = noise3D(time,vectornoise.seed,vectornoise.frequency)
-        an = n * vectornoise.scale .* bias
-        println("VN Update: $n $an")
         vectornoise.value = noise3D(time,vectornoise.seed,vectornoise.frequency) * vectornoise.scale .* bias
     end
 end
@@ -82,7 +79,6 @@ end
 function update!(noisegen, time, bias)
     update!(noisegen.base,time,bias)
     for i in 1:length(noisegen.generators)
-        println("Updating noise generator $i")
         update!(noisegen.generators[i],time,bias)
     end
 end

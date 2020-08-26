@@ -121,16 +121,14 @@ function goal_cb(goal_msg)
     goals = LivelyIK.Goals(goal_msg,time)
 end
 
+goal_sub = node.create_subscription(wisc_msgs.LivelyGoals,"/robot_goals",goal_cb,5)
+
 # Solve once
 println("\033[92mFinishing Compilation\033[0m")
 goals = LivelyIK.Goals(lik,info_data)
 while rclpy.ok()
     t = node.get_clock().now().nanoseconds * 10^-9
-    pos = [[-0.126, 0.237+.1*sin(t), 0.373]]
-    noise = lik.relaxedIK_vars.noise.generators[3].value
-    #pos = [[-0.126, 0.237, 0.373]]
-    println("Noise (LOOP): $noise")
-    sol = LivelyIK.solve(lik, pos, goals.quats, goals.dc, goals.time, goals.bias, goals.weights)
+    sol = LivelyIK.solve(lik, goals.positions, goals.quats, goals.dc, goals.time, goals.bias, goals.weights)
     msg = sensor_msgs.JointState(name=info_data["joint_ordering"],position=sol)
     msg.header.stamp = node.get_clock().now().to_msg()
     solutions_pub.publish(msg)
@@ -139,7 +137,7 @@ end
 
 exit()
 
-goal_sub = node.create_subscription(wisc_msgs.LivelyGoals,"/robot_goals",goal_cb,5)
+
 
 # Process Until Interrupted
 println("\033[92mRunning LivelyIK Node\033[0m")
