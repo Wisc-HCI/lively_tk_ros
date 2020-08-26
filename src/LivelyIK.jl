@@ -18,6 +18,10 @@ mutable struct Goals
     weights  #::Array{Float64}
 end
 
+# function Goals(time:Float64)
+#     positions =
+# end
+
 function Goals(goal_msg,time::Float64)
     positions = []
     quats = []

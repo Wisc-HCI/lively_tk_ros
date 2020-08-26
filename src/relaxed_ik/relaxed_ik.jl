@@ -155,13 +155,13 @@ function solve(relaxedIK, goal_positions, goal_quats, dc_goals, time, bias, weig
     # Assign the dc_goals to the joint_goal in vars
     vars.joint_goal = dc_goals
 
-    println("Updated Goals")
+    # println("Updated Goals")
 
     update!(vars.noise, time, bias)
-    println("Updated Noise")
+    # println("Updated Noise")
 
     xopt = groove_solve(relaxedIK.groove, prev_state=prev_state, max_iter=max_iter, max_time = max_time)
-    println("Groove Solved")
+    # println("Groove Solved")
 
     update_relaxedIK_vars!(relaxedIK.relaxedIK_vars, xopt)
     if filter
