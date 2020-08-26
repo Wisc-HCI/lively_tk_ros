@@ -118,7 +118,6 @@ function goal_cb(msg)
     global goals
     time = rclpy_time.Time.from_msg(msg.header.stamp).nanoseconds * 10^-9
     LivelyIK.update!(goals,msg,time)
-    println("CB: $goals")
 end
 
 goal_sub = node.create_subscription(wisc_msgs.LivelyGoals,"/robot_goals",goal_cb,5)
@@ -129,12 +128,9 @@ while rclpy.ok()
     global node
     global goals
     rclpy.spin_once(node)
-    #println("L: $goals")
     time = node.get_clock().now().nanoseconds * 10^-9
     sol = LivelyIK.solve(lik, goals.positions, goals.quats, goals.dc, time, goals.bias, goals.weights)
     msg = sensor_msgs.JointState(name=info_data["joint_ordering"],position=sol)
     msg.header.stamp = node.get_clock().now().to_msg()
     solutions_pub.publish(msg)
-
-    #println("SOL: $sol")
 end
