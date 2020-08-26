@@ -118,47 +118,19 @@ function goal_cb(goal_msg)
     global goals
     # Handle the goal message and publish the solution from lively_ik
     time = rclpy_time.Time.from_msg(goal_msg.header.stamp).nanoseconds * 10^-9
-    goals = LivelyIK.Goals(goal_msg,time)
+    goals = update!(goals,goal_msg,time)
 end
 
 goal_sub = node.create_subscription(wisc_msgs.LivelyGoals,"/robot_goals",goal_cb,5)
 
-# Solve once
-println("\033[92mFinishing Compilation\033[0m")
-goals = LivelyIK.Goals(lik,info_data)
+# Process Until Interrupted
+println("\033[92mRunning LivelyIK Node\033[0m")
 while rclpy.ok()
-    t = node.get_clock().now().nanoseconds * 10^-9
+    global goals
+    println(goals)
     sol = LivelyIK.solve(lik, goals.positions, goals.quats, goals.dc, goals.time, goals.bias, goals.weights)
     msg = sensor_msgs.JointState(name=info_data["joint_ordering"],position=sol)
     msg.header.stamp = node.get_clock().now().to_msg()
     solutions_pub.publish(msg)
     println("SOL: $sol")
-end
-
-exit()
-
-
-
-# Process Until Interrupted
-println("\033[92mRunning LivelyIK Node\033[0m")
-
-# while rclpy.ok()
-#     rclpy.spin_once(node)
-#     println("GP (LOOP): $goals")
-#     xopt = LivelyIK.solve(lik, goals.positions, goals.quats, goals.dc, goals.time, goals.bias, goals.weights)
-#     msg = sensor_msgs.JointState(name=info_data["joint_ordering"],position=xopt)
-#     msg.header.stamp = node.get_clock().now().to_msg()
-#     solutions_pub.publish(msg)
-#     global executed += 1
-# end
-global executed = 0.0
-while rclpy.ok()
-    g = LivelyIK.Goals(lik,info_data)
-    g.positions[1][2] += sin(executed)
-    println("GP (LOOP): $goals")
-    xopt = LivelyIK.solve(lik, g.positions, g.quats, g.dc, g.time, g.bias, g.weights)
-    msg = sensor_msgs.JointState(name=info_data["joint_ordering"],position=xopt)
-    msg.header.stamp = node.get_clock().now().to_msg()
-    solutions_pub.publish(msg)
-    global executed += .1
 end
