@@ -4,6 +4,10 @@ import Basic from './config/Basic';
 import Joints from './config/Joints';
 import Initial from './config/Initial';
 import Collision from './config/Collision';
+import Objects from './config/Objects';
+import Objectives from './config/Objectives';
+import Misc from './config/Misc';
+import Preprocessing from './config/Preprocessing';
 const { Step } = Steps;
 
 const clearedState = {app:{
@@ -182,6 +186,22 @@ class ConfigCreator extends React.Component {
                      updateTrainingStates={(states)=>this.updateTrainingStates(states)}
                      updateProblemStates={(states)=>this.updateProblemStates(states)}/>
         );
+      case 4:
+        return (
+          <Objects/>
+        );
+      case 5:
+        return (
+          <Objectives/>
+        );
+      case 6:
+        return (
+          <Misc/>
+        )
+      case 7:
+        return (
+          <Preprocessing/>
+        )
       default:
         return;
     }
@@ -195,6 +215,7 @@ class ConfigCreator extends React.Component {
           <Step title="Joints"/>
           <Step title="Initial"/>
           <Step title="Collision"/>
+          <Step title="Objects"/>
           <Step title="Objectives"/>
           <Step title="Misc"/>
           <Step title="Preprocessing"/>
@@ -205,7 +226,7 @@ class ConfigCreator extends React.Component {
         <Divider/>
         <div style={{display:'flex',justifyContent:'space-between'}}>
           <Button type='primary' disabled={this.state.app.step === 0} onClick={this.stepBackward}>Previous</Button>
-          <Button type='primary' disabled={this.state.app.step === 6 || !this.state.app.canStep} onClick={this.stepForward}>Next</Button>
+          <Button type='primary' disabled={!this.state.app.canStep} onClick={this.stepForward}>Next</Button>
         </div>
       </Card>
     )
