@@ -26,7 +26,8 @@ class RelaxedIKContainer(object):
         self.urdf_path = CONFIG_DIR+'/urdfs/'+info['urdf_file_name']
         self.collision_file_path = CONFIG_DIR+'/collision_files/'+info['collision_file_name']
         with open(self.collision_file_path) as collision_data:
-            self.collision_info = yaml.safe_load(collision_data)
+            collision_info = yaml.safe_load(collision_data)
+        self.info.update(collision_info)
         self.c_boost = False
         self.num_chains = len(self.full_joint_lists)
         self.arms = []
@@ -55,7 +56,7 @@ class RelaxedIKContainer(object):
 
         self.bounds = self.robot.bounds
 
-        self.collision_graph = CollisionGraph(self.collision_info, self.rcl_node, self.robot, collision_link_exclusion_list)
+        self.collision_graph = CollisionGraph(self.info, self.rcl_node, self.robot, collision_link_exclusion_list)
 
         if not self.numDOF == len(info['starting_config']):
             print(bcolors.WARNING + 'WARNING: Length of init_state does not match number of robot DOFs.  Is this what you intended?' + bcolors.ENDC)

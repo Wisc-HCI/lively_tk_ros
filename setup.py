@@ -60,7 +60,7 @@ setup(
             'visualize = lively_ik.visualize:main',
             'control = lively_ik.control:main',
             'param = lively_ik.param:main',
-            'simple = lively_ik.simple_pub:main'
+            'interface = lively_ik.interface:main'
         ],
     },
 )

@@ -67,7 +67,11 @@ class ControllerNode(Node):
             objective_weights.append(Float64(data=obj['weight']))
 
         # Specify the bias
-        bias = Position(1.0,1.0,1.0).ros_point
+        # bias = Position(1.0,1.0,1.0).ros_point # UNIFORM
+        # bias = Position(1.0,0.0,0.0).ros_point # LATERAL
+        # bias = Position(0.0,1.0,0.0).ros_point # FRONT/BACK
+        # bias = Position(0.0,0.0,1.0).ros_point # VERTICAL
+        bias = Position(1.0,0.3,2.0).ros_point # MIXED
 
         self.goals = LivelyGoals(ee_poses=ee_poses,dc_values=dc_values,objective_weights=objective_weights,bias=bias)
 

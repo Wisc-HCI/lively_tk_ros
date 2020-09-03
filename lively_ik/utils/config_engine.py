@@ -12,9 +12,10 @@ from lively_ik import BASE
 class ConfigEngine:
     def __init__(self, info, collision_graph, vars, override=False):
         self.info = info
+        print(self.info.keys())
         self.collision_graph = collision_graph
-        self.config_fn = BASE+'/config/collision_files/'+info['collision_file_name']
-        self.nn_file_name = BASE+'/config/collision_nn/'+info['collision_nn_file']+'_python'
+        self.config_fn = BASE+'/config/collision_files/'+self.info['collision_file_name']
+        self.nn_file_name = BASE+'/config/collision_nn/'+self.info['collision_nn_file']+'_python'
         self.vars = vars
 
         if not os.path.exists(self.nn_file_name) or override:

@@ -2,29 +2,25 @@ from .arm import *
 from ..utils.transformations import quaternion_from_matrix
 
 class Robot:
-    def __init__(self, arms, full_joint_lists, joint_order):
+    def __init__(self, arms, full_joint_lists, joint_order, extra_joints={}):
         self.arms = arms
         self.full_joint_lists = full_joint_lists
         self.joint_order = joint_order
+        self.extra_joints = extra_joints
 
         self.numChains = len(self.arms)
         self.numDOF = len(self.joint_order)
 
-        self.subchain_indices = []
+        self.subchain_indices = [[] for i in range(self.numChains)]
         self.__initialize_subchain_indices()
 
-        self.bounds = []
+        self.bounds = self.numDOF*[0.0]
         self.__initialize_bounds()
 
-        self.velocity_limits = []
+        self.velocity_limits = self.numDOF*[0.0]
         self.__initialize_velocity_limits()
 
-        # self.__name__ = self.arms[0].__name__
-
     def __initialize_subchain_indices(self):
-        for i in range(self.numChains):
-            self.subchain_indices.append([])
-
         for i in range(self.numChains):
             for j in self.full_joint_lists[i]:
                 idx = self.__get_index_from_joint_order(j)
@@ -35,32 +31,27 @@ class Robot:
         for j,joint in enumerate(self.joint_order):
             if jt_name == self.joint_order[j]:
                 return j
-
         return None
-        # raise Exception('Error in Robot Class.  It appears your full_joint_lists and joint_order lists are not congruent '
-        #                'The joint {} was not found in joint_order.  Is there perhaps a misspelling?'.format(jt_name) )
 
     def __initialize_bounds(self):
-        bounds = self.numDOF*[0.0]
-
         for i,a in enumerate(self.arms):
             sub_bounds = a.joint_limits
             for j,l in enumerate(sub_bounds):
                 idx = self.subchain_indices[i][j]
-                bounds[idx] = l
-
-        self.bounds = bounds
+                self.bounds[idx] = l
+        for j,info in self.extra_joints.items():
+            idx = self.__get_index_from_joint_order(j)
+            self.bounds[idx] = info['bounds']
 
     def __initialize_velocity_limits(self):
-        velocity_limits = self.numDOF*[0.0]
-
         for i,a in enumerate(self.arms):
             sub_vl = a.velocity_limits
             for j,l in enumerate(sub_vl):
                 idx = self.subchain_indices[i][j]
-                velocity_limits[idx] = l
-
-        self.velocity_limits = velocity_limits
+                self.velocity_limits[idx] = l
+        for j,info in self.extra_joints.items():
+            idx = self.__get_index_from_joint_order(j)
+            self.velocity_limits[idx] = info['velocity']
 
     def split_state_into_subchains(self, x):
         subchains = []

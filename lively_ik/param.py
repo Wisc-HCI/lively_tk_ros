@@ -13,6 +13,7 @@ class ParameterNode(Node):
         super(ParameterNode,self).__init__('global_params',allow_undeclared_parameters=True)
         self.declare_parameter('info')
         self.declare_parameter('output_topic')
+        self.declare_parameter('bias')
 
 def main():
     rclpy.init(args=None)

@@ -14,7 +14,7 @@ from ..spacetime.arm import *
 #     arm_c = False
 
 from .colors import *
-from .kdl_parser_py import treeFromFile
+from .kdl_parser_py import treeFromFile, treeFromString
 
 '''
 NOTE:
@@ -43,6 +43,35 @@ def urdf_load(urdfString, startJoint, endJoint, full_joint_list, fixed_ee_joint 
 
     urdf_robot = URDF.from_xml_file(urdfString)
     (ok, kdl_tree) = treeFromFile(urdfString)
+
+    if not (startJoint == '' or endJoint == ''):
+        chain = kdl_tree.getChain(startJoint, endJoint)
+    if full_joint_list == ():
+        arm, arm_c = convertToArm(urdf_robot, startJoint, endJoint, fixed_ee_joint, Debug=Debug)
+    else:
+        arm, arm_c = convertToArmJointList(urdf_robot, full_joint_list, fixed_ee_joint, Debug=Debug)
+
+    if Debug:
+        o = open('out', 'w')
+        o.write(str(urdf_robot))
+
+    return urdf_robot, arm, arm_c, kdl_tree
+
+def urdf_load_from_string(urdfString, startJoint, endJoint, full_joint_list, fixed_ee_joint = None, Debug=False):
+    '''
+    Takes in a urdf as a string and parses that into different object representations of the robot arm
+
+    :param urdfString: (string) urdf file contents.
+    :param startJoint: (string) name of the starting joint in the chain
+    :param endJoint: (string) name of the final joint in the chain
+        NOTE: this is the final ROTATING joint in the chain, for a fixed joint on the end effector, add this as the fixed joint!
+    :param fixed_ee_joint (string) name of the fixed joint after end joint in the chain.  This is read in just to get a final
+        displacement on the chain, i.e. usually just to add in an extra displacement offset for the end effector
+    :return: returns the robot parsed object from urdf_parser, Mike's "arm" version of the robot arm, as well as the kdl tree
+    '''
+
+    urdf_robot = URDF.from_xml_string(urdfString)
+    (ok, kdl_tree) = treeFromString(urdfString)
 
     if not (startJoint == '' or endJoint == ''):
         chain = kdl_tree.getChain(startJoint, endJoint)

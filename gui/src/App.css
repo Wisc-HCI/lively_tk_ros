@@ -2,16 +2,13 @@
   text-align: center;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.logo {
+  height: 40px;
+  font-size: calc(5px + 2vmin);
+  margin: 16px;
+  color: white;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
 
 .App-header {
   background-color: #282c34;
@@ -35,4 +32,33 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+.trigger-highlight-on-hover {
+  font-size: 18px;
+  line-height: 64px;
+  padding: 0 24px;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.trigger-highlight-on-hover:hover {
+  color: #1890ff;
+}
+
+.site-layout .site-layout-background {
+  background: #fff;
+}
+
+.site-tag-plus {
+  background: #fff;
+  border-style: dashed;
+}
+.edit-tag {
+  user-select: none;
+}
+.tag-input {
+  width: 78px;
+  margin-right: 8px;
+  vertical-align: top;
 }

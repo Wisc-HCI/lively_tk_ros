@@ -43,32 +43,31 @@ objectives:
 - type: positional_noise
   index: 1
   scale: 0.15
-  weight: 20.0
+  weight: 0.0
   gradient: forward_ad
-  frequency: 10.0 #4.0
+  frequency: 4.0
 - type: rotational_noise
   index: 1
   scale: 1.0
-  weight: 0.5
+  weight: 0.0
   gradient: forward_ad
-  frequency: 10.0 #4.0
-# - type: dc
-#   index: 2
-#   weight: 0.0
-#   gradient: forward_ad
-#   frequency: 4
+  frequency: 4.0
+- type: dc
+  index: 2
+  weight: 0.0
+  gradient: forward_ad
 # - type: dc_noise
 #   index: 1
 #   scale: 0.5371884221
 #   weight: 0.0
 #   gradient: forward_ad
 #   frequency: 4
-# - type: dc_noise
-#   index: 2
-#   scale: 0.52807446068
-#   weight: 0.0
-#   gradient: forward_ad
-#   frequency: 4
+- type: dc_noise
+  index: 2
+  scale: 0.52807446068
+  weight: 3.0
+  gradient: forward_ad
+  frequency: 4.0
 # - type: dc_noise
 #   index: 3
 #   scale: 0.71847205049
@@ -120,9 +119,3 @@ rot_offsets:
 starting_config: [1.55, -1.77, 1.4, -1.19, -1.57, 0.0]
 urdf_file_name: ur3e.urdf
 velocity_limits: [3.14, 3.14, 3.14, 6.28, 6.28, 6.28]
-dc_joint_noise: [0, 0, 0, 0, 0, 0]
-dc_joint_weight: [0, 0, 0, 0, 0, 0]
-ee_joint_noise: [0.05]
-ee_position_weight: [50]
-ee_rotation_weight: [49]
-match_objectives: []
