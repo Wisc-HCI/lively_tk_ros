@@ -9,9 +9,7 @@ class Basic extends React.Component {
     return (
       <>
         <h5 style={{backgroundColor:'#e8e8e8', borderRadius:3, padding:10}}>Specify basic information about the robot. The robot name will be used to specify file names.</h5>
-        <Form initialValues={{ urdf:       this.props.urdf,
-                               robotName:  this.props.robotName,
-                               fixedFrame: this.props.fixedFrame }}>
+        <Form>
          <Form.Item
             label="Robot Name"
             name="robotName"

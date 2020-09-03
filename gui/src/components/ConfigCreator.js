@@ -142,6 +142,10 @@ class ConfigCreator extends React.Component {
     this.props.socket.emit('app_update',{action:'config_update',config:{problemStates:problemStates}})
   }
 
+  updateObjectives = (objectives) => {
+    this.props.socket.emit('app_update',{action:'config_update',config:{objectives:objectives}})
+  }
+
   getPage = () => {
     switch (this.state.app.step) {
       case 0:
@@ -192,7 +196,7 @@ class ConfigCreator extends React.Component {
         );
       case 5:
         return (
-          <Objectives/>
+          <Objectives objectives={this.state.config.objectives}/>
         );
       case 6:
         return (
