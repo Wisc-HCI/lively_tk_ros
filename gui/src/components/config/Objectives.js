@@ -100,7 +100,7 @@ class Objectives extends React.Component {
   getObjective = (objective,idx) => {
     return (
       <Card.Grid style={{width:'100%'}}>
-        <Descriptions extra={<Button danger icon={<DeleteOutlined />}/>}>
+        <Descriptions extra={<Button danger icon={<DeleteOutlined onClick={(e)=>this.removeObjective(idx)}/>}/>}>
           <Descriptions.Item label="Type">
             <Select style={{width:250}} onChange={(e)=>this.onChangeType(e,idx)} value={objective.type}>
               <Option value="position">Position</Option>
