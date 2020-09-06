@@ -146,6 +146,26 @@ class ConfigCreator extends React.Component {
     this.props.socket.emit('app_update',{action:'config_update',config:{objectives:objectives}})
   }
 
+  updateBoxes = (boxes) => {
+    this.props.socket.emit('app_update',{action:'config_update',config:{boxes:boxes}})
+  }
+
+  updateSpheres = (spheres) => {
+    this.props.socket.emit('app_update',{action:'config_update',config:{spheres:spheres}})
+  }
+
+  updateEllipsoids = (ellipsoids) => {
+    this.props.socket.emit('app_update',{action:'config_update',config:{ellipsoids:ellipsoids}})
+  }
+
+  updateCapsules = (capsules) => {
+    this.props.socket.emit('app_update',{action:'config_update',config:{capsules:capsules}})
+  }
+
+  updateCylinders = (cylinders) => {
+    this.props.socket.emit('app_update',{action:'config_update',config:{cylinders:cylinders}})
+  }
+
   getPage = () => {
     switch (this.state.app.step) {
       case 0:
@@ -192,7 +212,17 @@ class ConfigCreator extends React.Component {
         );
       case 4:
         return (
-          <Objects/>
+          <Objects jointOrdering={this.state.config.jointOrdering}
+                   boxes={this.state.config.boxes}
+                   spheres={this.state.config.spheres}
+                   ellipsoids={this.state.config.ellipsoids}
+                   capsules={this.state.config.capsules}
+                   cylinders={this.state.config.cylinders}
+                   updateBoxes={(objects)=>this.updateBoxes(objects)}
+                   updateSpheres={(objects)=>this.updateSpheres(objects)}
+                   updateEllipsoids={(objects)=>this.updateEllipsoids(objects)}
+                   updateCapsules={(objects)=>this.updateCapsules(objects)}
+                   updateCylinders={(objects)=>this.updateCylinders(objects)}/>
         );
       case 5:
         return (

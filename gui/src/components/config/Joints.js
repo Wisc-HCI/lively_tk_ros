@@ -1,6 +1,6 @@
 import React from 'react';
-import { Input, Form, Tag, Tooltip, Select, Button } from 'antd';
-import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Form, Select, Button } from 'antd';
+import { DeleteOutlined } from '@ant-design/icons';
 const { Option } = Select;
 
 class Joints extends React.Component {

@@ -178,6 +178,14 @@ class ConfigCreator(App):
         self.starting_config = config.get('startingConfig',self.starting_config)
         self.objectives = config.get('objectives',self.objectives)
         self.js_define = config.get('jsDefine',self.js_define)
+        self.boxes = config.get('boxes',self.boxes)
+        self.spheres = config.get('spheres',self.spheres)
+        self.ellipsoids = config.get('ellipsoids',self.ellipsoids)
+        self.capsules = config.get('capsules',self.capsules)
+        self.cylinders = config.get('cylinders',self.cylinders)
+        self.sample_states = config.get('sampleStates',self.sample_states)
+        self.training_states = config.get('trainingStates',self.training_states)
+        self.problem_states = config.get('problemStates',self.problem_states)
 
         if 'app' in data:
             if 'step' in data['app']:

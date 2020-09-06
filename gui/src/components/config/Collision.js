@@ -64,12 +64,33 @@ class Collision extends React.Component {
             )
   }
 
+  addToSampleStates = () => {
+    let joints = [...this.props.displayedState];
+    let sampleStates = [...this.props.sampleStates];
+    sampleStates.push(joints);
+    this.props.updateSampleStates(sampleStates)
+  }
+
+  addToTrainingStates = () => {
+    let joints = [...this.props.displayedState];
+    let trainingStates = [...this.props.trainingStates];
+    trainingStates.push(joints);
+    this.props.updateTrainingStates(trainingStates)
+  }
+
+  addToProblemStates = () => {
+    let joints = [...this.props.displayedState];
+    let problemStates = [...this.props.problemStates];
+    problemStates.push(joints);
+    this.props.updateProblemStates(problemStates)
+  }
+
   getNumberStyle = (count) => {
     if (count === 0) {
       return {backgroundColor: '#f5222d'}
     } else if (0 < count < 5) {
-      return {backgroundColor: '#52c41a'}
-    } else {
+      return {backgroundColor: '#faad14'}
+    } else if (count > 5) {
       return {backgroundColor: '#52c41a'}
     }
   }
@@ -83,9 +104,9 @@ class Collision extends React.Component {
           <Popover content={this.getTrainingStatesDescription()}><span style={{color:'#1890ff'}}>Training States</span></Popover>,
           and <Popover content={this.getProblemStatesDescription()}><span style={{color:'#1890ff'}}>Problem States</span></Popover></h5>
         <span style={{display:'flex',justifyContent:'space-around',marginBottom:40}}>
-          <Button style={{flex:1,marginRight:5}}>Add to Sample States</Button>
-          <Button style={{flex:1,marginRight:5}}>Add to Training States</Button>
-          <Button style={{flex:1}}>Add to Problem States</Button>
+          <Button onClick={(e)=>{this.addToSampleStates()}} style={{flex:1,marginRight:5}}>Add to Sample States</Button>
+          <Button onClick={(e)=>{this.addToTrainingStates()}} style={{flex:1,marginRight:5}}>Add to Training States</Button>
+          <Button onClick={(e)=>{this.addToProblemStates()}} style={{flex:1}}>Add to Problem States</Button>
         </span>
         <Form>
          {this.props.displayedState.map((joint,idx)=>{
