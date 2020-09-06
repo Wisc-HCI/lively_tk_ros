@@ -51,19 +51,18 @@ class ConfigCreator(App):
         # Properties: joint_limits, velocity_limits
 
         # Collision Contents
-        self.robot_link_radius=None
-        self.sample_states=[]
-        self.training_states=[]
-        self.problem_states=[]
-        self.boxes=[]
-        self.spheres=[]
-        self.ellipsoids=[]
-        self.capsules=[]
-        self.cylinders=[]
+        self.robot_link_radius=None  # User-provided
+        self.sample_states=[]        # User-provided
+        self.training_states=[]      # User-provided
+        self.problem_states=[]       # User-provided
+        self.boxes=[]                # User-provided
+        self.spheres=[]              # User-provided
+        self.ellipsoids=[]           # User-provided
+        self.capsules=[]             # User-provided
+        self.cylinders=[]            # User-provided
 
         # Utility
         self.requires_robot_update = set(('urdf','jointNames','jointOrdering','eeFixedJoints'))
-        self.requires_reprocess = set(())
 
     def publish_joint_states(self):
         if self.robot and self.robot_setup and len(self.joint_ordering) == len(self.displayed_state):

@@ -65,7 +65,7 @@ class Collision extends React.Component {
   }
 
   getNumberStyle = (count) => {
-    if (count == 0) {
+    if (count === 0) {
       return {backgroundColor: '#f5222d'}
     } else if (0 < count < 5) {
       return {backgroundColor: '#52c41a'}

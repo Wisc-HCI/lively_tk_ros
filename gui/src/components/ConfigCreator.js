@@ -196,7 +196,10 @@ class ConfigCreator extends React.Component {
         );
       case 5:
         return (
-          <Objectives objectives={this.state.config.objectives}/>
+          <Objectives objectives={this.state.config.objectives}
+                      eeFixedJoints={this.state.config.eeFixedJoints}
+                      jointOrdering={this.state.config.jointOrdering}
+                      updateObjectives={(objectives)=>this.updateObjectives(objectives)}/>
         );
       case 6:
         return (
