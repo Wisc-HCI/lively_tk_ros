@@ -23,7 +23,7 @@ end
 
 loss(w,x,y) = Knet.mean(abs2, y - predict(w,x) )
 loss2(w,x,y) = Knet.mean(abs2, y - predict(w,x))[1]
-lossgradient = grad(loss)
+lossgradient = Knet.grad(loss)
 
 function total_loss(w, all_x, all_y)
     sum = 0.0
