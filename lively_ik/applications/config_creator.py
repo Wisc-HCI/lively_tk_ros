@@ -11,6 +11,11 @@ from geometry_msgs.msg import TransformStamped, Transform, Vector3, Quaternion
 import inflection
 import xml.etree.ElementTree as et
 
+DEFAULT_JS_DEFINE = """from sensor_msgs.msg import JointState
+def joint_state_define(x):
+	return None
+"""
+
 class ConfigCreator(App):
 
     def __init__(self, node):
@@ -29,6 +34,8 @@ class ConfigCreator(App):
         # App State Info
         self.step = 0
         self.displayed_state = [] # Published to /joint_states
+        self.preprocessing_python = 0.0
+        self.preprocessing_julia = 0.0
 
         # Config Contents
         self.urdf=None               # User-provided
@@ -39,7 +46,10 @@ class ConfigCreator(App):
         self.ee_fixed_joints=[]      # User-provided
         self.starting_config=[]      # User-provided
         self.objectives=[]           # User-provided
-        self.js_define=None          # User-provided
+        self.js_define=DEFAULT_JS_DEFINE   # User-provided
+        self.fixed_frame_noise_scale=0     # User-provided
+        self.fixed_frame_noise_frequency=0 # User-provided
+        self.mode='absolute'               # User-provided
         self.axis_types=[]           # Computed
         self.disp_offsets=[]         # Computed
         self.rot_offsets=[]          # Computed
@@ -47,6 +57,7 @@ class ConfigCreator(App):
         self.all_links=[]            # Computed
         self.all_dynamic_joints=[]   # Computed
         self.all_fixed_joints=[]     # Computed
+
 
         # Properties: joint_limits, velocity_limits
 
@@ -82,16 +93,16 @@ class ConfigCreator(App):
                                transform=Transform(translation=Vector3(x=0.0,y=0.0,z=0.0),
                                                    rotation=Quaternion(w=1.0,x=0.0,y=0.0,z=0.0)))
 
-        # tf.header.stamp = self.node.get_clock().now().to_msg()
-        # tf.header.frame_id = 'world'
-        # print('sending tf {0}'.format(tf))
         tf_msg = TFMessage(transforms=[tf1,tf2])
         self.tf_pub.publish(tf_msg)
 
 
     @property
     def json_app(self):
-        return {'step':self.step,'canStep':self.can_step,'displayedState':self.displayed_state}
+        return {'step':self.step,'canStep':self.can_step,
+                'displayedState':self.displayed_state,
+                'preprocessingPython':self.preprocessing_python,
+                'preprocessingJulia':self.preprocessing_julia}
 
     @property
     def config(self):
@@ -122,7 +133,10 @@ class ConfigCreator(App):
             'cylinders':self.cylinders,
             'all_links':self.all_links,
             'all_fixed_joints':self.all_fixed_joints,
-            'all_dynamic_joints':self.all_dynamic_joints
+            'all_dynamic_joints':self.all_dynamic_joints,
+            'fixed_frame_noise_scale':self.fixed_frame_noise_scale,
+            'fixed_frame_noise_frequency':self.fixed_frame_noise_frequency,
+            'mode':self.mode
         }
 
     @property
@@ -186,6 +200,9 @@ class ConfigCreator(App):
         self.sample_states = config.get('sampleStates',self.sample_states)
         self.training_states = config.get('trainingStates',self.training_states)
         self.problem_states = config.get('problemStates',self.problem_states)
+        self.fixed_frame_noise_scale = config.get('fixedFrameNoiseScale',self.fixed_frame_noise_scale)
+        self.fixed_frame_noise_frequency = config.get('fixedFrameNoiseFrequency',self.fixed_frame_noise_frequency)
+        self.mode = config.get('mode',self.mode)
 
         if 'app' in data:
             if 'step' in data['app']:

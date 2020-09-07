@@ -166,6 +166,23 @@ class ConfigCreator extends React.Component {
     this.props.socket.emit('app_update',{action:'config_update',config:{cylinders:cylinders}})
   }
 
+  updateMode = (mode) => {
+    this.props.socket.emit('app_update',{action:'config_update',config:{mode:mode}})
+  }
+
+  updateFixedFrameNoiseScale = (scale) => {
+    this.props.socket.emit('app_update',{action:'config_update',config:{fixedFrameNoiseScale:scale}})
+  }
+
+  updateFixedFrameNoiseFrequency = (frequency) => {
+    this.props.socket.emit('app_update',{action:'config_update',config:{fixedFrameNoiseFrequency:frequency}})
+  }
+
+  updateJsDefine = (e) => {
+    let code = e.target.value;
+    this.props.socket.emit('app_update',{action:'config_update',config:{jsDefine:code}})
+  }
+
   getPage = () => {
     switch (this.state.app.step) {
       case 0:
@@ -233,11 +250,19 @@ class ConfigCreator extends React.Component {
         );
       case 6:
         return (
-          <Misc/>
+          <Misc mode={this.state.config.mode}
+                fixedFrameNoiseScale={this.state.config.fixedFrameNoiseScale}
+                fixedFrameNoiseFrequency={this.state.config.fixedFrameNoiseFrequency}
+                jsDefine={this.state.config.jsDefine}
+                updateMode={(mode)=>this.updateMode(mode)}
+                updateFixedFrameNoiseScale={(scale)=>this.updateFixedFrameNoiseScale(scale)}
+                updateFixedFrameNoiseFrequency={(freq)=>this.updateFixedFrameNoiseFrequency(freq)}
+                updateJsDefine={(e)=>this.updateJsDefine(e)}/>
         )
       case 7:
         return (
-          <Preprocessing/>
+          <Preprocessing preprocessingPython={this.state.app.preprocessingPython}
+                         preprocessingJulia={this.state.app.preprocessingJulia}/>
         )
       default:
         return;
