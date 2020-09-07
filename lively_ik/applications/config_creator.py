@@ -10,6 +10,7 @@ from std_msgs.msg import Header
 from geometry_msgs.msg import TransformStamped, Transform, Vector3, Quaternion
 import inflection
 import xml.etree.ElementTree as et
+from julia import LivelyIK
 
 DEFAULT_JS_DEFINE = """from sensor_msgs.msg import JointState
 def joint_state_define(x):
