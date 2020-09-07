@@ -107,7 +107,7 @@ class ConfigCreator(App):
             yaml.dump(self.config,base_save)
 
     def preprocess(self):
-        LivelyIK.preprocess(self.config,self.node)
+        LivelyIK.preprocess(self.config,self.node,self.preprocess_cb)
 
     @property
     def json_app(self):
@@ -174,7 +174,7 @@ class ConfigCreator(App):
                 success = False
             if self.step == 7:
                 self.write_config()
-                self.preprocess(self.config,self.node,self.cb)
+                self.preprocess()
         else:
             self.step -= 1
         return {'success':success,'action':'step','app':self.json_app}

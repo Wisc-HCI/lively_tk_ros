@@ -1,4 +1,5 @@
 #!/usr/bin/env julia
+using LivelyIK
 collision_transfer = pyimport("lively_ik.utils.collision_transfer")
 lively_ik = pyimport("lively_ik")
 
@@ -95,7 +96,7 @@ function get_batched_data(ins, outs, batch_size)
 end
 
 function preprocess(info, rcl_node, cb)
-    relaxedIK = get_standard(info, rcl_node; preconfigured=true)
+    relaxedIK = LivelyIK.get_standard(info, rcl_node; preconfigured=true)
     cv = collision_transfer.CollisionVars(info, rcl_node)
 
     num_dof = relaxedIK.relaxedIK_vars.robot.num_dof
