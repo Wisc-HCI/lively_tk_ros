@@ -94,7 +94,7 @@ function get_batched_data(ins, outs, batch_size)
     return batched_data
 end
 
-function preprocess(info, rcl_node, emitter)
+function preprocess(info, rcl_node, cb)
     relaxedIK = get_standard(info, rcl_node; preconfigured=true)
     cv = collision_transfer.CollisionVars(info, rcl_node)
 
@@ -117,6 +117,7 @@ function preprocess(info, rcl_node, emitter)
         push!(in_states, state_to_joint_pts_closure(state))
         push!(out_scores, score)
         # TODO: Emit to socket with state update
+        cb('julia',i/num_samples*10)
         # println("sample $i of $num_samples ::: state: $in, y: $out")
     end
 
@@ -129,6 +130,7 @@ function preprocess(info, rcl_node, emitter)
         push!(in_states, state_to_joint_pts_closure(state))
         push!(out_scores, score)
         # TODO: Emit to socket with state update
+        cb('julia',i/num_samples*10+10)
         #println("manual sample $i of $num_samples ::: state: $in, y: $out")
     end
 
@@ -145,6 +147,7 @@ function preprocess(info, rcl_node, emitter)
             push!(in_states, state_to_joint_pts_closure(state))
             push!(out_scores, score)
             # TODO: Emit to socket with state update
+            cb('julia',i/num_samples*10+20)
             #println("problem state sample $i ($j / $num_rands_per) of $num_samples ::: state: $in, y: $out")
         end
     end
@@ -162,6 +165,7 @@ function preprocess(info, rcl_node, emitter)
             push!(in_states, state_to_joint_pts_closure(state))
             push!(out_scores, score)
             # TODO: Emit to socket with state update
+            cb('julia',i/num_samples*10+30)
             #println("sample state sample $i ($j / $num_rands_per) of $num_samples ::: state: $in, y: $out")
         end
     end
@@ -261,6 +265,7 @@ function preprocess(info, rcl_node, emitter)
         num_batches = length(batched_data)
         tl = total_loss2(w1, test_ins, test_outs)
         tl_train = total_loss( w1, new_ins, new_outs )
+        cb('julia',epoch/num_epochs*50+40)
         println("\nepoch $epoch of $num_epochs ::: train loss: $tl_train, test loss: $tl")
     end
 
@@ -363,4 +368,5 @@ function preprocess(info, rcl_node, emitter)
     fp = open(lively_ik.SRC * "/config/collision_nn/" * info["robot_name"] * "_network_rank", "w")
     write(fp, "$(sorted[3]), $(sorted[2]), $(sorted[1])")
     close(fp)
+    cb('julia',100)
 end

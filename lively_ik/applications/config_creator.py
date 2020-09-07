@@ -13,6 +13,7 @@ import inflection
 import xml.etree.ElementTree as et
 import yaml
 from julia import LivelyIK
+from flask_socketio import emit
 
 DEFAULT_JS_DEFINE = """from sensor_msgs.msg import JointState
 def joint_state_define(x):
@@ -173,7 +174,7 @@ class ConfigCreator(App):
                 success = False
             if self.step == 7:
                 self.write_config()
-                self.preprocess
+                self.preprocess(self.config,self.node,self.cb)
         else:
             self.step -= 1
         return {'success':success,'action':'step','app':self.json_app}
@@ -226,10 +227,20 @@ class ConfigCreator(App):
 
         return {'success':True,'action':'config_update','config':self.json_config,'app':self.json_app}
 
+    def preprocess_cb(self,lang,progress):
+        self.log(progress)
+        if lang == 'julia':
+            self.preprocessing_julia = progress
+        else:
+            self.preprocessing_python = progress
+        response = {'success':True,'action':'fetch','config':self.json_config,'app':self.json_app}
+        emit('app_update_response',response)
+
+
     @property
     def joint_limits(self):
         if self.robot:
-            return self.robot.bounds
+            return [[pair[0],pair[1]] for pair in self.robot.bounds]
         else:
             return []
 

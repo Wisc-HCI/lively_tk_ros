@@ -92,6 +92,12 @@ class Objects extends React.Component {
     this.props.updateCylinders(cylinders);
   }
 
+  onChangeBoxName = (value,idx) => {
+    let boxes = [...this.props.boxes];
+    boxes[idx].name = value;
+    this.props.updateBoxes(boxes);
+  }
+
   onChangeBoxFrame = (value,idx) => {
     let boxes = [...this.props.boxes];
     boxes[idx].coordinate_frame = value;
@@ -116,6 +122,18 @@ class Objects extends React.Component {
     this.props.updateBoxes(boxes);
   }
 
+  onChangeSphereName = (value,idx) => {
+    let spheres = [...this.props.spheres];
+    spheres[idx].name = value;
+    this.props.updateSpheres(spheres);
+  }
+
+  onChangeSphereFrame = (value,idx) => {
+    let spheres = [...this.props.spheres];
+    spheres[idx].coordinate_frame = value;
+    this.props.updateSpheres(spheres);
+  }
+
   onChangeSphereParameter = (value,idx) => {
     let spheres = [...this.props.spheres];
     spheres[idx].parameters = value;
@@ -132,6 +150,18 @@ class Objects extends React.Component {
     let spheres = [...this.props.spheres];
     spheres[idx].rotation[dim] = value;
     this.props.updateSpheres(spheres);
+  }
+
+  onChangeEllipsoidName = (value,idx) => {
+    let ellipsoids = [...this.props.ellipsoids];
+    ellipsoids[idx].name = value;
+    this.props.updateEllipsoids(ellipsoids);
+  }
+
+  onChangeEllipsoidFrame = (value,idx) => {
+    let ellipsoids = [...this.props.ellipsoids];
+    ellipsoids[idx].coordinate_frame = value;
+    this.props.updateEllipsoids(ellipsoids);
   }
 
   onChangeEllipsoidParameter = (value,idx,param) => {
@@ -152,6 +182,18 @@ class Objects extends React.Component {
     this.props.updateEllipsoids(ellipsoids);
   }
 
+  onChangeCapsuleName = (value,idx) => {
+    let capsules = [...this.props.capsules];
+    capsules[idx].name = value;
+    this.props.updateCapsules(capsules);
+  }
+
+  onChangeCapsuleFrame = (value,idx) => {
+    let capsules = [...this.props.capsules];
+    capsules[idx].coordinate_frame = value;
+    this.props.updateCapsules(capsules);
+  }
+
   onChangeCapsuleParameter = (value,idx,param) => {
     let capsules = [...this.props.capsules];
     capsules[idx].parameters[param] = value;
@@ -168,6 +210,18 @@ class Objects extends React.Component {
     let capsules = [...this.props.capsules];
     capsules[idx].rotation[dim] = value;
     this.props.updateCapsules(capsules);
+  }
+
+  onChangeCylinderName = (value,idx) => {
+    let cylinders = [...this.props.cylinders];
+    cylinders[idx].name = value;
+    this.props.updateCylinders(cylinders);
+  }
+
+  onChangeCylinderFrame = (value,idx) => {
+    let cylinders = [...this.props.cylinders];
+    cylinders[idx].coordinate_frame = value;
+    this.props.updateCylinders(cylinders);
   }
 
   onChangeCylinderParameter = (value,idx,param) => {
