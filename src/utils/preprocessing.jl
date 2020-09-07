@@ -1,7 +1,5 @@
 #!/usr/bin/env julia
 using LivelyIK
-collision_transfer = pyimport("lively_ik.utils.collision_transfer")
-lively_ik = pyimport("lively_ik")
 
 function state_to_joint_pts(x, vars)
     # return x
@@ -96,6 +94,9 @@ function get_batched_data(ins, outs, batch_size)
 end
 
 function preprocess(info, rcl_node, cb)
+    collision_transfer = pyimport("lively_ik.utils.collision_transfer")
+    lively_ik = pyimport("lively_ik")
+    
     relaxedIK = LivelyIK.get_standard(info, rcl_node; preconfigured=true)
     cv = collision_transfer.CollisionVars(info, rcl_node)
 

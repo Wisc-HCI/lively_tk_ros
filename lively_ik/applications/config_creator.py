@@ -61,6 +61,7 @@ class ConfigCreator(App):
         self.all_links=[]            # Computed
         self.all_dynamic_joints=[]   # Computed
         self.all_fixed_joints=[]     # Computed
+        self.displacements=[]        # Computed
 
 
         # Properties: joint_limits, velocity_limits
@@ -119,36 +120,37 @@ class ConfigCreator(App):
     @property
     def config(self):
         return {
-            'urdf':self.urdf,
-            'robot_name':self.robot_name,
-            'fixed_frame':self.fixed_frame,
-            'joint_ordering':self.joint_ordering,
-            'joint_names':self.joint_names,
-            'ee_fixed_joints':self.ee_fixed_joints,
-            'starting_config':self.starting_config,
-            'objectives':self.objectives,
-            'js_define':self.js_define,
-            'joint_limits':self.joint_limits,
-            'velocity_limits':self.velocity_limits,
+            'all_dynamic_joints':self.all_dynamic_joints,
+            'all_fixed_joints':self.all_fixed_joints,
+            'all_links':self.all_links,
             'axis_types':self.axis_types,
-            'disp_offsets':self.disp_offsets,
-            'rot_offsets':self.rot_offsets,
-            'joint_types':self.joint_types,
-            'robot_link_radius':self.robot_link_radius,
-            'sample_states':self.sample_states,
-            'training_states':self.training_states,
-            'problem_states':self.problem_states,
             'boxes':self.boxes,
-            'spheres':self.spheres,
-            'ellipsoids':self.ellipsoids,
             'capsules':self.capsules,
             'cylinders':self.cylinders,
-            'all_links':self.all_links,
-            'all_fixed_joints':self.all_fixed_joints,
-            'all_dynamic_joints':self.all_dynamic_joints,
+            'displacements':self.displacements,
+            'disp_offsets':self.disp_offsets,
+            'ee_fixed_joints':self.ee_fixed_joints,
+            'ellipsoids':self.ellipsoids,
+            'fixed_frame':self.fixed_frame,
             'fixed_frame_noise_scale':self.fixed_frame_noise_scale,
             'fixed_frame_noise_frequency':self.fixed_frame_noise_frequency,
-            'mode':self.mode
+            'joint_limits':self.joint_limits,
+            'joint_names':self.joint_names,
+            'joint_ordering':self.joint_ordering,
+            'joint_types':self.joint_types,
+            'js_define':self.js_define,
+            'mode':self.mode,
+            'objectives':self.objectives,
+            'problem_states':self.problem_states,
+            'robot_link_radius':self.robot_link_radius,
+            'robot_name':self.robot_name,
+            'rot_offsets':self.rot_offsets,
+            'sample_states':self.sample_states,
+            'spheres':self.spheres,
+            'starting_config':self.starting_config,
+            'training_states':self.training_states,
+            'urdf':self.urdf,
+            'velocity_limits':self.velocity_limits
         }
 
     @property
