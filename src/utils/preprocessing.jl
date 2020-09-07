@@ -96,7 +96,7 @@ end
 function preprocess(info, rcl_node, cb)
     collision_transfer = pyimport("lively_ik.utils.collision_transfer")
     lively_ik = pyimport("lively_ik")
-    
+
     relaxedIK = LivelyIK.get_standard(info, rcl_node; preconfigured=true)
     cv = collision_transfer.CollisionVars(info, rcl_node)
 
@@ -154,7 +154,7 @@ function preprocess(info, rcl_node, cb)
         end
     end
 
-    problem_states = info["sample_states"]
+    sample_states = info["sample_states"]
     num_samples = length(sample_states)
     length_of_sample = length(sample_states[1])
     num_rands_per = 50

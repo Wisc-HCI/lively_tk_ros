@@ -156,7 +156,7 @@ problem_states:
   - 0
   - 0.02
   - 0.02
-robot_link_radius: null
+robot_link_radius: 0.05
 robot_name: panda
 rot_offsets:
 - - - 0.0

@@ -231,12 +231,17 @@ class ConfigCreator(App):
 
     def preprocess_cb(self,lang,progress):
         self.log(progress)
+        p = int(round(progress))
+        should_emit = False
         if lang == 'julia':
-            self.preprocessing_julia = progress
+            if self.preprocessing_julia != p:
+                self.preprocessing_julia = p
         else:
-            self.preprocessing_python = progress
-        response = {'success':True,'action':'fetch','config':self.json_config,'app':self.json_app}
-        emit('app_update_response',response)
+            if self.preprocessing_python != p:
+                self.preprocessing_python = p
+        if should_emit:
+            response = {'success':True,'action':'fetch','config':self.json_config,'app':self.json_app}
+            emit('app_update_response',response)
 
 
     @property
