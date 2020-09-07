@@ -245,7 +245,6 @@ function preprocess(info, rcl_node, cb)
 
     tl = total_loss2(w1, test_ins, test_outs)
     tl_train = total_loss( w1, in_states, out_scores )
-    println("epoch 0 ::: train loss: $tl_train, test loss: $tl")
     num_epochs = 2
     batch_size = 200
     best_w = []
@@ -258,18 +257,13 @@ function preprocess(info, rcl_node, cb)
         batched_data = get_batched_data(new_ins, new_outs, batch_size)
 
         for b = 1:length(batched_data)
-            num_batches = length(batched_data)
-            global w1, w2, w3
             train(w1, batched_data[b], o1)
             train(w2, batched_data[b], o2)
             train(w3, batched_data[b], o3)
-            print("*")
+            cb("julia",((epoch-1)/num_epochs+b/length(batched_data))*50+40)
         end
-        num_batches = length(batched_data)
         tl = total_loss2(w1, test_ins, test_outs)
         tl_train = total_loss( w1, new_ins, new_outs )
-        cb("julia",epoch/num_epochs*50+40)
-        println("\nepoch $epoch of $num_epochs ::: train loss: $tl_train, test loss: $tl")
     end
 
     @save lively_ik.BASE * "/config/collision_nn/" * info["robot_name"] * "_1" w1
