@@ -1,5 +1,6 @@
 #!/usr/bin/env julia
 using LivelyIK
+using Random
 
 function state_to_joint_pts(x, vars)
     # return x
