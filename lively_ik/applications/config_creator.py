@@ -67,7 +67,7 @@ class ConfigCreator(App):
         # Properties: joint_limits, velocity_limits
 
         # Collision Contents
-        self.robot_link_radius=None  # User-provided
+        self.robot_link_radius=0.05  # User-provided
         self.sample_states=[]        # User-provided
         self.training_states=[]      # User-provided
         self.problem_states=[]       # User-provided
@@ -220,6 +220,7 @@ class ConfigCreator(App):
         self.fixed_frame_noise_scale = config.get('fixedFrameNoiseScale',self.fixed_frame_noise_scale)
         self.fixed_frame_noise_frequency = config.get('fixedFrameNoiseFrequency',self.fixed_frame_noise_frequency)
         self.mode = config.get('mode',self.mode)
+        self.robot_link_radius = config.get('robotLinkRadius',self.robot_link_radius)
 
         if 'app' in data:
             if 'step' in data['app']:

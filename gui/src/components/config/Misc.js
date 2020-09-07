@@ -18,6 +18,9 @@ class Misc extends React.Component {
               <Option value='relative'>Relative</Option>
             </Select>
           </Descriptions.Item>
+          <Descriptions.Item label='Robot Link Radius'>
+            <InputNumber style={{width:200}} onChange={(e)=>this.props.updateRobotLinkRadius(e)} value={this.props.robotLinkRadius}/>
+          </Descriptions.Item>
           <Descriptions.Item label='Base Noise Scaling'>
             <InputNumber style={{width:200}} onChange={(e)=>this.props.updateFixedFrameNoiseScale(e)} value={this.props.fixedFrameNoiseScale}/>
           </Descriptions.Item>

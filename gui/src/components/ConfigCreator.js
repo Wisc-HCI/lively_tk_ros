@@ -170,6 +170,10 @@ class ConfigCreator extends React.Component {
     this.props.socket.emit('app_update',{action:'config_update',config:{mode:mode}})
   }
 
+  updateRobotLinkRadius = (radius) => {
+    this.props.socket.emit('app_update',{action:'config_update',config:{robotLinkRadius:radius}})
+  }
+
   updateFixedFrameNoiseScale = (scale) => {
     this.props.socket.emit('app_update',{action:'config_update',config:{fixedFrameNoiseScale:scale}})
   }
