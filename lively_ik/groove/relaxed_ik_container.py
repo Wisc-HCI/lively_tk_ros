@@ -23,11 +23,7 @@ class RelaxedIKContainer(object):
         self.full_joint_lists = info['joint_names']
         self.fixed_ee_joints = info['ee_fixed_joints']
         self.joint_order = info['joint_ordering']
-        self.urdf_path = CONFIG_DIR+'/urdfs/'+info['urdf_file_name']
-        self.collision_file_path = CONFIG_DIR+'/collision_files/'+info['collision_file_name']
-        with open(self.collision_file_path) as collision_data:
-            collision_info = yaml.safe_load(collision_data)
-        self.info.update(collision_info)
+        self.urdf = info['urdf']
         self.c_boost = False
         self.num_chains = len(self.full_joint_lists)
         self.arms = []
@@ -41,7 +37,7 @@ class RelaxedIKContainer(object):
             pass
 
         for i in range(self.num_chains):
-            urdf_robot, arm, arm_c, tree = urdf_load(self.urdf_path, '', '', self.full_joint_lists[i], self.fixed_ee_joints[i])
+            urdf_robot, arm, arm_c, tree = urdf_load_from_string(self.urdf, '', '', self.full_joint_lists[i], self.fixed_ee_joints[i])
             if self.c_boost:
                 self.arms.append(arm_c)
             else:

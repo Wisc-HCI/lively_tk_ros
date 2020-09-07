@@ -7,6 +7,12 @@ using Interpolations
 using Knet
 using PyCall
 using BSON
+using BSON: @save
+using Flux
+using Flux: @epochs
+using Calculus
+using ForwardDiff
+using ReverseDiff
 import Distributions: Uniform
 using Statistics
 using DSP
