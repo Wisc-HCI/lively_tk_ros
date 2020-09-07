@@ -255,12 +255,11 @@ function preprocess(info, rcl_node, cb)
         # shuffle data here...get new batched data
         new_ins, new_outs, new_states = shuffle_ins_and_outs(in_states, out_scores, states)
         batched_data = get_batched_data(new_ins, new_outs, batch_size)
-
         for b = 1:length(batched_data)
             train(w1, batched_data[b], o1)
             train(w2, batched_data[b], o2)
             train(w3, batched_data[b], o3)
-            cb("julia",((epoch-1)/num_epochs+b/length(batched_data))*50+40)
+            cb("julia",(((epoch-1)*length(batched_data)+b)/(num_epochs*length(batched_data)))*50+40)
         end
         tl = total_loss2(w1, test_ins, test_outs)
         tl_train = total_loss( w1, new_ins, new_outs )
@@ -273,7 +272,6 @@ function preprocess(info, rcl_node, cb)
     @save lively_ik.BASE * "/config/collision_nn/" * info["robot_name"] * "_3" w3
     @save lively_ik.SRC * "/config/collision_nn/" * info["robot_name"] * "_3" w3
 
-    collision_nn_file_name = y["collision_nn_file"]
     w1 = BSON.load(lively_ik.BASE * "/config/collision_nn/" * info["robot_name"] * "_1")[:w1]
     model1 = (x) -> predict(w1, x)[1]
     w2 = BSON.load(lively_ik.BASE * "/config/collision_nn/" * info["robot_name"] * "_2")[:w2]
@@ -329,6 +327,7 @@ function preprocess(info, rcl_node, cb)
                 model3_acc += 1.
             end
         end
+        cb("julia",i/total_acc_count*9+90)
     end
 
     model1_acc = model1_acc/total_acc_count
@@ -336,7 +335,7 @@ function preprocess(info, rcl_node, cb)
     model3_acc = model3_acc/total_acc_count
 
     sorted = sortperm([model1_acc, model2_acc, model3_acc])
-    println("model 1 accuracy: $model1_acc, model 2 accuracy: $model2_acc, model 3 accuracy: $model3_acc")
+    # println("model 1 accuracy: $model1_acc, model 2 accuracy: $model2_acc, model 3 accuracy: $model3_acc")
 
     fp = open(lively_ik.BASE * "/config/collision_nn/" * info["robot_name"] * "_params_1", "w")
     write(fp, "$t_val1, $c_val1, $f_val1")
