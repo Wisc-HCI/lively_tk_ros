@@ -13,13 +13,13 @@ mutable struct RelaxedIK_vars
     init_ee_positions
     init_ee_quats
     joint_pts
-    nn_model
+    nn_model1
     nn_model2
     nn_model3
-    w
-    nn_t
-    nn_c
-    nn_f
+    w1
+    nn_t1
+    nn_c1
+    nn_f1
     w2
     nn_t2
     nn_c2
@@ -75,44 +75,43 @@ function RelaxedIK_vars(info, rcl_node, objectives, grad_types, weight_priors, i
     joint_goal = zeros(length(vars.init_state))
 
     if preconfigured == false
-        collision_nn_file_name = info["collision_nn_file"]
+        robot_name = info["robot_name"]
         lively_ik_folder = lively_ik.BASE
-        folder = lively_ik_folder * "/config/collision_nn/"
-        println(folder * collision_nn_file_name)
-        w = BSON.load(folder * collision_nn_file_name)[:w]
-        w_ = Array{Array{Float64,2},1}()
-        for i = 1:length(w)
-            push!(w_, w[i])
+        collision_nn_file = lively_ik_folder * "/config/collision_nn/" * robot_name
+        w1 = BSON.load(collision_nn_file * "_1")[:w1]
+        w1_ = Array{Array{Float64,2},1}()
+        for i = 1:length(w1)
+            push!(w1_, w1[i])
         end
-        model = (x) -> predict(w_, x)[1]
-        w2 = BSON.load(folder * collision_nn_file_name * "_2")[:w2]
+        model1 = (x) -> predict(w1_, x)[1]
+        w2 = BSON.load(collision_nn_file * "_2")[:w2]
         w2_ = Array{Array{Float64,2},1}()
         for i = 1:length(w2)
             push!(w2_, w2[i])
         end
         model2 = (x) -> predict(w2_, x)[1]
-        w3 = BSON.load(folder * collision_nn_file_name * "_3")[:w3]
+        w3 = BSON.load(collision_nn_file * "_3")[:w3]
         w3_ = Array{Array{Float64,2},1}()
         for i = 1:length(w3)
             push!(w3_, w3[i])
         end
         model3 = (x) -> predict(w3_, x)[1]
 
-        fp = open(folder * collision_nn_file_name * "_params", "r")
+        fp = open(collision_nn_file * "_params_1", "r")
         nn_params_line = readline(fp)
         split_arr = split(nn_params_line, ",")
-        t_val = parse(Float64, split_arr[1])
-        c_val = parse(Float64, split_arr[2])
-        f_val = parse(Float64, split_arr[3])
+        t_val1 = parse(Float64, split_arr[1])
+        c_val1 = parse(Float64, split_arr[2])
+        f_val1 = parse(Float64, split_arr[3])
         close(fp)
-        fp = open(folder * collision_nn_file_name * "_params_2", "r")
+        fp = open(collision_nn_file * "_params_2", "r")
         nn_params_line = readline(fp)
         split_arr = split(nn_params_line, ",")
         t_val2 = parse(Float64, split_arr[1])
         c_val2 = parse(Float64, split_arr[2])
         f_val2 = parse(Float64, split_arr[3])
         close(fp)
-        fp = open(folder * collision_nn_file_name * "_params_3", "r")
+        fp = open(collision_nn_file * "_params_3", "r")
         nn_params_line = readline(fp)
         split_arr = split(nn_params_line, ",")
         t_val3 = parse(Float64, split_arr[1])
@@ -122,7 +121,7 @@ function RelaxedIK_vars(info, rcl_node, objectives, grad_types, weight_priors, i
 
         rv = RelaxedIK_vars(vars, robot, noise, position_mode, rotation_mode, goal_positions,
             goal_quats, goal_positions_relative, goal_quats_relative, joint_goal, init_ee_positions,
-            init_ee_quats, 0, model, model2, model3, w_, t_val, c_val, f_val, w2_, t_val2, c_val2, f_val2, w3_, t_val3, c_val3, f_val3, 0, 0, 0)
+            init_ee_quats, 0, model1, model2, model3, w1_, t_val1, c_val1, f_val1, w2_, t_val2, c_val2, f_val2, w3_, t_val3, c_val3, f_val3, 0, 0, 0)
         initial_joint_points = state_to_joint_pts_withreturn(rand(length(vars.init_state)), rv)
         rv.joint_pts = initial_joint_points
 
@@ -153,7 +152,7 @@ function RelaxedIK_vars(info, rcl_node, objectives, grad_types, weight_priors, i
         for i = 1:length(grad_types)
             if grad_types[i] == "nn"
                 # nn_grad_func_c = x->nn_grad_func(x, rv, rv.w, rv.nn_t, rv.nn_c, rv.nn_f)
-                nn∇ = get_nn_grad_func(rv, rv.w, rv.nn_t, rv.nn_c, rv.nn_f)
+                nn∇_1 = get_nn_grad_func(rv, rv.w1, rv.nn_t1, rv.nn_c1, rv.nn_f1)
                 nn∇_2 = get_nn_grad_func(rv, rv.w2, rv.nn_t2, rv.nn_c2, rv.nn_f2)
                 nn∇_3 = get_nn_grad_func(rv, rv.w3, rv.nn_t3, rv.nn_c3, rv.nn_f3)
                 rv.vars.∇s[i] = nn∇_3

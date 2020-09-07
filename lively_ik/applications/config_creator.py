@@ -1,6 +1,7 @@
 from lively_ik.applications.app import App
 from lively_ik.utils.urdf_load import urdf_load_from_string
 from lively_ik.spacetime.robot import Robot
+from Lively_ik import BASE, SRC
 import rclpy
 from rcl_interfaces.srv import SetParameters
 from rcl_interfaces.msg import Parameter, ParameterValue
@@ -10,6 +11,7 @@ from std_msgs.msg import Header
 from geometry_msgs.msg import TransformStamped, Transform, Vector3, Quaternion
 import inflection
 import xml.etree.ElementTree as et
+import yaml
 from julia import LivelyIK
 
 DEFAULT_JS_DEFINE = """from sensor_msgs.msg import JointState
@@ -97,6 +99,14 @@ class ConfigCreator(App):
         tf_msg = TFMessage(transforms=[tf1,tf2])
         self.tf_pub.publish(tf_msg)
 
+    def write_config(self):
+        with open(SRC+'/config/info_files/'+self.robot_name+'.yaml','w') as src_save:
+            yaml.dump(self.config,src_save)
+        with open(BASE+'/config/info_files/'+self.robot_name+'.yaml','w') as base_save:
+            yaml.dump(self.config,base_save)
+
+    def preprocess(self):
+        LivelyIK.preprocess(self.config,self.node)
 
     @property
     def json_app(self):
@@ -161,6 +171,9 @@ class ConfigCreator(App):
                 self.step += 1
             else:
                 success = False
+            if self.step == 7:
+                self.write_config()
+                self.preprocess
         else:
             self.step -= 1
         return {'success':success,'action':'step','app':self.json_app}
@@ -344,6 +357,10 @@ class ConfigCreator(App):
             for idx, limits in enumerate(self.joint_limits):
                 if limits[0] > self.starting_config[idx] or limits[1] < self.starting_config[idx]:
                     return False
+            return True
+        elif self.step == 7:
+            if self.preprocessing_julia < 100 or self.preprocessing_python < 100:
+                return False
             return True
         else:
             return True
