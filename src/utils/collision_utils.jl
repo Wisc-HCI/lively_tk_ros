@@ -1,6 +1,7 @@
 
 
 function get_t_c_and_f_values(w, collision_check_py_object, relaxedIK)
+    collision_transfer = pyimport("lively_ik.utils.collision_transfer")
     model_scores = []
     ground_truth_scores = []
 
