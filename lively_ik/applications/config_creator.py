@@ -1,7 +1,7 @@
 from lively_ik.applications.app import App
 from lively_ik.utils.urdf_load import urdf_load_from_string
 from lively_ik.spacetime.robot import Robot
-from Lively_ik import BASE, SRC
+from lively_ik import BASE, SRC
 import rclpy
 from rcl_interfaces.srv import SetParameters
 from rcl_interfaces.msg import Parameter, ParameterValue

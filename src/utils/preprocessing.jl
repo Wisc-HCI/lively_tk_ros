@@ -21,14 +21,6 @@ function state_to_joint_pts(x, vars)
     return joint_pts
 end
 
-function predict(w,x)
-    # x = Knet.mat(x)
-    for i=1:2:length(w)-2
-        x = Knet.relu.(w[i]*x .+ w[i+1])
-    end
-    return w[end-1]*x .+ w[end]
-end
-
 loss(w,x,y) = Knet.mean(abs2, y - predict(w,x) )
 loss2(w,x,y) = Knet.mean(abs2, y - predict(w,x))[1]
 lossgradient = grad(loss)
