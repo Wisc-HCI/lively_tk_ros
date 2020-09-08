@@ -283,11 +283,8 @@ function preprocess(info, rcl_node, cb)
 
     # get t, c, and f values #######################################################
     t_val1, c_val1, f_val1 = get_t_c_and_f_values(w1, cv, relaxedIK)
-    println("calibrated network one.")
     t_val2, c_val2, f_val2 = get_t_c_and_f_values(w2, cv, relaxedIK)
-    println("calibrated network two.")
     t_val3, c_val3, f_val3 = get_t_c_and_f_values(w3, cv, relaxedIK)
-    println("calibrated network three.")
 
     model1_acc = 0.0
     model2_acc = 0.0
@@ -300,7 +297,7 @@ function preprocess(info, rcl_node, cb)
         model1_score = model1(state)
         model2_score = model2(state)
         model3_score = model3(state)
-        ground_truth_score = c.get_score(r, cv)
+        ground_truth_score = collision_transfer.get_score(r, cv)
         thresh = 1.0
         if ground_truth_score >= 5.0
             if model1_score >= thresh
