@@ -12,13 +12,13 @@ end
 
 
 function positional_noise_obj(x, vars, objidx, eeidx)
-    #println("POS NOISE IDX: $objidx $eeidx")
+    println("POS NOISE IDX: $objidx $eeidx")
     vars.robot.arms[eeidx].getFrames(x[vars.robot.subchain_indices[eeidx]])
-    #println("POS 1")
+    println("POS 1")
     goal = vars.goal_positions[eeidx] + vars.noise.generators[objidx].value + vars.noise.base.value
-    #println("POS 2")
+    println("POS 2")
     x_val = norm(vars.robot.arms[eeidx].out_pts[end] - goal)
-    #println("POS 3")
+    println("POS 3")
     return groove_loss(x_val, 0., 2, .1, 10., 2)
 end
 
