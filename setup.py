@@ -1,6 +1,7 @@
 from setuptools import setup
 import glob
 import os
+import asyncio
 
 
 package_name = 'lively_ik'
@@ -8,9 +9,6 @@ config_files = glob.glob(os.path.join('config', '*', '*'))
 launch_files = glob.glob(os.path.join('launch', '*'))
 rviz_files = glob.glob(os.path.join('rviz', '*'))
 
-# TODO figure out Julia stuff
-from julia import Pkg
-import asyncio
 
 async def run(cmd):
     proc = await asyncio.create_subprocess_shell(
