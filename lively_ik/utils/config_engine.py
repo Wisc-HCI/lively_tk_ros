@@ -12,10 +12,8 @@ from lively_ik import BASE
 class ConfigEngine:
     def __init__(self, info, collision_graph, vars, override=False):
         self.info = info
-        print(self.info.keys())
         self.collision_graph = collision_graph
-        self.config_fn = BASE+'/config/collision_files/'+self.info['collision_file_name']
-        self.nn_file_name = BASE+'/config/collision_nn/'+self.info['collision_nn_file']+'_python'
+        self.nn_file_name = BASE+'/config/collision_nn/'+self.info['robot_name']+'_python'
         self.vars = vars
 
         if not os.path.exists(self.nn_file_name) or override:
@@ -39,4 +37,4 @@ class ConfigEngine:
         joblib.dump(collision_nn, self.nn_file_name)
 
         return robot_name, collision_nn, self.info['starting_config'], self.info['joint_names'], self.info['ee_fixed_joints'], \
-               self.info['joint_ordering'], self.info['urdf_file_name'], self.info['collision_file_name']
+               self.info['joint_ordering'], self.info['urdf_file_name'], self.info['robot_name'] + '_python'

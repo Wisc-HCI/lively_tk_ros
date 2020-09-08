@@ -7,6 +7,7 @@ import os
 import yaml
 #from sklearn.externals import joblib
 import joblib
+import xml.etree.ElementTree as et
 
 CONFIG_DIR = lively_ik.BASE + '/config'
 
@@ -46,7 +47,7 @@ class RelaxedIKContainer(object):
             self.trees.append(tree)
 
         # make robot
-        self.robot = Robot(self.arms, self.full_joint_lists, self.joint_order)
+        self.robot = Robot(self.arms, self.full_joint_lists, self.joint_order,extra_joints=self.get_extra_joints())
 
         self.numDOF = self.robot.numDOF
 
@@ -60,3 +61,23 @@ class RelaxedIKContainer(object):
         if not pre_config:
             self.ce = ConfigEngine(self.info, self.collision_graph, self, override=config_override)
             self.collision_nn = self.ce.collision_nn
+
+    def get_extra_joints(self):
+        extra_joint_names = []
+        for joint in self.info['joint_ordering']:
+            found = False
+            for chain in self.info['joint_names']:
+                if joint in chain:
+                    found = True
+            if not found:
+                extra_joint_names.append(joint)
+        extra_joints = {name:{'bounds':[0,0],'velocity':0} for name in extra_joint_names}
+        robot_root = et.fromstring(self.info['urdf'])
+        for child in robot_root:
+            if child.tag == 'joint' and child.attrib['type'] != 'fixed' and child.attrib['name'] in extra_joint_names:
+                for attrib in child:
+                    if attrib.tag == 'limit':
+                        extra_joints[child.attrib['name']]['bounds'][0] = float(attrib.attrib['lower'])
+                        extra_joints[child.attrib['name']]['bounds'][1] = float(attrib.attrib['upper'])
+                        extra_joints[child.attrib['name']]['velocity'] = float(attrib.attrib['velocity'])
+        return extra_joints

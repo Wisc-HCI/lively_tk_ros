@@ -59,12 +59,12 @@ class ControllerNode(Node):
             ee_poses.append(Pose.from_pose_dict(pose_dict).ros_pose)
 
         # Specify joint goals as initial
-        dc_values = [Float64(data=d) for d in self.info['starting_config']]
+        dc_values = [Float64(data=float(d)) for d in self.info['starting_config']]
 
         # Specify the objective weights
         objective_weights =  []
         for obj in self.info['objectives']:
-            objective_weights.append(Float64(data=obj['weight']))
+            objective_weights.append(Float64(data=float(obj['weight'])))
 
         # Specify the bias
         # bias = Position(1.0,1.0,1.0).ros_point # UNIFORM

@@ -354,6 +354,10 @@ function preprocess(info, rcl_node, cb)
     write(fp, "$t_val3, $c_val3, $f_val3")
     close(fp)
 
+    fp = open(lively_ik.SRC * "/config/collision_nn/" * info["robot_name"] * "_params_3", "w")
+    write(fp, "$t_val3, $c_val3, $f_val3")
+    close(fp)
+
     fp = open(lively_ik.BASE * "/config/collision_nn/" * info["robot_name"] * "_network_rank", "w")
     write(fp, "$(sorted[3]), $(sorted[2]), $(sorted[1])")
     close(fp)

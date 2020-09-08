@@ -255,10 +255,12 @@ class ConfigCreator extends React.Component {
       case 6:
         return (
           <Misc mode={this.state.config.mode}
+                robotLinkRadius={this.state.config.robotLinkRadius}
                 fixedFrameNoiseScale={this.state.config.fixedFrameNoiseScale}
                 fixedFrameNoiseFrequency={this.state.config.fixedFrameNoiseFrequency}
                 jsDefine={this.state.config.jsDefine}
                 updateMode={(mode)=>this.updateMode(mode)}
+                updateRobotLinkRadius={(radius)=>this.updateRobotLinkRadius(radius)}
                 updateFixedFrameNoiseScale={(scale)=>this.updateFixedFrameNoiseScale(scale)}
                 updateFixedFrameNoiseFrequency={(freq)=>this.updateFixedFrameNoiseFrequency(freq)}
                 updateJsDefine={(e)=>this.updateJsDefine(e)}/>

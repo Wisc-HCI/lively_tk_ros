@@ -17,10 +17,7 @@ def launch_setup(context, *args, **kwargs):
         info_data = yaml.safe_load(s)
     info_string = yaml.dump(info_data)
 
-    urdf_path = lik_share + '/config/urdfs/' + info_data['urdf_file_name']
-
-    with open(urdf_path, 'r') as s:
-        robot_desc = s.read()
+    robot_desc = info_data['urdf']
 
     nodes = [
         # For debugging tf stuff
@@ -43,10 +40,10 @@ def launch_setup(context, *args, **kwargs):
         Node(package='lively_ik',
              executable='Node.jl',
              output='screen'),
-        Node(package='rviz2',
-             executable='rviz2',
-             name='rviz2',
-             arguments=['-d',rviz_file])
+        # Node(package='rviz2',
+        #      executable='rviz2',
+        #      name='rviz2',
+        #      arguments=['-d',rviz_file])
     ]
 
     return nodes
