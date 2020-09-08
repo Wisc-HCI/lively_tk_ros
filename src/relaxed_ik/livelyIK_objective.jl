@@ -12,32 +12,32 @@ end
 
 
 function positional_noise_obj(x, vars, objidx, eeidx)
-    println("POS NOISE IDX: $objidx $eeidx")
+    # println("POS NOISE IDX: $objidx $eeidx")
     vars.robot.arms[eeidx].getFrames(x[vars.robot.subchain_indices[eeidx]])
-    println("POS 1")
+    # println("POS 1")
     goal = vars.goal_positions[eeidx] + vars.noise.generators[objidx].value + vars.noise.base.value
-    println("POS 2")
+    # println("POS 2")
     x_val = norm(vars.robot.arms[eeidx].out_pts[end] - goal)
-    println("POS 3")
+    # println("POS 3")
     return groove_loss(x_val, 0., 2, .1, 10., 2)
 end
 
 function rotational_noise_obj(x, vars, objidx, eeidx)
-    #println("ROT NOISE IDX: $objidx $eeidx")
+    println("ROT NOISE IDX: $objidx $eeidx")
     vars.robot.arms[eeidx].getFrames(x[vars.robot.subchain_indices[eeidx]])
-    #println("ROT 1")
+    println("ROTn 1")
     eeMat = vars.robot.arms[eeidx].out_frames[end]
-    #println("ROT 2")
+    println("ROTn 2")
     orilog = quaternion_log(vars.goal_quats[eeidx])
-    #println("ROT 3")
+    println("ROTn 3")
     goal_ori = orilog + vars.noise.generators[objidx].value
-    #println("ROT 4")
+    println("ROTn 4")
     goal_quat = quaternion_exp(goal_ori)
-    #println("ROT 5")
+    println("ROTn 5")
     ee_quat = Quat(eeMat)
-    #println("ROT 6")
+    println("ROTn 6")
     ee_quat2 = Quat(-ee_quat.w, -ee_quat.x, -ee_quat.y, -ee_quat.z)
-    #println("ROT 7")
+    println("ROTn 7")
     disp = norm(quaternion_disp(goal_quat, ee_quat))
     disp2 = norm(quaternion_disp(goal_quat, ee_quat2))
 

@@ -13,7 +13,7 @@ function dc_obj(x, vars, idx)
     # Calculate the delta between goal and state
     goal = vars.joint_goal[idx]
     x_val = abs(x[idx]-goal)
-
+    println("DC 1")
     # return groove_loss(  x_val, 0.0, 2.0, 2.3, 0.003, 2.0 )
     return groove_loss(  x_val, 0.0, 2, 0.3295051144911304, 0.1, 2)
 end
@@ -26,7 +26,7 @@ function position_obj(x, vars, idx)
     # println("goal: $goal")
     x_val = norm(vars.robot.arms[idx].out_pts[end] - goal)
     # println("xval: $x_val")
-
+    println("POS 1")
     return groove_loss(x_val, 0., 2, .1, 10., 2)
 end
 
@@ -44,27 +44,31 @@ function rotation_obj(x, vars, idx)
     disp2 = norm(quaternion_disp(goal_quat, ee_quat2))
 
     x_val = min(disp, disp2)
-
+    println("ROT 1")
     return groove_loss(x_val, 0., 2, .1, 10., 2)
 end
 
 function joint_goal_obj(x, vars)
     goal, ret_k = interpolate_to_joint_limits(vars.vars.xopt, vars.joint_goal, t=0.033, joint_velocity_limits=vars.robot.velocity_limits)
     x_val = euclidean(x, goal)
+    println("JG 1")
     return groove_loss(x_val, 0., 2, .1, 10., 2)
 end
 
 function min_jt_vel_obj(x, vars)
+    println("JTV 1")
     # return groove_loss(norm(x - vars.vars.xopt), 0.0, 2.0, 0.1, 10.0, 2.0)
     return groove_loss(norm(x - vars.vars.xopt), 0.0, 2.0, 1, 10.0, 2.0)
 end
 
 function min_jt_accel_obj(x, vars)
+    println("JTA 1")
     # return groove_loss(norm((vars.vars.xopt - vars.vars.prev_state) - (x - vars.vars.xopt)), 0.0, 2.0, 0.1, 10.0, 2.0)
     return groove_loss(norm((vars.vars.xopt - vars.vars.prev_state) - (x - vars.vars.xopt)),  0.0, 2, 1, 10.0, 2)
 end
 
 function min_jt_jerk_obj(x, vars)
+    println("JTJ 1")
     # return groove_loss( norm( ( (x - vars.vars.xopt) - (vars.vars.xopt - vars.vars.prev_state) ) - ( (vars.vars.xopt - vars.vars.prev_state) - (vars.vars.prev_state - vars.vars.prev_state2) ) ),  0.0, 2.0, 0.1, 10.0, 2.0   )
     return groove_loss( norm( ( (x - vars.vars.xopt) - (vars.vars.xopt - vars.vars.prev_state) ) - ( (vars.vars.xopt - vars.vars.prev_state) - (vars.vars.prev_state - vars.vars.prev_state2) ) ),  0.0, 2, 1, 10.0, 2  )
 end
@@ -89,17 +93,21 @@ function joint_limit_obj(x, vars)
     end
 
     x_val = sum
+    println("Limit 1")
     # return groove_loss(  x_val, 0.0, 2.0, 2.3, 0.003, 2.0 )
     return groove_loss(  x_val, 0.0, 2, 0.3295051144911304, 0.1, 2)
 end
 
 function collision_nn_obj(x, vars)
+    println("Collision 1")
     state_to_joint_pts_inplace(x, vars)
+    println("Collision 2")
     # state = state_to_joint_pts_withreturn(x, vars)
     # return groove_loss(  vars.nn_model( vars.joint_pts ) , 0.0, 2.0, 0.07, 100.0, 2.0 )
     # 0.2010929597597385, 0.5241930016229932, 1.1853951273805203
     # 0.2010929597597385, 0.5241930016229932, 1.1853951273805203
     # return groove_loss(  vars.nn_model( vars.joint_pts ) , 0.2010929597597385, 2, 0.52419, 1.1853951273805203, 2 )
+    println("Collision 3")
     return groove_loss(  vars.nn_model3( vars.joint_pts ), vars.nn_t3, 2, vars.nn_c3, vars.nn_f3, 2 )
 end
 
