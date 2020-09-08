@@ -108,7 +108,9 @@ function collision_nn_obj(x, vars)
     # 0.2010929597597385, 0.5241930016229932, 1.1853951273805203
     # return groove_loss(  vars.nn_model( vars.joint_pts ) , 0.2010929597597385, 2, 0.52419, 1.1853951273805203, 2 )
     println("Collision 3")
-    return groove_loss(  vars.nn_model3( vars.joint_pts ), vars.nn_t3, 2, vars.nn_c3, vars.nn_f3, 2 )
+    val = vars.nn_model3( vars.joint_pts )
+    println("Collision 4")
+    return groove_loss(  val, vars.nn_t3, 2, vars.nn_c3, vars.nn_f3, 2 )
 end
 
 
