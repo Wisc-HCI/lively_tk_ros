@@ -19,14 +19,14 @@ class ConfigEngine:
         if not os.path.exists(self.nn_file_name) or override:
             print(bcolors.OKBLUE + 'Config file not found at ' +self.nn_file_name+ ', generating a new one!  This will take some time.' + bcolors.ENDC)
             self.robot_name, self.collision_nn, self.init_state, self.full_joint_lists, self.fixed_ee_joints, \
-               self.joint_order, self.urdf_path, self.collision_file = self.generate_nn_file()
+               self.joint_order, self.collision_file = self.generate_nn_file()
         else:
             try:
                 self.collision_nn = joblib.load(self.nn_file_name)
             except:
                 print(bcolors.OKBLUE + 'Config file at ' + self.nn_file_name + ' could not be opened; generating a new one!  This will take some time.' + bcolors.ENDC)
                 self.robot_name, self.collision_nn, self.init_state, self.full_joint_lists, self.fixed_ee_joints, \
-                   self.joint_order, self.urdf_path, self.collision_file = self.generate_nn_file()
+                   self.joint_order, self.collision_file = self.generate_nn_file()
 
     def generate_nn_file(self):
         trainer = CollisionNNTrainer(self.collision_graph)
@@ -37,4 +37,4 @@ class ConfigEngine:
         joblib.dump(collision_nn, self.nn_file_name)
 
         return robot_name, collision_nn, self.info['starting_config'], self.info['joint_names'], self.info['ee_fixed_joints'], \
-               self.info['joint_ordering'], self.info['urdf_file_name'], self.info['robot_name'] + '_python'
+               self.info['joint_ordering'], self.info['robot_name'] + '_python'

@@ -139,37 +139,41 @@ function preprocess(info, rcl_node, cb)
 
     problem_states = info["problem_states"]
     num_samples = length(problem_states)
-    length_of_sample = length(problem_states[1])
-    num_rands_per = 50
-    for i=1:num_samples
-        for j = 1:num_rands_per
-            r = rand(Uniform(-.005,.005), length_of_sample)
-            state = problem_states[i] + r
-            score = [collision_transfer.get_score(state, cv)]
-            push!(states, state)
-            push!(in_states, state_to_joint_pts_closure(state))
-            push!(out_scores, score)
-            # TODO: Emit to socket with state update
-            cb("julia",i/num_samples*10+20)
-            #println("problem state sample $i ($j / $num_rands_per) of $num_samples ::: state: $in, y: $out")
+    if (num_samples > 0)
+        length_of_sample = length(problem_states[1])
+        num_rands_per = 50
+        for i=1:num_samples
+            for j = 1:num_rands_per
+                r = rand(Uniform(-.005,.005), length_of_sample)
+                state = problem_states[i] + r
+                score = [collision_transfer.get_score(state, cv)]
+                push!(states, state)
+                push!(in_states, state_to_joint_pts_closure(state))
+                push!(out_scores, score)
+                # TODO: Emit to socket with state update
+                cb("julia",i/num_samples*10+20)
+                #println("problem state sample $i ($j / $num_rands_per) of $num_samples ::: state: $in, y: $out")
+            end
         end
     end
 
     sample_states = info["sample_states"]
     num_samples = length(sample_states)
-    length_of_sample = length(sample_states[1])
-    num_rands_per = 50
-    for i=1:num_samples
-        for j = 1:num_rands_per
-            r = rand(Uniform(-.005,.005), length_of_sample)
-            state = sample_states[i] + r
-            score = [collision_transfer.get_score(state, cv)]
-            push!(states, state)
-            push!(in_states, state_to_joint_pts_closure(state))
-            push!(out_scores, score)
-            # TODO: Emit to socket with state update
-            cb("julia",i/num_samples*10+30)
-            #println("sample state sample $i ($j / $num_rands_per) of $num_samples ::: state: $in, y: $out")
+    if (num_samples > 0)
+        length_of_sample = length(sample_states[1])
+        num_rands_per = 50
+        for i=1:num_samples
+            for j = 1:num_rands_per
+                r = rand(Uniform(-.005,.005), length_of_sample)
+                state = sample_states[i] + r
+                score = [collision_transfer.get_score(state, cv)]
+                push!(states, state)
+                push!(in_states, state_to_joint_pts_closure(state))
+                push!(out_scores, score)
+                # TODO: Emit to socket with state update
+                cb("julia",i/num_samples*10+30)
+                #println("sample state sample $i ($j / $num_rands_per) of $num_samples ::: state: $in, y: $out")
+            end
         end
     end
 
