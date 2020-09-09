@@ -29,9 +29,11 @@ function state_to_joint_pts_inplace(x, vars)
     idx = 1
     for j=1:vars.robot.num_chains
         out_pts = vars.robot.arms[j].out_pts
+        println(out_pts)
         for k = 1:length(out_pts)
             for l=1:3
                 # push!(joint_pts, out_pts[k][l])
+                println(out_pts[k][l])
                 vars.joint_pts[idx] = out_pts[k][l]
                 idx += 1
             end
