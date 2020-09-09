@@ -21,10 +21,11 @@ end
 
 function state_to_joint_pts_inplace(x, vars)
     # joint_pts = []
+    println("cp 1")
     for i=1:vars.robot.num_chains
         vars.robot.arms[i].getFrames(x[vars.robot.subchain_indices[i]])
     end
-
+    println("cp 2")
     idx = 1
     for j=1:vars.robot.num_chains
         out_pts = vars.robot.arms[j].out_pts
@@ -36,6 +37,7 @@ function state_to_joint_pts_inplace(x, vars)
             end
         end
     end
+    println("cp 3")
 end
 
 
