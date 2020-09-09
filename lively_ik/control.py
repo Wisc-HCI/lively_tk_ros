@@ -39,7 +39,7 @@ class ControllerNode(Node):
             rot = ee_rotations[ee_idx]
             name = self.info['ee_fixed_joints'][ee_idx]
 
-            marker = self.create_marker(name,pos,rot)
+            marker = self.create_marker(name,pos,rot,self.info['fixed_frame'])
             self.ims.insert(marker,feedback_callback=lambda msg:self.feedback_cb(ee_idx,msg))
 
             # Set the initial value in self.goals
@@ -67,11 +67,11 @@ class ControllerNode(Node):
             objective_weights.append(Float64(data=float(obj['weight'])))
 
         # Specify the bias
-        # bias = Position(1.0,1.0,1.0).ros_point # UNIFORM
+        bias = Position(1.0,1.0,1.0).ros_point # UNIFORM
         # bias = Position(1.0,0.0,0.0).ros_point # LATERAL
         # bias = Position(0.0,1.0,0.0).ros_point # FRONT/BACK
         # bias = Position(0.0,0.0,1.0).ros_point # VERTICAL
-        bias = Position(1.0,0.3,2.0).ros_point # MIXED
+        # bias = Position(1.0,0.3,2.0).ros_point # MIXED
 
         self.goals = LivelyGoals(ee_poses=ee_poses,dc_values=dc_values,objective_weights=objective_weights,bias=bias)
 
@@ -98,10 +98,10 @@ class ControllerNode(Node):
         return response.values[0].string_value
 
     @staticmethod
-    def create_marker(name,ee_pos,ee_rot):
+    def create_marker(name,ee_pos,ee_rot,frame_id):
         # create an interactive marker for our server
         marker = InteractiveMarker()
-        marker.header.frame_id = "world"
+        marker.header.frame_id = frame_id
         marker.name = "interactive_marker_" + name
         marker.pose.position.x = float(ee_pos[0])
         marker.pose.position.y = float(ee_pos[1])

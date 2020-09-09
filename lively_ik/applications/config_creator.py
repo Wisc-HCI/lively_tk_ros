@@ -15,11 +15,6 @@ import yaml
 from julia import LivelyIK
 from flask_socketio import emit
 
-DEFAULT_JS_DEFINE = """from sensor_msgs.msg import JointState
-def joint_state_define(x):
-	return None
-"""
-
 class ConfigCreator(App):
 
     def __init__(self, node):
@@ -50,7 +45,6 @@ class ConfigCreator(App):
         self.ee_fixed_joints=[]      # User-provided
         self.starting_config=[]      # User-provided
         self.objectives=[]           # User-provided
-        self.js_define=DEFAULT_JS_DEFINE   # User-provided
         self.fixed_frame_noise_scale=0     # User-provided
         self.fixed_frame_noise_frequency=0 # User-provided
         self.mode='absolute'               # User-provided
@@ -138,7 +132,6 @@ class ConfigCreator(App):
             'joint_names':self.joint_names,
             'joint_ordering':self.joint_ordering,
             'joint_types':self.joint_types,
-            'js_define':self.js_define,
             'mode':self.mode,
             'objectives':self.objectives,
             'problem_states':self.problem_states,
@@ -208,7 +201,6 @@ class ConfigCreator(App):
         self.fixed_frame = config.get('fixedFrame',self.fixed_frame)
         self.starting_config = config.get('startingConfig',self.starting_config)
         self.objectives = config.get('objectives',self.objectives)
-        self.js_define = config.get('jsDefine',self.js_define)
         self.boxes = config.get('boxes',self.boxes)
         self.spheres = config.get('spheres',self.spheres)
         self.ellipsoids = config.get('ellipsoids',self.ellipsoids)

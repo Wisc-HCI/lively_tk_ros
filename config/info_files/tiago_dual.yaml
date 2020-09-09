@@ -752,9 +752,9 @@ objectives:
 - gradient: forward_ad
   type: joint_limit
   weight: 1
-- gradient: forward_ad
-  type: collision_nn
-  weight: 5
+# - gradient: forward_ad
+#   type: collision_nn
+#   weight: 5
 problem_states:
 - - 0.28
   - -0.5

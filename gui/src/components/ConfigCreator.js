@@ -94,11 +94,7 @@ class ConfigCreator extends React.Component {
     this.props.socket.emit('app_update',{action:'config_update',config:{robotName:robotName}})
   }
 
-  updateFixedFrame = (event) => {
-    let fixedFrame = event.target.value
-    if (fixedFrame === '') {
-      fixedFrame = null;
-    }
+  updateFixedFrame = (fixedFrame) => {
     this.props.socket.emit('app_update',{action:'config_update',config:{fixedFrame:fixedFrame}})
   }
 
@@ -182,11 +178,6 @@ class ConfigCreator extends React.Component {
     this.props.socket.emit('app_update',{action:'config_update',config:{fixedFrameNoiseFrequency:frequency}})
   }
 
-  updateJsDefine = (e) => {
-    let code = e.target.value;
-    this.props.socket.emit('app_update',{action:'config_update',config:{jsDefine:code}})
-  }
-
   getPage = () => {
     switch (this.state.app.step) {
       case 0:
@@ -258,12 +249,10 @@ class ConfigCreator extends React.Component {
                 robotLinkRadius={this.state.config.robotLinkRadius}
                 fixedFrameNoiseScale={this.state.config.fixedFrameNoiseScale}
                 fixedFrameNoiseFrequency={this.state.config.fixedFrameNoiseFrequency}
-                jsDefine={this.state.config.jsDefine}
                 updateMode={(mode)=>this.updateMode(mode)}
                 updateRobotLinkRadius={(radius)=>this.updateRobotLinkRadius(radius)}
                 updateFixedFrameNoiseScale={(scale)=>this.updateFixedFrameNoiseScale(scale)}
-                updateFixedFrameNoiseFrequency={(freq)=>this.updateFixedFrameNoiseFrequency(freq)}
-                updateJsDefine={(e)=>this.updateJsDefine(e)}/>
+                updateFixedFrameNoiseFrequency={(freq)=>this.updateFixedFrameNoiseFrequency(freq)}/>
         )
       case 7:
         return (

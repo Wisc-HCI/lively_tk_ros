@@ -1,7 +1,7 @@
 import React from 'react';
-import { Input, Descriptions } from 'antd';
+import { Input, Descriptions, Select } from 'antd';
 const { TextArea } = Input;
-
+const { Option } = Select;
 
 class Basic extends React.Component {
 
@@ -14,7 +14,15 @@ class Basic extends React.Component {
             <Input value={this.props.robotName} defaultValue={this.props.robotName} onChange={this.props.updateRobotName}/>
           </Descriptions.Item>
           <Descriptions.Item label="Fixed Frame">
-             <Input value={this.props.fixedFrame} defaultValue={this.props.fixedFrame} onChange={this.props.updateFixedFrame}/>
+             <Select
+               placeholder="Please select"
+               value={this.props.fixedFrame}
+               onChange={(joint)=>this.props.updateFixedFrame(joint)}
+               style={{ width:'100%'}}>
+               {this.props.allLinks.map((joint)=>{
+                 return <Option key={joint}>{joint}</Option>
+               })}
+             </Select>
            </Descriptions.Item>
           <Descriptions.Item label="URDF">
              <TextArea value={this.props.urdf} defaultValue={this.props.urdf} rows={10} onChange={this.props.updateUrdf}/>

@@ -27,9 +27,6 @@ class Misc extends React.Component {
           <Descriptions.Item label='Base Noise Frequency'>
             <InputNumber style={{width:200}} onChange={(e)=>this.props.updateFixedFrameNoiseFrequency(e)} value={this.props.fixedFrameNoiseFrequency}/>
           </Descriptions.Item>
-          <Descriptions.Item label="Joint State Function">
-             <TextArea value={this.props.jsDefine} rows={10} onChange={(e)=>this.props.updateJsDefine(e)}/>
-           </Descriptions.Item>
         </Descriptions>
       </>
     )

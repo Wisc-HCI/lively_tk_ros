@@ -21,30 +21,22 @@ end
 
 function state_to_joint_pts_inplace(x, vars)
     # joint_pts = []
-    println("cp 1")
     for i=1:vars.robot.num_chains
         vars.robot.arms[i].getFrames(x[vars.robot.subchain_indices[i]])
     end
-    println("cp 2")
     idx = 1
     for j=1:vars.robot.num_chains
         out_pts = vars.robot.arms[j].out_pts
-        println("j: $j")
-        println(length(out_pts))
         for k = 1:length(out_pts)
-            println("k: $k")
             for l=1:3
-                println("l: $l")
-                # push!(joint_pts, out_pts[k][l])
+                # Seems to be duals being placed in joint_pts
                 val = out_pts[k][l]
                 println("val: $val")
-                #vars.joint_pts[idx] = out_pts[k][l]
-                println("idx: $idx")
+                vars.joint_pts[idx] = out_pts[k][l]
                 idx += 1
             end
         end
     end
-    println("cp 3")
 end
 
 
