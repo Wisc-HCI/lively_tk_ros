@@ -38,7 +38,7 @@ function state_to_joint_pts_inplace(x, vars)
                 # push!(joint_pts, out_pts[k][l])
                 val = out_pts[k][l]
                 println("val: $val")
-                vars.joint_pts[idx] = out_pts[k][l]
+                #vars.joint_pts[idx] = out_pts[k][l]
                 println("idx: $idx")
                 idx += 1
             end
