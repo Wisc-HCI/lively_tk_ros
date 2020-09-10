@@ -150,7 +150,7 @@ objectives:
   weight: 20
   gradient: forward_ad
   frequency: 4.0
-- gradient: forward_ad
+- gradient: finite_diff
   type: collision_nn
   weight: 3
 problem_states:

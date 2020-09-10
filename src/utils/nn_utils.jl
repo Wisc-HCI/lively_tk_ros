@@ -29,10 +29,7 @@ function state_to_joint_pts_inplace(x, vars)
         out_pts = vars.robot.arms[j].out_pts
         for k = 1:length(out_pts)
             for l=1:3
-                # Seems to be duals being placed in joint_pts
-                val = out_pts[k][l]
-                println("val: $val")
-                vars.joint_pts[idx] = 0#out_pts[k][l]
+                vars.joint_pts[idx] = out_pts[k][l]
                 idx += 1
             end
         end
