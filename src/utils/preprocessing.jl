@@ -94,7 +94,7 @@ function get_batched_data(ins, outs, batch_size)
     return batched_data
 end
 
-function preprocess(info, rcl_node, cb)
+function preprocess_phase1(info, rcl_node, cb)
     collision_transfer = pyimport("lively_ik.utils.collision_transfer")
     lively_ik = pyimport("lively_ik")
 
@@ -275,6 +275,15 @@ function preprocess(info, rcl_node, cb)
     @save lively_ik.SRC * "/config/collision_nn/" * info["robot_name"] * "_2" w2
     @save lively_ik.BASE * "/config/collision_nn/" * info["robot_name"] * "_3" w3
     @save lively_ik.SRC * "/config/collision_nn/" * info["robot_name"] * "_3" w3
+
+end
+
+function preprocess_phase2(info, rcl_node, cb)
+    collision_transfer = pyimport("lively_ik.utils.collision_transfer")
+    lively_ik = pyimport("lively_ik")
+
+    relaxedIK = LivelyIK.get_standard(info, rcl_node; preconfigured=true)
+    cv = collision_transfer.CollisionVars(info, rcl_node)
 
     w1 = BSON.load(lively_ik.BASE * "/config/collision_nn/" * info["robot_name"] * "_1")[:w1]
     model1 = (x) -> predict(w1, x)[1]
