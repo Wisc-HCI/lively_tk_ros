@@ -29,7 +29,7 @@ class Objectives extends React.Component {
     } else if (futureType === 'min_jt_vel' || futureType === 'min_jt_accel' || futureType === 'min_jt_jerk' || futureType === 'joint_limit' || futureType === 'collision_nn') {
       let {position, weight, gradient} = currentObjective;
       // Enforce 'finite_diff' for collision_nn
-      if futureType === 'collision_nn' {
+      if (futureType === 'collision_nn') {
         gradient = 'finite_diff'
       }
       newObjective = {type:futureType,position:position,weight:weight,gradient:gradient};
@@ -188,8 +188,10 @@ class Objectives extends React.Component {
           <Descriptions.Item label="Gradient">
             <Select style={{width:200}} onChange={(e)=>this.onChangeGradient(e,idx)} value={objective.gradient}>
               {objective.type !== 'collision_nn' ? (
+                <>
                 <Option value='forward_ad'>Forward Diff</Option>
                 <Option value='reverse_ad'>Reverse Diff</Option>
+                </>
               ) : (
                 <></>
               )}

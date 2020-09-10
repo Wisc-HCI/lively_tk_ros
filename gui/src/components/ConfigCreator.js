@@ -1,5 +1,7 @@
 import React from 'react';
-import { message, Card, Steps, Divider, Button } from 'antd';
+import { message, Card, Steps, Divider, Button, Upload, Modal } from 'antd';
+import { UploadOutlined } from '@ant-design/icons';
+import YAML from 'yaml'
 import Basic from './config/Basic';
 import Joints from './config/Joints';
 import Initial from './config/Initial';
@@ -9,8 +11,18 @@ import Objectives from './config/Objectives';
 import Misc from './config/Misc';
 import Preprocessing from './config/Preprocessing';
 const { Step } = Steps;
+const { Dragger } = Upload;
 
-const clearedState = {app:{
+const toCamel = (s) => {
+  return s.replace(/([-_][a-z])/ig, ($1) => {
+    return $1.toUpperCase()
+      .replace('-', '')
+      .replace('_', '');
+  });
+};
+
+const clearedState = {uploaderVisible:false,
+                      app:{
                         step:0,
                         canStep:false,
                         displayedState:[]
@@ -18,21 +30,20 @@ const clearedState = {app:{
                       config:{
                         urdf:null,
                         robotName:null,
-                        fixedFrame:null,
+                        fixedFrame:'world',
                         jointOrdering:[],
                         jointNames:[],
                         eeFixedJoints:[],
                         objectives:[],
                         fixedFrameNoise:0,
                         startingConfig:[],
-                        jsDefine:null,
                         axisTypes:[],
                         dispOffsets:[],
                         rotOffsets:[],
                         jointTypes:[],
                         jointLimits:[],
                         velocityLimits:[],
-                        robotLinkRadius:null,
+                        robotLinkRadius:0.05,
                         sampleStates:[],
                         trainingStates:[],
                         problemStates:[],
@@ -56,8 +67,6 @@ class ConfigCreator extends React.Component {
 
   componentDidMount() {
     this.props.socket.on('app_update_response',(data)=>{
-      console.log(data.action)
-      console.log(data)
       if ((data.action === 'config_update' || data.action === 'fetch') && data.success) {
         // Update config from backend success
         this.setState({config:data.config,app:data.app})
@@ -72,6 +81,38 @@ class ConfigCreator extends React.Component {
       }
     });
     this.props.socket.emit('app_update',{action:'fetch'})
+  }
+
+  handleModalCancel = () => {
+    this.setState({uploaderVisible:false})
+  }
+
+  openUploader = ()  => {
+    this.setState({uploaderVisible:true})
+  }
+
+  handleUpload = async (info) => {
+    if (info.file) {
+      console.log(info.file);
+      const reader = new FileReader();
+      reader.onabort = () => {message.error('Upload Aborted')}
+      reader.onerror = () => {message.error('Upload Error')}
+      reader.onload = () => {
+
+        let data = YAML.parse(reader.result);
+        if (data) {
+          let state = clearedState;
+          for (const [key,value] of Object.entries(data)) {
+            state.config[toCamel(key)] = value
+          }
+          state.app.displayedState = data.starting_config;
+          this.props.socket.emit('app_update',{action:'config_update',...state});
+          this.setState({uploaderVisible:false});
+        }
+      }
+      reader.readAsText(info.file.originFileObj)
+
+    }
   }
 
   reset = () => {
@@ -266,7 +307,8 @@ class ConfigCreator extends React.Component {
 
   render() {
     return (
-      <Card title="Config Creator" size='small' style={{margin:10}} extra={<Button onClick={this.reset}>Clear</Button>}>
+    <>
+      <Card title="Config Creator" size='small' style={{margin:10}} extra={<><Button style={{marginRight:5}} onClick={this.openUploader}>Upload</Button><Button onClick={this.reset}>Clear</Button></>}>
         <Steps current={this.state.app.step} size="small">
           <Step title="Basic"/>
           <Step title="Joints"/>
@@ -286,6 +328,22 @@ class ConfigCreator extends React.Component {
           <Button type='primary' disabled={!this.state.app.canStep} onClick={this.stepForward}>Next</Button>
         </div>
       </Card>
+      <Modal title="Upload"
+          footer={null}
+          visible={this.state.uploaderVisible}
+          onCancel={this.handleModalCancel}
+        >
+          <Dragger name='file' onChange={(info)=>this.handleUpload(info)} accept='.yaml'>
+            <p className="ant-upload-drag-icon">
+              <UploadOutlined/>
+            </p>
+            <p className="ant-upload-text">Click or drag file to this area to upload</p>
+            <p className="ant-upload-hint">
+              Upload a Config Yaml File
+            </p>
+          </Dragger>
+        </Modal>
+      </>
     )
   }
 

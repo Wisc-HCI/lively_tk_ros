@@ -5,18 +5,6 @@ const { Panel } = Collapse;
 
 class Collision extends React.Component {
 
-  componentDidMount() {
-    if (this.props.jointOrdering.length !== this.props.displayedState.length) {
-      let displayedState = this.props.jointLimits.map((limit)=>{
-        let minval = +limit[0].toFixed(2);
-        let maxval = +limit[1].toFixed(2);
-        let avgval = +([minval,maxval].reduce((a,b)=>a+b)/2.0).toFixed(2);
-        return avgval;
-      });
-      this.props.updateStartingConfig(displayedState);
-    }
-  }
-
   updateDisplayedStateAtIdx = (idx,value) => {
     console.log(value);
     let joints = [...this.props.displayedState];

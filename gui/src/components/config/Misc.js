@@ -1,7 +1,6 @@
 import React from 'react';
-import { Descriptions, InputNumber, Select, Input } from 'antd';
+import { Descriptions, InputNumber, Select } from 'antd';
 const { Option } = Select;
-const { TextArea } = Input;
 
 class Misc extends React.Component {
 
@@ -11,7 +10,7 @@ class Misc extends React.Component {
         <h5 style={{backgroundColor:'#e8e8e8', borderRadius:3, padding:10}}>
           Miscellaneous configuration parameters.
         </h5>
-        <Descriptions column={1}>
+        <Descriptions column={2}>
           <Descriptions.Item label='Control Mode'>
             <Select style={{width:200}} onChange={(e)=>this.props.updateMode(e)} value={this.props.mode}>
               <Option value='absolute'>Absolute</Option>

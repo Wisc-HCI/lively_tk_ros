@@ -92,9 +92,10 @@ class Objects extends React.Component {
     this.props.updateCylinders(cylinders);
   }
 
-  onChangeBoxName = (value,idx) => {
+  onChangeBoxName = (e,idx) => {
+    let name = e.target.value;
     let boxes = [...this.props.boxes];
-    boxes[idx].name = value;
+    boxes[idx].name = name;
     this.props.updateBoxes(boxes);
   }
 
@@ -122,9 +123,10 @@ class Objects extends React.Component {
     this.props.updateBoxes(boxes);
   }
 
-  onChangeSphereName = (value,idx) => {
+  onChangeSphereName = (e,idx) => {
+    let name = e.target.value;
     let spheres = [...this.props.spheres];
-    spheres[idx].name = value;
+    spheres[idx].name = name;
     this.props.updateSpheres(spheres);
   }
 
@@ -152,9 +154,10 @@ class Objects extends React.Component {
     this.props.updateSpheres(spheres);
   }
 
-  onChangeEllipsoidName = (value,idx) => {
+  onChangeEllipsoidName = (e,idx) => {
+    let name = e.target.value;
     let ellipsoids = [...this.props.ellipsoids];
-    ellipsoids[idx].name = value;
+    ellipsoids[idx].name = name;
     this.props.updateEllipsoids(ellipsoids);
   }
 
@@ -182,9 +185,10 @@ class Objects extends React.Component {
     this.props.updateEllipsoids(ellipsoids);
   }
 
-  onChangeCapsuleName = (value,idx) => {
+  onChangeCapsuleName = (e,idx) => {
+    let name = e.target.value;
     let capsules = [...this.props.capsules];
-    capsules[idx].name = value;
+    capsules[idx].name = name;
     this.props.updateCapsules(capsules);
   }
 
@@ -212,9 +216,10 @@ class Objects extends React.Component {
     this.props.updateCapsules(capsules);
   }
 
-  onChangeCylinderName = (value,idx) => {
+  onChangeCylinderName = (e,idx) => {
+    let name = e.target.value;
     let cylinders = [...this.props.cylinders];
-    cylinders[idx].name = value;
+    cylinders[idx].name = name;
     this.props.updateCylinders(cylinders);
   }
 
@@ -272,14 +277,14 @@ class Objects extends React.Component {
                         <InputNumber value={object.parameters[2]} min={0} max={25} step={0.05} onChange={(e)=>this.onChangeBoxParameter(e,idx,2)} />
                       </Descriptions.Item>
                       <Descriptions.Item label='Position'>
-                        <InputNumber value={object.translation[0]} min={0} max={25} step={0.05} onChange={(e)=>this.onChangeBoxTranslation(e,idx,0)} />
-                        <InputNumber value={object.translation[1]} min={0} max={25} step={0.05} onChange={(e)=>this.onChangeBoxTranslation(e,idx,1)} />
-                        <InputNumber value={object.translation[2]} min={0} max={25} step={0.05} onChange={(e)=>this.onChangeBoxTranslation(e,idx,2)} />
+                        <InputNumber value={object.translation[0]} min={-25} max={25} step={0.05} onChange={(e)=>this.onChangeBoxTranslation(e,idx,0)} />
+                        <InputNumber value={object.translation[1]} min={-25} max={25} step={0.05} onChange={(e)=>this.onChangeBoxTranslation(e,idx,1)} />
+                        <InputNumber value={object.translation[2]} min={-25} max={25} step={0.05} onChange={(e)=>this.onChangeBoxTranslation(e,idx,2)} />
                       </Descriptions.Item>
                       <Descriptions.Item label='Rotation'>
-                        <InputNumber value={object.rotation[0]} min={0} max={25} step={0.05} onChange={(e)=>this.onChangeBoxRotation(e,idx,0)} />
-                        <InputNumber value={object.rotation[1]} min={0} max={25} step={0.05} onChange={(e)=>this.onChangeBoxRotation(e,idx,1)} />
-                        <InputNumber value={object.rotation[2]} min={0} max={25} step={0.05} onChange={(e)=>this.onChangeBoxRotation(e,idx,2)} />
+                        <InputNumber value={object.rotation[0]} min={-25} max={25} step={0.05} onChange={(e)=>this.onChangeBoxRotation(e,idx,0)} />
+                        <InputNumber value={object.rotation[1]} min={-25} max={25} step={0.05} onChange={(e)=>this.onChangeBoxRotation(e,idx,1)} />
+                        <InputNumber value={object.rotation[2]} min={-25} max={25} step={0.05} onChange={(e)=>this.onChangeBoxRotation(e,idx,2)} />
                       </Descriptions.Item>
                     </Descriptions>
                   </Card.Grid>
