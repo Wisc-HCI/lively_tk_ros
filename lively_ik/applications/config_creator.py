@@ -14,6 +14,8 @@ import xml.etree.ElementTree as et
 import yaml
 from julia import LivelyIK
 from flask_socketio import emit
+import asyncio
+import os
 
 class ConfigCreator(App):
 
@@ -25,6 +27,7 @@ class ConfigCreator(App):
         self.tf_timer = self.node.create_timer(1,self.publish_tf)
         self.robot_description_client = self.node.create_client(SetParameters, '/robot_state_publisher/set_parameters')
         self.robot_setup = False
+        self.is_preprocessing = False
 
         self.robot=None
         self.xml_tree=None
@@ -33,8 +36,10 @@ class ConfigCreator(App):
         # App State Info
         self.step = 0
         self.displayed_state = [] # Published to /joint_states
-        self.preprocessing_python = 0.0
-        self.preprocessing_julia = 0.0
+        self.preprocessing_state = {'write_yaml':{'progress':0.0,'ok':True},
+                                    'julia_nn':{'progress':0.0,'ok':True},
+                                    'julia_params':{'progress':0.0,'ok':True},
+                                    'python':{'progress':0.0,'ok':True}}
 
         # Config Contents
         self.urdf=None               # User-provided
@@ -73,6 +78,8 @@ class ConfigCreator(App):
 
         # Utility
         self.requires_robot_update = set(('urdf','jointNames','jointOrdering','eeFixedJoints'))
+        self.requires_preprocessing = self.requires_robot_update.union(set(('robotLinkRadius','sampleStates','trainingStates','problemStates',
+                                                                            'boxes','spheres','ellipsoids','capsules','cylinders','robotName')))
 
     def publish_joint_states(self):
         if self.robot and self.robot_setup and len(self.joint_ordering) == len(self.displayed_state):
@@ -96,20 +103,50 @@ class ConfigCreator(App):
         self.tf_pub.publish(tf_msg)
 
     def write_config(self):
-        with open(SRC+'/config/info_files/'+self.robot_name+'.yaml','w') as src_save:
-            yaml.dump(self.config,src_save)
+        self.preprocessing_state['write_yaml']['progress'] = 0.0
         with open(BASE+'/config/info_files/'+self.robot_name+'.yaml','w') as base_save:
             yaml.dump(self.config,base_save)
+        self.preprocessing_state['write_yaml']['progress'] = 50.0
+        os.symlink(BASE+'/config/info_files/'+self.robot_name+'.yaml',SRC+'/config/info_files/'+self.robot_name+'.yaml')
+        self.preprocessing_state['write_yaml']['progress'] = 100.0
 
-    def preprocess(self):
-        LivelyIK.preprocess(self.config,self.node,self.preprocess_cb)
+
+
+    async def preprocess(self):
+        self.is_preprocessing = True
+        if self.preprocessing_state['write_yaml']['progress'] < 100.0:
+            try:
+                self.write_config()
+                self.preprocessing_state['write_yaml']['ok'] = True
+            except:
+                self.preprocessing_state['write_yaml']['ok'] = False
+        if self.preprocessing_state['julia_nn'] < 100.0:
+            try:
+                LivelyIK.preprocess_phase1(self.config,self.node,lambda progress: self.preprocess_cb('write_yaml',progress))
+                # Create a symlink between LivelyIK SRC and BASE
+                for nn_suffix in ['_1','_2','_3']:
+                    os.symlink(BASE+"/config/collision_nn/"+info["robot_name"]+nn_suffix,SRC+"/config/collision_nn/"+info["robot_name"]+nn_suffix)
+            except:
+                self.preprocessing_state['julia_nn']['ok'] = False
+        if self.preprocessing_state['julia_params']['progress'] < 100.0:
+            try:
+                LivelyIK.preprocess_phase2(self.config,self.node,lambda progress: self.preprocess_cb('write_yaml',progress))
+                # Create a symlink between LivelyIK SRC and BASE
+                for nn_suffix in ['_params_1','_params_2','_params_3','_network_rank']:
+                    os.symlink(BASE+"/config/collision_nn/"+info["robot_name"]+nn_suffix,SRC+"/config/collision_nn/"+info["robot_name"]+nn_suffix)
+            except:
+                self.preprocessing_state['julia_params']['ok'] = False
+        if self.preprocessing_state['python']['progress'] < 100.0:
+            self.preprocessing_state['write_yaml']= {'progress':100.0,'ok':True}
+            # Create a symlink between LivelyIK SRC and BASE
+
+        self.is_preprocessing = False
 
     @property
     def json_app(self):
         return {'step':self.step,'canStep':self.can_step,
                 'displayedState':self.displayed_state,
-                'preprocessingPython':self.preprocessing_python,
-                'preprocessingJulia':self.preprocessing_julia}
+                'preprocessingState':self.preprocessing_state}
 
     @property
     def config(self):
@@ -160,6 +197,15 @@ class ConfigCreator(App):
         elif data['action'] == 'step':
             return self.perform_step(data['direction'])
 
+    def process(self,data):
+        if data['action'] == 'preprocess':
+            self.log('starting preprocessing')
+            asyncio.run(self.preprocess())
+        while self.is_preprocessing:
+            success = self.preprocessing_state['write_yaml']['ok'] and self.preprocessing_state['julia_nn']['ok'] and self.preprocessing_state['julia_params']['ok'] and self.preprocessing_state['python']['ok']
+            yield {'success':self.preprocessing_state[''],'action':'preprocess','app':self.json_app}
+
+
     def perform_step(self,direction):
         success = True
         if direction == 'forward':
@@ -167,9 +213,6 @@ class ConfigCreator(App):
                 self.step += 1
             else:
                 success = False
-            if self.step == 7:
-                self.write_config()
-                self.preprocess()
         else:
             self.step -= 1
         return {'success':success,'action':'step','app':self.json_app}
@@ -222,19 +265,11 @@ class ConfigCreator(App):
 
         return {'success':True,'action':'config_update','config':self.json_config,'app':self.json_app}
 
-    def preprocess_cb(self,lang,progress):
+    def preprocess_cb(self,key,progress):
         self.log(progress)
-        p = int(round(progress))
-        should_emit = False
-        if lang == 'julia':
-            if self.preprocessing_julia != p:
-                self.preprocessing_julia = p
-        else:
-            if self.preprocessing_python != p:
-                self.preprocessing_python = p
-        if should_emit:
-            response = {'success':True,'action':'fetch','config':self.json_config,'app':self.json_app}
-            emit('app_update_response',response)
+        p = round(progress)
+        if self.preprocessing_state[key]['progress'] != p:
+            self.preprocessing_state[key]['progress'] = p
 
 
     @property
@@ -370,7 +405,11 @@ class ConfigCreator(App):
                     return False
             return True
         elif self.step == 7:
-            if self.preprocessing_julia < 100 or self.preprocessing_python < 100:
+            complete = True
+            for step in ['write_yaml','julia_nn','julia_params','python']:
+                if not self.preprocessing_state[step]['progress'] >= 100 or not self.preprocessing_state[step]['ok']:
+                    complete = False
+            if self.is_preprocessing or complete:
                 return False
             return True
         else:

@@ -14,6 +14,10 @@ class App(object):
     def update(self, data):
         return {'success':True}
 
+    def process(self, data):
+        for i in range(10):
+            yield {'success':True, 'value':i}
+
     def log(self,message):
         self.node.get_logger().info(message)
 

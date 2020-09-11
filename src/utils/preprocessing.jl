@@ -120,7 +120,7 @@ function preprocess_phase1(info, rcl_node, cb)
         push!(in_states, state_to_joint_pts_closure(state))
         push!(out_scores, score)
         # TODO: Emit to socket with state update
-        cb("julia",i/num_samples*10)
+        cb(i/num_samples*10)
         # println("sample $i of $num_samples ::: state: $in, y: $out")
     end
 
@@ -133,7 +133,7 @@ function preprocess_phase1(info, rcl_node, cb)
         push!(in_states, state_to_joint_pts_closure(state))
         push!(out_scores, score)
         # TODO: Emit to socket with state update
-        cb("julia",i/num_samples*10+10)
+        cb(i/num_samples*10+10)
         #println("manual sample $i of $num_samples ::: state: $in, y: $out")
     end
 
@@ -151,7 +151,7 @@ function preprocess_phase1(info, rcl_node, cb)
                 push!(in_states, state_to_joint_pts_closure(state))
                 push!(out_scores, score)
                 # TODO: Emit to socket with state update
-                cb("julia",i/num_samples*10+20)
+                cb(i/num_samples*10+20)
                 #println("problem state sample $i ($j / $num_rands_per) of $num_samples ::: state: $in, y: $out")
             end
         end
@@ -171,7 +171,7 @@ function preprocess_phase1(info, rcl_node, cb)
                 push!(in_states, state_to_joint_pts_closure(state))
                 push!(out_scores, score)
                 # TODO: Emit to socket with state update
-                cb("julia",i/num_samples*10+30)
+                cb(i/num_samples*10+30)
                 #println("sample state sample $i ($j / $num_rands_per) of $num_samples ::: state: $in, y: $out")
             end
         end
@@ -263,17 +263,17 @@ function preprocess_phase1(info, rcl_node, cb)
             train(w1, batched_data[b], o1)
             train(w2, batched_data[b], o2)
             train(w3, batched_data[b], o3)
-            cb("julia",(((epoch-1)*length(batched_data)+b)/(num_epochs*length(batched_data)))*50+40)
+            cb((((epoch-1)*length(batched_data)+b)/(num_epochs*length(batched_data)))*50+40)
         end
         tl = total_loss2(w1, test_ins, test_outs)
         tl_train = total_loss( w1, new_ins, new_outs )
     end
 
-    @save lively_ik.BASE * "/config/collision_nn/" * info["robot_name"] * "_1" w1
+    # @save lively_ik.BASE * "/config/collision_nn/" * info["robot_name"] * "_1" w1
     @save lively_ik.SRC * "/config/collision_nn/" * info["robot_name"] * "_1" w1
-    @save lively_ik.BASE * "/config/collision_nn/" * info["robot_name"] * "_2" w2
+    # @save lively_ik.BASE * "/config/collision_nn/" * info["robot_name"] * "_2" w2
     @save lively_ik.SRC * "/config/collision_nn/" * info["robot_name"] * "_2" w2
-    @save lively_ik.BASE * "/config/collision_nn/" * info["robot_name"] * "_3" w3
+    # @save lively_ik.BASE * "/config/collision_nn/" * info["robot_name"] * "_3" w3
     @save lively_ik.SRC * "/config/collision_nn/" * info["robot_name"] * "_3" w3
 
 end
@@ -285,11 +285,11 @@ function preprocess_phase2(info, rcl_node, cb)
     relaxedIK = LivelyIK.get_standard(info, rcl_node; preconfigured=true)
     cv = collision_transfer.CollisionVars(info, rcl_node)
 
-    w1 = BSON.load(lively_ik.BASE * "/config/collision_nn/" * info["robot_name"] * "_1")[:w1]
+    w1 = BSON.load(lively_ik.SRC * "/config/collision_nn/" * info["robot_name"] * "_1")[:w1]
     model1 = (x) -> predict(w1, x)[1]
-    w2 = BSON.load(lively_ik.BASE * "/config/collision_nn/" * info["robot_name"] * "_2")[:w2]
+    w2 = BSON.load(lively_ik.SRC * "/config/collision_nn/" * info["robot_name"] * "_2")[:w2]
     model2 = (x) -> predict(w2, x)[1]
-    w3 = BSON.load(lively_ik.BASE * "/config/collision_nn/" * info["robot_name"] * "_3")[:w3]
+    w3 = BSON.load(lively_ik.SRC * "/config/collision_nn/" * info["robot_name"] * "_3")[:w3]
     model3 = (x) -> predict(w3, x)[1]
 
     ################################################################################
@@ -337,7 +337,7 @@ function preprocess_phase2(info, rcl_node, cb)
                 model3_acc += 1.
             end
         end
-        cb("julia",i/total_acc_count*9+90)
+        cb(i/total_acc_count*9+90)
     end
 
     model1_acc = model1_acc/total_acc_count
@@ -345,38 +345,21 @@ function preprocess_phase2(info, rcl_node, cb)
     model3_acc = model3_acc/total_acc_count
 
     sorted = sortperm([model1_acc, model2_acc, model3_acc])
-    # println("model 1 accuracy: $model1_acc, model 2 accuracy: $model2_acc, model 3 accuracy: $model3_acc")
-
-    fp = open(lively_ik.BASE * "/config/collision_nn/" * info["robot_name"] * "_params_1", "w")
-    write(fp, "$t_val1, $c_val1, $f_val1")
-    close(fp)
 
     fp = open(lively_ik.SRC * "/config/collision_nn/" * info["robot_name"] * "_params_1", "w")
     write(fp, "$t_val1, $c_val1, $f_val1")
-    close(fp)
-
-    fp = open(lively_ik.BASE * "/config/collision_nn/" * info["robot_name"] * "_params_2", "w")
-    write(fp, "$t_val2, $c_val2, $f_val2")
     close(fp)
 
     fp = open(lively_ik.SRC * "/config/collision_nn/" * info["robot_name"] * "_params_2", "w")
     write(fp, "$t_val2, $c_val2, $f_val2")
     close(fp)
 
-    fp = open(lively_ik.BASE * "/config/collision_nn/" * info["robot_name"] * "_params_3", "w")
-    write(fp, "$t_val3, $c_val3, $f_val3")
-    close(fp)
-
     fp = open(lively_ik.SRC * "/config/collision_nn/" * info["robot_name"] * "_params_3", "w")
     write(fp, "$t_val3, $c_val3, $f_val3")
-    close(fp)
-
-    fp = open(lively_ik.BASE * "/config/collision_nn/" * info["robot_name"] * "_network_rank", "w")
-    write(fp, "$(sorted[3]), $(sorted[2]), $(sorted[1])")
     close(fp)
 
     fp = open(lively_ik.SRC * "/config/collision_nn/" * info["robot_name"] * "_network_rank", "w")
     write(fp, "$(sorted[3]), $(sorted[2]), $(sorted[1])")
     close(fp)
-    cb("julia",100)
+    cb(100)
 end

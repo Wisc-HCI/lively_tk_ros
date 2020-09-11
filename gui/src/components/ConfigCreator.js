@@ -25,7 +25,11 @@ const clearedState = {uploaderVisible:false,
                       app:{
                         step:0,
                         canStep:false,
-                        displayedState:[]
+                        displayedState:[],
+                        preprocesssingState:{write_yaml:0.0,
+                                             julia_nn:0.0,
+                                             julia_params:0.0,
+                                             python:0.0}
                       },
                       config:{
                         urdf:null,
@@ -80,6 +84,19 @@ class ConfigCreator extends React.Component {
         message.error(data.message);
       }
     });
+    this.props.socket.on('app_process_response',(data)=>{
+      if (data.success) {
+        console.log(data)
+        let state = {};
+        if (data.config) {
+          state.config = data.config;
+        }
+        if (data.app) {
+          state.app = data.app;
+        }
+        this.setState(state)
+      }
+    })
     this.props.socket.emit('app_update',{action:'fetch'})
   }
 
@@ -219,6 +236,10 @@ class ConfigCreator extends React.Component {
     this.props.socket.emit('app_update',{action:'config_update',config:{fixedFrameNoiseFrequency:frequency}})
   }
 
+  beginPreprocess = () => {
+    this.props.socket.emit('app_process',{action:'preprocess'})
+  }
+
   getPage = () => {
     switch (this.state.app.step) {
       case 0:
@@ -297,8 +318,8 @@ class ConfigCreator extends React.Component {
         )
       case 7:
         return (
-          <Preprocessing preprocessingPython={this.state.app.preprocessingPython}
-                         preprocessingJulia={this.state.app.preprocessingJulia}/>
+          <Preprocessing preprocessingState={this.state.app.preprocessingState}
+                         beginPreprocess={()=>this.beginPreprocess()}/>
         )
       default:
         return;
@@ -308,7 +329,9 @@ class ConfigCreator extends React.Component {
   render() {
     return (
     <>
-      <Card title="Config Creator" size='small' style={{margin:10}} extra={<><Button style={{marginRight:5}} onClick={this.openUploader}>Upload</Button><Button onClick={this.reset}>Clear</Button></>}>
+      <Card title="Config Creator" size='small' style={{margin:10}} extra={<><Button style={{marginRight:5}} onClick={this.openUploader}>Upload</Button>
+                                                                             <Button onClick={this.reset}>Clear</Button>
+                                                                           </>}>
         <Steps current={this.state.app.step} size="small">
           <Step title="Basic"/>
           <Step title="Joints"/>

@@ -55,6 +55,17 @@ class InterfaceNamespace(Namespace):
             response = self.apps[self.active_app].update(data)
             emit('app_update_response',response)
 
+    def on_app_process(self,data):
+        self.node.get_logger().info("Request: 'app_process'")
+        if not self.active_app:
+            self.node.get_logger().warn("Request: 'app_process failed: no active app'")
+            emit('app_process_response',{'success':False})
+        else:
+            process = self.apps[self.active_app].process(data)
+            for step in process:
+                eventlet.greenthread.sleep()
+                emit('app_process_response',step)
+
 
 class InterfaceNode(Node):
     def __init__(self):
