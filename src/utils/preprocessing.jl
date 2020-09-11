@@ -97,6 +97,7 @@ end
 function preprocess_phase1(info, rcl_node, cb)
     collision_transfer = pyimport("lively_ik.utils.collision_transfer")
     lively_ik = pyimport("lively_ik")
+    cb(0)
 
     relaxedIK = LivelyIK.get_standard(info, rcl_node; preconfigured=true)
     cv = collision_transfer.CollisionVars(info, rcl_node)
@@ -281,6 +282,7 @@ end
 function preprocess_phase2(info, rcl_node, cb)
     collision_transfer = pyimport("lively_ik.utils.collision_transfer")
     lively_ik = pyimport("lively_ik")
+    cb(0)
 
     relaxedIK = LivelyIK.get_standard(info, rcl_node; preconfigured=true)
     cv = collision_transfer.CollisionVars(info, rcl_node)
@@ -337,7 +339,7 @@ function preprocess_phase2(info, rcl_node, cb)
                 model3_acc += 1.
             end
         end
-        cb(i/total_acc_count*9+90)
+        cb(i/total_acc_count*90)
     end
 
     model1_acc = model1_acc/total_acc_count

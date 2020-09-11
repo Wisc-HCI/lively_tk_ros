@@ -1,5 +1,7 @@
 import React from 'react';
-import { Progress, Card, Button } from 'antd';
+import { Progress, Card, Button, Popover } from 'antd';
+
+const steps = ['write_yaml','julia_nn','julia_params','python'];
 
 class Preprocessing extends React.Component {
 
@@ -13,30 +15,36 @@ class Preprocessing extends React.Component {
     }
   }
 
+  getDescription = (step) => {
+    switch (step) {
+      case 'write_yaml':
+        return 'Writing Yaml File';
+      case 'julia_nn':
+        return 'Training Julia Collison Network'
+      case 'julia_params':
+        return 'Configuring Julia Parameters'
+      case 'python':
+        return 'Training Python Collision Network'
+    }
+  }
+
   render() {
+    console.log(this.props.preprocessingState);
     return (
       <>
         <h5 style={{backgroundColor:'#e8e8e8', borderRadius:3, padding:10}}>
           Complete the configuration by preprocessing.
         </h5>
-        <Button style={{marginRight:5}} primary block onClick={this.props.beginPreprocess}>Begin Preprocess</Button>
-        <Card>
-          <Card.Grid style={{width:'25%',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'space-around'}}>
-            <Progress type="circle" percent={this.props.preprocessingState.write_yaml.progress} status={this.getStatus(this.props.preprocessingState.write_yaml)} width={150} />
-            <h4 style={{marginTop:30}}>YAML Config</h4>
-          </Card.Grid>
-          <Card.Grid style={{width:'25%',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'space-around'}}>
-            <Progress type="circle" percent={this.props.preprocessingState.julia_nn.progress} status={this.getStatus(this.props.preprocessingState.julia_nn)} width={150} />
-            <h4 style={{marginTop:30}}>Julia Neural Network</h4>
-          </Card.Grid>
-          <Card.Grid style={{width:'25%',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'space-around'}}>
-            <Progress type="circle" percent={this.props.preprocessingState.julia_params.progress} status={this.getStatus(this.props.preprocessingState.julia_params)} width={150} />
-            <h4 style={{marginTop:30}}>Julia Parameters</h4>
-          </Card.Grid>
-          <Card.Grid style={{width:'25%',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'space-around'}}>
-            <Progress type="circle" percent={this.props.preprocessingState.python.progress} status={this.getStatus(this.props.preprocessingState.python)} width={150} />
-            <h4 style={{marginTop:30}}>Python Neural Network</h4>
-          </Card.Grid>
+        <Button style={{marginRight:5, marginBottom:20}} primary block onClick={this.props.beginPreprocess}>Begin Preprocess</Button>
+        <Card style={{display:'flex',flexDirection:'row',justifyContent:'space-around'}}>
+          {steps.map((step) => {
+            return (
+            <Popover content={this.getDescription(step)}
+                     trigger='hover'
+                     visible={0 < this.props.preprocessingState[step].progress && this.props.preprocessingState[step].progress < 100}>
+              <Progress type='circle' style={{margin:5}} percent={this.props.preprocessingState[step].progress} status={this.getStatus(this.props.preprocessingState[step])} width={150} />
+            </Popover>
+          )})}
         </Card>
       </>
     )

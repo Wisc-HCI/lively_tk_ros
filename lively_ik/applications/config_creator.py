@@ -28,6 +28,10 @@ class ConfigCreator(App):
         self.robot_description_client = self.node.create_client(SetParameters, '/robot_state_publisher/set_parameters')
         self.robot_setup = False
         self.is_preprocessing = False
+        self.preprocessing_steps = ['write_yaml','julia_nn','julia_params','python']
+        self.preprocessing_lookup = {
+            'write_yaml' =
+        }
 
         self.robot=None
         self.xml_tree=None
@@ -36,10 +40,7 @@ class ConfigCreator(App):
         # App State Info
         self.step = 0
         self.displayed_state = [] # Published to /joint_states
-        self.preprocessing_state = {'write_yaml':{'progress':0.0,'ok':True},
-                                    'julia_nn':{'progress':0.0,'ok':True},
-                                    'julia_params':{'progress':0.0,'ok':True},
-                                    'python':{'progress':0.0,'ok':True}}
+        self.preprocessing_state = {step':{'progress':0.0,'ok':True} for step in self.preprocessing_steps}
 
         # Config Contents
         self.urdf=None               # User-provided
@@ -81,6 +82,7 @@ class ConfigCreator(App):
         self.requires_preprocessing = self.requires_robot_update.union(set(('robotLinkRadius','sampleStates','trainingStates','problemStates',
                                                                             'boxes','spheres','ellipsoids','capsules','cylinders','robotName')))
 
+
     def publish_joint_states(self):
         if self.robot and self.robot_setup and len(self.joint_ordering) == len(self.displayed_state):
             js_msg = JointState(name=self.joint_ordering,position=self.displayed_state)
@@ -114,32 +116,29 @@ class ConfigCreator(App):
 
     async def preprocess(self):
         self.is_preprocessing = True
-        if self.preprocessing_state['write_yaml']['progress'] < 100.0:
-            try:
-                self.write_config()
-                self.preprocessing_state['write_yaml']['ok'] = True
-            except:
-                self.preprocessing_state['write_yaml']['ok'] = False
-        if self.preprocessing_state['julia_nn'] < 100.0:
-            try:
-                LivelyIK.preprocess_phase1(self.config,self.node,lambda progress: self.preprocess_cb('write_yaml',progress))
-                # Create a symlink between LivelyIK SRC and BASE
-                for nn_suffix in ['_1','_2','_3']:
-                    os.symlink(BASE+"/config/collision_nn/"+info["robot_name"]+nn_suffix,SRC+"/config/collision_nn/"+info["robot_name"]+nn_suffix)
-            except:
-                self.preprocessing_state['julia_nn']['ok'] = False
-        if self.preprocessing_state['julia_params']['progress'] < 100.0:
-            try:
-                LivelyIK.preprocess_phase2(self.config,self.node,lambda progress: self.preprocess_cb('write_yaml',progress))
-                # Create a symlink between LivelyIK SRC and BASE
-                for nn_suffix in ['_params_1','_params_2','_params_3','_network_rank']:
-                    os.symlink(BASE+"/config/collision_nn/"+info["robot_name"]+nn_suffix,SRC+"/config/collision_nn/"+info["robot_name"]+nn_suffix)
-            except:
-                self.preprocessing_state['julia_params']['ok'] = False
-        if self.preprocessing_state['python']['progress'] < 100.0:
-            self.preprocessing_state['write_yaml']= {'progress':100.0,'ok':True}
-            # Create a symlink between LivelyIK SRC and BASE
-
+        for step in self.preprocessing_steps:
+            if self.preprocessing_state[step]['progress'] < 100.0:
+                self.log('Start: {0}'.format(step))
+                try:
+                    if step == 'writing_yaml':
+                        self.write_config()
+                    elif step == 'julia_nn':
+                        LivelyIK.preprocess_phase1(self.config,self.node,lambda progress: self.preprocess_cb(step,progress))
+                        # Create a symlink between LivelyIK SRC and BASE
+                        for nn_suffix in ['_1','_2','_3']:
+                            os.symlink(BASE+"/config/collision_nn/"+info["robot_name"]+nn_suffix,SRC+"/config/collision_nn/"+info["robot_name"]+nn_suffix)
+                    elif step == 'julia_params':
+                        LivelyIK.preprocess_phase2(self.config,self.node,lambda progress: self.preprocess_cb(step,progress))
+                        # Create a symlink between LivelyIK SRC and BASE
+                        for nn_suffix in ['_params_1','_params_2','_params_3','_network_rank']:
+                            os.symlink(BASE+"/config/collision_nn/"+info["robot_name"]+nn_suffix,SRC+"/config/collision_nn/"+info["robot_name"]+nn_suffix)
+                    elif step == 'python':
+                        # TODO: Implement python preprocesssing
+                        self.preprocessing_state[step]['progress'] = 100.0
+                    self.preprocessing_state[step]['ok'] = True
+                except Exception as e:
+                    self.preprocessing_state[step]['ok'] = False
+                    self.error('{0} error: {1}'.format(step,e))
         self.is_preprocessing = False
 
     @property
@@ -203,6 +202,7 @@ class ConfigCreator(App):
             asyncio.run(self.preprocess())
         while self.is_preprocessing:
             success = self.preprocessing_state['write_yaml']['ok'] and self.preprocessing_state['julia_nn']['ok'] and self.preprocessing_state['julia_params']['ok'] and self.preprocessing_state['python']['ok']
+            self.log('Process: {0}'.format(self.preprocessing_state))
             yield {'success':self.preprocessing_state[''],'action':'preprocess','app':self.json_app}
 
 
@@ -406,7 +406,7 @@ class ConfigCreator(App):
             return True
         elif self.step == 7:
             complete = True
-            for step in ['write_yaml','julia_nn','julia_params','python']:
+            for step in :
                 if not self.preprocessing_state[step]['progress'] >= 100 or not self.preprocessing_state[step]['ok']:
                     complete = False
             if self.is_preprocessing or complete:

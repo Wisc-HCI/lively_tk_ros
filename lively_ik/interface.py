@@ -64,6 +64,7 @@ class InterfaceNamespace(Namespace):
             process = self.apps[self.active_app].process(data)
             for step in process:
                 eventlet.greenthread.sleep()
+                self.node.get_logger().info(step)
                 emit('app_process_response',step)
 
 
