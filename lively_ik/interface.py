@@ -61,11 +61,12 @@ class InterfaceNamespace(Namespace):
             self.node.get_logger().warn("Request: 'app_process failed: no active app'")
             emit('app_process_response',{'success':False})
         else:
-            self.apps[self.active_app].process(data)
-            # process = self.apps[self.active_app].process(data)
-            # for step in process:
-            #     eventlet.greenthread.sleep()
-            #     emit('app_process_response',step)
+            # self.apps[self.active_app].process(data)
+            process = self.apps[self.active_app].process(data)
+            for step in process:
+                eventlet.greenthread.sleep()
+                print(step)
+                emit('app_process_response',step)
 
 
 class InterfaceNode(Node):

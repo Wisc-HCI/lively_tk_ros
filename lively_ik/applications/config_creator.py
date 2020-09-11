@@ -150,11 +150,11 @@ class ConfigCreator(App):
         self.tf_pub.publish(tf_msg)
 
     def preprocess_cb(self,key,progress):
-        self.log('CB: {0} - {1}'.format(key,progress))
         p = round(progress)
         if self.preprocessing_state[key]['progress'] != p:
+            self.log('CB: {0} - {1}'.format(key,p))
             self.preprocessing_state[key]['progress'] = p
-        emit('app_process_response',{'success':True,'action':'preprocess','app':self.json_app})
+        #emit('app_process_response',{'success':True,'action':'preprocess','app':self.json_app})
 
     def write_config(self, cb):
         cb(0.0)
@@ -163,8 +163,6 @@ class ConfigCreator(App):
         cb(50.0)
         os.symlink(BASE+'/config/info_files/'+self.robot_name+'.yaml',SRC+'/config/info_files/'+self.robot_name+'.yaml')
         cb(100.0)
-
-
 
     def preprocess(self):
         self.is_preprocessing = True
@@ -216,17 +214,18 @@ class ConfigCreator(App):
     def process(self,data):
         if data['action'] == 'preprocess' and not self.is_preprocessing:
             self.log('starting preprocessing')
-            # self.is_preprocessing = True
-            # self.preprocessing_thread = Thread(target=self.preprocess,daemon=True)
-            # self.preprocessing_thread.start()
+            self.is_preprocessing = True
+            self.preprocessing_thread = Thread(target=self.preprocess,daemon=True)
+            self.preprocessing_thread.start()
             #asyncio.run(self.preprocess())
-            self.preprocess()
-            # while self.is_preprocessing:
-            #     success = self.preprocessing_state['write_yaml']['ok'] and self.preprocessing_state['julia_nn']['ok'] and self.preprocessing_state['julia_params']['ok'] and self.preprocessing_state['python']['ok']
-            #     self.log('Process: {0}'.format(self.preprocessing_state))
-            #     yield {'success':success,'action':'preprocess','app':self.json_app}
-            # self.preprocessing_thread.join()
-            # self.preprocessing_thread = None
+            # self.preprocess()
+            while self.is_preprocessing:
+                success = self.preprocessing_state['write_yaml']['ok'] and self.preprocessing_state['julia_nn']['ok'] and self.preprocessing_state['julia_params']['ok'] and self.preprocessing_state['python']['ok']
+                #self.log('Process: {0}'.format(self.preprocessing_state))
+                app = self.json_app
+                yield {'success':success,'action':'preprocess','app':app}
+            self.preprocessing_thread.join()
+            self.preprocessing_thread = None
 
 
     def perform_step(self,direction):

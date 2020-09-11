@@ -99,7 +99,6 @@ function preprocess_phase1(info_yaml, rcl_node, cb)
     collision_transfer = pyimport("lively_ik.utils.collision_transfer")
     lively_ik = pyimport("lively_ik")
     info = YAML.load(info_yaml)
-    println(info)
     cb(0)
 
 
