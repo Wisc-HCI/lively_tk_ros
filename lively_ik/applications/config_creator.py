@@ -1,3 +1,6 @@
+import eventlet
+eventlet.monkey_patch()
+from threading import Thread
 from lively_ik.applications.app import App
 from lively_ik.utils.urdf_load import urdf_load_from_string
 from lively_ik.spacetime.robot import Robot
@@ -29,6 +32,7 @@ class ConfigCreator(App):
         self.robot_setup = False
         self.is_preprocessing = False
         self.preprocessing_steps = ['write_yaml','julia_nn','julia_params','python']
+        self.preprocessing_thread = None
 
         self.robot=None
         self.xml_tree=None
@@ -146,10 +150,11 @@ class ConfigCreator(App):
         self.tf_pub.publish(tf_msg)
 
     def preprocess_cb(self,key,progress):
-        self.log(str(progress))
+        self.log('CB: {0} - {1}'.format(key,progress))
         p = round(progress)
         if self.preprocessing_state[key]['progress'] != p:
             self.preprocessing_state[key]['progress'] = p
+        emit('app_process_response',{'success':True,'action':'preprocess','app':self.json_app})
 
     def write_config(self, cb):
         cb(0.0)
@@ -161,8 +166,9 @@ class ConfigCreator(App):
 
 
 
-    async def preprocess(self):
+    def preprocess(self):
         self.is_preprocessing = True
+        success = True
         for step in self.preprocessing_steps:
             if self.preprocessing_state[step]['progress'] < 100.0:
                 self.log('Start: {0}'.format(step))
@@ -173,12 +179,12 @@ class ConfigCreator(App):
                     LivelyIK.preprocess_phase1(self.yaml,self.node,lambda progress: self.preprocess_cb(step,progress))
                     # Create a symlink between LivelyIK SRC and BASE
                     for nn_suffix in ['_1','_2','_3']:
-                        os.symlink(BASE+"/config/collision_nn/"+info["robot_name"]+nn_suffix,SRC+"/config/collision_nn/"+info["robot_name"]+nn_suffix)
+                        os.symlink(BASE+"/config/collision_nn/"+self.robot_name+nn_suffix,SRC+"/config/collision_nn/"+self.robot_name+nn_suffix)
                 elif step == 'julia_params':
                     LivelyIK.preprocess_phase2(self.yaml,self.node,lambda progress: self.preprocess_cb(step,progress))
                     # Create a symlink between LivelyIK SRC and BASE
                     for nn_suffix in ['_params_1','_params_2','_params_3','_network_rank']:
-                        os.symlink(BASE+"/config/collision_nn/"+info["robot_name"]+nn_suffix,SRC+"/config/collision_nn/"+info["robot_name"]+nn_suffix)
+                        os.symlink(BASE+"/config/collision_nn/"+self.robot_name+nn_suffix,SRC+"/config/collision_nn/"+self.robot_name+nn_suffix)
                 elif step == 'python':
                     # TODO: Implement python preprocesssing
                     self.preprocessing_state[step]['progress'] = 100.0
@@ -186,8 +192,10 @@ class ConfigCreator(App):
                 # except Exception as e:
                 #     self.preprocessing_state[step]['ok'] = False
                 #     self.error('{0} error: {1}'.format(step,e))
+                #     success = False
                 #     break
         self.is_preprocessing = False
+        emit('app_process_response',{'success':success,'action':'preprocess','app':self.json_app})
 
 
 
@@ -206,13 +214,19 @@ class ConfigCreator(App):
             return self.perform_step(data['direction'])
 
     def process(self,data):
-        if data['action'] == 'preprocess':
+        if data['action'] == 'preprocess' and not self.is_preprocessing:
             self.log('starting preprocessing')
-            asyncio.run(self.preprocess())
-        while self.is_preprocessing:
-            success = self.preprocessing_state['write_yaml']['ok'] and self.preprocessing_state['julia_nn']['ok'] and self.preprocessing_state['julia_params']['ok'] and self.preprocessing_state['python']['ok']
-            self.log('Process: {0}'.format(self.preprocessing_state))
-            yield {'success':self.preprocessing_state[''],'action':'preprocess','app':self.json_app}
+            # self.is_preprocessing = True
+            # self.preprocessing_thread = Thread(target=self.preprocess,daemon=True)
+            # self.preprocessing_thread.start()
+            #asyncio.run(self.preprocess())
+            self.preprocess()
+            # while self.is_preprocessing:
+            #     success = self.preprocessing_state['write_yaml']['ok'] and self.preprocessing_state['julia_nn']['ok'] and self.preprocessing_state['julia_params']['ok'] and self.preprocessing_state['python']['ok']
+            #     self.log('Process: {0}'.format(self.preprocessing_state))
+            #     yield {'success':success,'action':'preprocess','app':self.json_app}
+            # self.preprocessing_thread.join()
+            # self.preprocessing_thread = None
 
 
     def perform_step(self,direction):

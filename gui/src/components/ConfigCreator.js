@@ -77,7 +77,7 @@ class ConfigCreator extends React.Component {
       } else if (data.action === 'config_update' && !data.success) {
         // Update config from backend failed
         message.error(data.message);
-      } else if (data.action === 'can_step' || data.action === 'step') {
+      } else if (data.action === 'can_step' || data.action === 'step' || data.action === 'preprocess') {
         this.setState({app:data.app})
       } else {
         console.log(data.message)

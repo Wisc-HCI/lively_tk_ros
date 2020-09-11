@@ -8,7 +8,7 @@ class Preprocessing extends React.Component {
   getStatus = (state) => {
     if (state.ok && state.progress < 100) {
       return 'active';
-    } else if (state.ok && state.progress == 100) {
+    } else if (state.ok && state.progress === 100) {
       return 'success';
     } else {
       return 'exception';
@@ -25,6 +25,8 @@ class Preprocessing extends React.Component {
         return 'Configuring Julia Parameters'
       case 'python':
         return 'Training Python Collision Network'
+      default:
+        return 'Unknown Process'
     }
   }
 
