@@ -29,9 +29,6 @@ class ConfigCreator(App):
         self.robot_setup = False
         self.is_preprocessing = False
         self.preprocessing_steps = ['write_yaml','julia_nn','julia_params','python']
-        self.preprocessing_lookup = {
-            'write_yaml' =
-        }
 
         self.robot=None
         self.xml_tree=None
@@ -40,7 +37,7 @@ class ConfigCreator(App):
         # App State Info
         self.step = 0
         self.displayed_state = [] # Published to /joint_states
-        self.preprocessing_state = {step':{'progress':0.0,'ok':True} for step in self.preprocessing_steps}
+        self.preprocessing_state = {step:{'progress':0.0,'ok':True} for step in self.preprocessing_steps}
 
         # Config Contents
         self.urdf=None               # User-provided
@@ -82,65 +79,6 @@ class ConfigCreator(App):
         self.requires_preprocessing = self.requires_robot_update.union(set(('robotLinkRadius','sampleStates','trainingStates','problemStates',
                                                                             'boxes','spheres','ellipsoids','capsules','cylinders','robotName')))
 
-
-    def publish_joint_states(self):
-        if self.robot and self.robot_setup and len(self.joint_ordering) == len(self.displayed_state):
-            js_msg = JointState(name=self.joint_ordering,position=self.displayed_state)
-            js_msg.header.stamp = self.node.get_clock().now().to_msg()
-            self.js_pub.publish(js_msg)
-
-    def publish_tf(self):
-        tf1 = TransformStamped(header=Header(stamp=self.node.get_clock().now().to_msg(),
-                                             frame_id='1'),
-                               child_frame_id='world',
-                               transform=Transform(translation=Vector3(x=0.0,y=0.0,z=0.0),
-                                                   rotation=Quaternion(w=1.0,x=0.0,y=0.0,z=0.0)))
-        tf2 = TransformStamped(header=Header(stamp=self.node.get_clock().now().to_msg(),
-                                             frame_id='world'),
-                               child_frame_id=self.fixed_frame,
-                               transform=Transform(translation=Vector3(x=0.0,y=0.0,z=0.0),
-                                                   rotation=Quaternion(w=1.0,x=0.0,y=0.0,z=0.0)))
-
-        tf_msg = TFMessage(transforms=[tf1,tf2])
-        self.tf_pub.publish(tf_msg)
-
-    def write_config(self):
-        self.preprocessing_state['write_yaml']['progress'] = 0.0
-        with open(BASE+'/config/info_files/'+self.robot_name+'.yaml','w') as base_save:
-            yaml.dump(self.config,base_save)
-        self.preprocessing_state['write_yaml']['progress'] = 50.0
-        os.symlink(BASE+'/config/info_files/'+self.robot_name+'.yaml',SRC+'/config/info_files/'+self.robot_name+'.yaml')
-        self.preprocessing_state['write_yaml']['progress'] = 100.0
-
-
-
-    async def preprocess(self):
-        self.is_preprocessing = True
-        for step in self.preprocessing_steps:
-            if self.preprocessing_state[step]['progress'] < 100.0:
-                self.log('Start: {0}'.format(step))
-                try:
-                    if step == 'writing_yaml':
-                        self.write_config()
-                    elif step == 'julia_nn':
-                        LivelyIK.preprocess_phase1(self.config,self.node,lambda progress: self.preprocess_cb(step,progress))
-                        # Create a symlink between LivelyIK SRC and BASE
-                        for nn_suffix in ['_1','_2','_3']:
-                            os.symlink(BASE+"/config/collision_nn/"+info["robot_name"]+nn_suffix,SRC+"/config/collision_nn/"+info["robot_name"]+nn_suffix)
-                    elif step == 'julia_params':
-                        LivelyIK.preprocess_phase2(self.config,self.node,lambda progress: self.preprocess_cb(step,progress))
-                        # Create a symlink between LivelyIK SRC and BASE
-                        for nn_suffix in ['_params_1','_params_2','_params_3','_network_rank']:
-                            os.symlink(BASE+"/config/collision_nn/"+info["robot_name"]+nn_suffix,SRC+"/config/collision_nn/"+info["robot_name"]+nn_suffix)
-                    elif step == 'python':
-                        # TODO: Implement python preprocesssing
-                        self.preprocessing_state[step]['progress'] = 100.0
-                    self.preprocessing_state[step]['ok'] = True
-                except Exception as e:
-                    self.preprocessing_state[step]['ok'] = False
-                    self.error('{0} error: {1}'.format(step,e))
-        self.is_preprocessing = False
-
     @property
     def json_app(self):
         return {'step':self.step,'canStep':self.can_step,
@@ -181,6 +119,77 @@ class ConfigCreator(App):
             'urdf':self.urdf,
             'velocity_limits':self.velocity_limits
         }
+
+    @property
+    def yaml(self):
+        return yaml.dump(self.config)
+
+    def publish_joint_states(self):
+        if self.robot and self.robot_setup and len(self.joint_ordering) == len(self.displayed_state):
+            js_msg = JointState(name=self.joint_ordering,position=self.displayed_state)
+            js_msg.header.stamp = self.node.get_clock().now().to_msg()
+            self.js_pub.publish(js_msg)
+
+    def publish_tf(self):
+        tf1 = TransformStamped(header=Header(stamp=self.node.get_clock().now().to_msg(),
+                                             frame_id='1'),
+                               child_frame_id='world',
+                               transform=Transform(translation=Vector3(x=0.0,y=0.0,z=0.0),
+                                                   rotation=Quaternion(w=1.0,x=0.0,y=0.0,z=0.0)))
+        tf2 = TransformStamped(header=Header(stamp=self.node.get_clock().now().to_msg(),
+                                             frame_id='world'),
+                               child_frame_id=self.fixed_frame,
+                               transform=Transform(translation=Vector3(x=0.0,y=0.0,z=0.0),
+                                                   rotation=Quaternion(w=1.0,x=0.0,y=0.0,z=0.0)))
+
+        tf_msg = TFMessage(transforms=[tf1,tf2])
+        self.tf_pub.publish(tf_msg)
+
+    def preprocess_cb(self,key,progress):
+        self.log(str(progress))
+        p = round(progress)
+        if self.preprocessing_state[key]['progress'] != p:
+            self.preprocessing_state[key]['progress'] = p
+
+    def write_config(self, cb):
+        cb(0.0)
+        with open(BASE+'/config/info_files/'+self.robot_name+'.yaml','w') as base_save:
+            yaml.dump(self.config,base_save)
+        cb(50.0)
+        os.symlink(BASE+'/config/info_files/'+self.robot_name+'.yaml',SRC+'/config/info_files/'+self.robot_name+'.yaml')
+        cb(100.0)
+
+
+
+    async def preprocess(self):
+        self.is_preprocessing = True
+        for step in self.preprocessing_steps:
+            if self.preprocessing_state[step]['progress'] < 100.0:
+                self.log('Start: {0}'.format(step))
+                #try:
+                if step == 'writing_yaml':
+                    self.write_config(lambda progress: self.preprocess_cb(step,progress))
+                elif step == 'julia_nn':
+                    LivelyIK.preprocess_phase1(self.yaml,self.node,lambda progress: self.preprocess_cb(step,progress))
+                    # Create a symlink between LivelyIK SRC and BASE
+                    for nn_suffix in ['_1','_2','_3']:
+                        os.symlink(BASE+"/config/collision_nn/"+info["robot_name"]+nn_suffix,SRC+"/config/collision_nn/"+info["robot_name"]+nn_suffix)
+                elif step == 'julia_params':
+                    LivelyIK.preprocess_phase2(self.yaml,self.node,lambda progress: self.preprocess_cb(step,progress))
+                    # Create a symlink between LivelyIK SRC and BASE
+                    for nn_suffix in ['_params_1','_params_2','_params_3','_network_rank']:
+                        os.symlink(BASE+"/config/collision_nn/"+info["robot_name"]+nn_suffix,SRC+"/config/collision_nn/"+info["robot_name"]+nn_suffix)
+                elif step == 'python':
+                    # TODO: Implement python preprocesssing
+                    self.preprocessing_state[step]['progress'] = 100.0
+                self.preprocessing_state[step]['ok'] = True
+                # except Exception as e:
+                #     self.preprocessing_state[step]['ok'] = False
+                #     self.error('{0} error: {1}'.format(step,e))
+                #     break
+        self.is_preprocessing = False
+
+
 
     @property
     def json_config(self):
@@ -264,12 +273,6 @@ class ConfigCreator(App):
                 self.displayed_state = data['app']['displayedState']
 
         return {'success':True,'action':'config_update','config':self.json_config,'app':self.json_app}
-
-    def preprocess_cb(self,key,progress):
-        self.log(progress)
-        p = round(progress)
-        if self.preprocessing_state[key]['progress'] != p:
-            self.preprocessing_state[key]['progress'] = p
 
 
     @property
@@ -406,7 +409,7 @@ class ConfigCreator(App):
             return True
         elif self.step == 7:
             complete = True
-            for step in :
+            for step in self.preprocessing_steps:
                 if not self.preprocessing_state[step]['progress'] >= 100 or not self.preprocessing_state[step]['ok']:
                     complete = False
             if self.is_preprocessing or complete:

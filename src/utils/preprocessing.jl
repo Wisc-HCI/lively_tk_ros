@@ -1,6 +1,7 @@
 #!/usr/bin/env julia
 using LivelyIK
 using Random
+using YAML
 
 function state_to_joint_pts(x, vars)
     # return x
@@ -94,10 +95,12 @@ function get_batched_data(ins, outs, batch_size)
     return batched_data
 end
 
-function preprocess_phase1(info, rcl_node, cb)
+function preprocess_phase1(info_yaml, rcl_node, cb)
     collision_transfer = pyimport("lively_ik.utils.collision_transfer")
     lively_ik = pyimport("lively_ik")
+    info = YAML.load(info_yaml)
     cb(0)
+
 
     relaxedIK = LivelyIK.get_standard(info, rcl_node; preconfigured=true)
     cv = collision_transfer.CollisionVars(info, rcl_node)
@@ -279,9 +282,10 @@ function preprocess_phase1(info, rcl_node, cb)
 
 end
 
-function preprocess_phase2(info, rcl_node, cb)
+function preprocess_phase2(info_yaml, rcl_node, cb)
     collision_transfer = pyimport("lively_ik.utils.collision_transfer")
     lively_ik = pyimport("lively_ik")
+    info = YAML.load(info_yaml)
     cb(0)
 
     relaxedIK = LivelyIK.get_standard(info, rcl_node; preconfigured=true)
