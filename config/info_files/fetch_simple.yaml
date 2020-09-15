@@ -171,8 +171,6 @@ joint_types:
   - continuous
   - revolute
   - continuous
-js_define: "from sensor_msgs.msg import JointState\ndef joint_state_define(x):\n\t\
-  return None\n"
 mode: absolute
 objectives:
 - gradient: forward_ad
@@ -207,10 +205,30 @@ objectives:
 - gradient: forward_ad
   type: joint_limit
   weight: 1
-- gradient: forward_ad
+- gradient: finite_diff
   type: collision_nn
   weight: 5
-problem_states: []
+problem_states:
+- - 0.193075
+  - 0
+  - 0.345
+  - -1.5
+  - -1.22
+  - -0.24
+  - -2.25
+  - 0
+  - 0
+  - 0
+- - 0.193075
+  - 0
+  - 0.345
+  - 0.25
+  - -1.08
+  - -0.83
+  - -2.25
+  - -0.01
+  - -1.17
+  - 0
 robot_link_radius: 0.05
 robot_name: fetch_simple
 rot_offsets:
@@ -253,20 +271,70 @@ rot_offsets:
   - - 0.0
     - 0.0
     - 0.0
-sample_states: []
+sample_states:
+- - 0.193075
+  - 0
+  - 0.345
+  - 0
+  - 0.14849999999999997
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+- - 0.193075
+  - 0
+  - 0.345
+  - -1.5
+  - -1.08
+  - -0.83
+  - -1.16
+  - 0
+  - 0
+  - 0
 spheres: []
 starting_config:
 - 0.193075
-- 0.0
+- 0
 - 0.345
-- 0.0
+- 0
 - 0.14849999999999997
-- 0.0
-- 0.0
-- 0.0
-- 0.0
-- 0.0
-training_states: []
+- 0
+- 0
+- 0
+- 0
+- 0
+training_states:
+- - 0.193075
+  - 0
+  - 0.345
+  - 0
+  - 0.14849999999999997
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+- - 0.193075
+  - 0
+  - 0.345
+  - -1.5
+  - 0.14849999999999997
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+- - 0.193075
+  - 0
+  - 0.345
+  - -1.5
+  - -1.22
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
 urdf: "<?xml version=\"1.0\" ?>\n<robot name=\"fetch\">\n  <link name=\"base_link\"\
   >\n    <inertial>\n      <origin rpy=\"0 0 0\" xyz=\"-0.0036 0.0 0.0014\" />\n \
   \     <mass value=\"70.1294\" />\n      <inertia ixx=\"1.225\" ixy=\"0.0099\" ixz=\"\

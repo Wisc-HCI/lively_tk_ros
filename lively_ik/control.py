@@ -30,7 +30,7 @@ class ControllerNode(Node):
         self.rik_container = RelaxedIKContainer(self.info,self)
         ee_positions = self.rik_container.robot.get_ee_positions(self.info['starting_config'])
         ee_rotations = self.rik_container.robot.get_ee_rotations(self.info['starting_config'])
-
+        self.marker_lookup = []
         # Specify the ee_poses and configre markers
         ee_poses = []
         for ee_idx in range(len(self.info['joint_names'])):
@@ -38,9 +38,10 @@ class ControllerNode(Node):
             pos = ee_positions[ee_idx]
             rot = ee_rotations[ee_idx]
             name = self.info['ee_fixed_joints'][ee_idx]
+            self.marker_lookup.append('interactive_marker_'+name)
 
             marker = self.create_marker(name,pos,rot,self.info['fixed_frame'])
-            self.ims.insert(marker,feedback_callback=lambda msg:self.feedback_cb(ee_idx,msg))
+            self.ims.insert(marker,feedback_callback=self.feedback_cb)
 
             # Set the initial value in self.goals
             pose_dict = {
@@ -82,9 +83,9 @@ class ControllerNode(Node):
         self.temp_js_pub.publish(js_msg)
         self.destroy_publisher(self.temp_js_pub)
 
-    def feedback_cb(self,idx,msg):
-        self.get_logger().info("EE CB: {0}".format(idx))
-        self.goals.ee_poses[idx] = msg.pose
+    def feedback_cb(self,msg):
+        #self.get_logger().info("EE CB: {0} {1}".format(idx, msg))
+        self.goals.ee_poses[self.marker_lookup.index(msg.marker_name)] = msg.pose
 
     def publisher(self):
         self.goals.header.stamp = self.get_clock().now().to_msg()

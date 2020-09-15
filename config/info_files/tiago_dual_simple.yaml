@@ -479,9 +479,9 @@ objectives:
 - frequency: 5
   gradient: forward_ad
   index: 1
-  scale: 1
+  scale: .1
   type: rotational_noise
-  weight: 30
+  weight: 10
 - gradient: forward_ad
   index: 2
   type: position
@@ -513,13 +513,13 @@ objectives:
 - frequency: 5
   gradient: forward_ad
   index: 2
-  scale: 1
+  scale: .1
   type: rotational_noise
   weight: 3
 - frequency: 5
   gradient: forward_ad
   index: 3
-  scale: 1
+  scale: .1
   type: rotational_noise
   weight: 3
 - gradient: forward_ad
