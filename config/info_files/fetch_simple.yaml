@@ -180,9 +180,9 @@ objectives:
 - frequency: 5
   gradient: forward_ad
   index: 1
-  scale: 1
+  scale: .1
   type: rotational_noise
-  weight: 1
+  weight: 20
 - gradient: forward_ad
   index: 2
   type: position
