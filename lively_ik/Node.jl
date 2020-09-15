@@ -56,7 +56,7 @@ while rclpy.ok()
     global node
     global goals
     rclpy.spin_once(node)
-    println("GOALS: $goals")
+    #println("GOALS: $goals")
     time = node.get_clock().now().nanoseconds * 10^-9
     sol = LivelyIK.solve(lik, goals.positions, goals.quats, goals.dc, time, goals.bias, goals.weights)
     # println("SOL: $sol")

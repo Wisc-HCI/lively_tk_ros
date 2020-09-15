@@ -154,14 +154,12 @@ class ConfigCreator(App):
         if self.preprocessing_state[key]['progress'] != p:
             self.log('CB: {0} - {1}'.format(key,p))
             self.preprocessing_state[key]['progress'] = p
-        #emit('app_process_response',{'success':True,'action':'preprocess','app':self.json_app})
+        # emit('app_process_response',{'success':True,'action':'preprocess','app':self.json_app})
 
     def write_config(self, cb):
         cb(0.0)
-        with open(BASE+'/config/info_files/'+self.robot_name+'.yaml','w') as base_save:
-            yaml.dump(self.config,base_save)
-        cb(50.0)
-        os.symlink(BASE+'/config/info_files/'+self.robot_name+'.yaml',SRC+'/config/info_files/'+self.robot_name+'.yaml')
+        with open(SRC+'/config/info_files/'+self.robot_name+'.yaml','w') as src_save:
+            yaml.dump(self.config,src_save)
         cb(100.0)
 
     def preprocess(self):
@@ -170,28 +168,32 @@ class ConfigCreator(App):
         for step in self.preprocessing_steps:
             if self.preprocessing_state[step]['progress'] < 100.0:
                 self.log('Start: {0}'.format(step))
-                #try:
-                if step == 'writing_yaml':
-                    self.write_config(lambda progress: self.preprocess_cb(step,progress))
-                elif step == 'julia_nn':
-                    LivelyIK.preprocess_phase1(self.yaml,self.node,lambda progress: self.preprocess_cb(step,progress))
-                    # Create a symlink between LivelyIK SRC and BASE
-                    for nn_suffix in ['_1','_2','_3']:
-                        os.symlink(BASE+"/config/collision_nn/"+self.robot_name+nn_suffix,SRC+"/config/collision_nn/"+self.robot_name+nn_suffix)
-                elif step == 'julia_params':
-                    LivelyIK.preprocess_phase2(self.yaml,self.node,lambda progress: self.preprocess_cb(step,progress))
-                    # Create a symlink between LivelyIK SRC and BASE
-                    for nn_suffix in ['_params_1','_params_2','_params_3','_network_rank']:
-                        os.symlink(BASE+"/config/collision_nn/"+self.robot_name+nn_suffix,SRC+"/config/collision_nn/"+self.robot_name+nn_suffix)
-                elif step == 'python':
-                    # TODO: Implement python preprocesssing
-                    self.preprocessing_state[step]['progress'] = 100.0
-                self.preprocessing_state[step]['ok'] = True
-                # except Exception as e:
-                #     self.preprocessing_state[step]['ok'] = False
-                #     self.error('{0} error: {1}'.format(step,e))
-                #     success = False
-                #     break
+                try:
+                    if step == 'write_yaml':
+                        self.write_config(lambda progress: self.preprocess_cb(step,progress))
+                        if not os.path.exists(BASE+'/config/info_files/'+self.robot_name+'.yaml'):
+                            os.symlink(SRC+'/config/info_files/'+self.robot_name+'.yaml',BASE+'/config/info_files/'+self.robot_name+'.yaml')
+                    elif step == 'julia_nn':
+                        LivelyIK.preprocess_phase1(self.yaml,self.node,lambda progress: self.preprocess_cb(step,progress))
+                        # Create a symlink between LivelyIK SRC and BASE
+                        for nn_suffix in ['_1','_2','_3']:
+                            if not os.path.exists(BASE+"/config/collision_nn/"+self.robot_name+nn_suffix):
+                                os.symlink(SRC+"/config/collision_nn/"+self.robot_name+nn_suffix,BASE+"/config/collision_nn/"+self.robot_name+nn_suffix)
+                    elif step == 'julia_params':
+                        LivelyIK.preprocess_phase2(self.yaml,self.node,lambda progress: self.preprocess_cb(step,progress))
+                        # Create a symlink between LivelyIK SRC and BASE
+                        for nn_suffix in ['_params_1','_params_2','_params_3','_network_rank']:
+                            if not os.path.exists(BASE+"/config/collision_nn/"+self.robot_name+nn_suffix):
+                                os.symlink(SRC+"/config/collision_nn/"+self.robot_name+nn_suffix,BASE+"/config/collision_nn/"+self.robot_name+nn_suffix)
+                    elif step == 'python':
+                        # TODO: Implement python preprocesssing
+                        self.preprocessing_state[step]['progress'] = 100.0
+                    self.preprocessing_state[step]['ok'] = True
+                except Exception as e:
+                    self.preprocessing_state[step]['ok'] = False
+                    self.error('{0} error: {1}'.format(step,e))
+                    success = False
+                    break
         self.is_preprocessing = False
         emit('app_process_response',{'success':success,'action':'preprocess','app':self.json_app})
 
@@ -219,11 +221,14 @@ class ConfigCreator(App):
             self.preprocessing_thread.start()
             #asyncio.run(self.preprocess())
             # self.preprocess()
+            last_update = self.json_app
             while self.is_preprocessing:
                 success = self.preprocessing_state['write_yaml']['ok'] and self.preprocessing_state['julia_nn']['ok'] and self.preprocessing_state['julia_params']['ok'] and self.preprocessing_state['python']['ok']
                 #self.log('Process: {0}'.format(self.preprocessing_state))
-                app = self.json_app
-                yield {'success':success,'action':'preprocess','app':app}
+                if last_update != self.json_app:
+                    last_update = self.json_app
+                    emit('app_process_response',{'success':success,'action':'preprocess','app':self.json_app})
+                # yield {'success':success,'action':'preprocess','app':app}
             self.preprocessing_thread.join()
             self.preprocessing_thread = None
 

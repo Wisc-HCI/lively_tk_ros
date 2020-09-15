@@ -97,11 +97,7 @@ function groove_solve(groove; prev_state = nothing, ftol_abs=0.0, max_time=0.0, 
         maxeval!(groove.opt, max_iter)
     end
 
-    println("Maxeval Completed")
-
     (minf, minx, ret) = optimize(groove.opt, initSol)
-
-    println("Optimized")
 
     return minx
 end

@@ -267,7 +267,7 @@ function preprocess_phase1(info_yaml, rcl_node, cb)
             train(w1, batched_data[b], o1)
             train(w2, batched_data[b], o2)
             train(w3, batched_data[b], o3)
-            cb((((epoch-1)*length(batched_data)+b)/(num_epochs*length(batched_data)))*50+40)
+            cb((((epoch-1)*length(batched_data)+b)/(num_epochs*length(batched_data)))*60+40)
         end
         tl = total_loss2(w1, test_ins, test_outs)
         tl_train = total_loss( w1, new_ins, new_outs )
@@ -343,7 +343,7 @@ function preprocess_phase2(info_yaml, rcl_node, cb)
                 model3_acc += 1.
             end
         end
-        cb(i/total_acc_count*90)
+        cb(i/total_acc_count*99)
     end
 
     model1_acc = model1_acc/total_acc_count

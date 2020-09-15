@@ -83,6 +83,7 @@ class ControllerNode(Node):
         self.destroy_publisher(self.temp_js_pub)
 
     def feedback_cb(self,idx,msg):
+        self.get_logger().info("EE CB: {0}".format(idx))
         self.goals.ee_poses[idx] = msg.pose
 
     def publisher(self):

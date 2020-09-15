@@ -2,18 +2,21 @@ import React from 'react';
 import {MenuUnfoldOutlined,
         MenuFoldOutlined,
         SettingFilled,
-        PlusOutlined
+        PlusOutlined,
+        CrownOutlined
        } from '@ant-design/icons';
 import './App.css';
 import 'antd/dist/antd.css';
 import io from 'socket.io-client';
 import Connection from './components/Connection';
 import ConfigCreator from './components/ConfigCreator';
+import Commander from './components/Commander';
 import { message, Layout, Menu, Empty, Card } from 'antd';
 const { Header, Sider, Content, Footer } = Layout;
 
 const Applications = {
-  config_creator:{logo:PlusOutlined,component:ConfigCreator}
+  config_creator:{logo:PlusOutlined,component:ConfigCreator},
+  commander:{logo:CrownOutlined,component:Commander}
 }
 
 class App extends React.Component {

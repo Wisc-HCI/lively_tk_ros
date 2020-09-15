@@ -13,6 +13,7 @@ from flask_socketio import SocketIO, emit, Namespace
 from flask_cors import CORS
 
 from lively_ik.applications.config_creator import ConfigCreator
+from lively_ik.applications.commander import Commander
 
 class InterfaceNamespace(Namespace):
     '''
@@ -22,7 +23,8 @@ class InterfaceNamespace(Namespace):
         super(InterfaceNamespace,self).__init__()
         self.node = node
         self.apps = {
-            'config_creator':ConfigCreator(self.node)
+            'config_creator':ConfigCreator(self.node),
+            'commander':Commander(self.node)
         }
         self.active_app = None
 
@@ -61,12 +63,12 @@ class InterfaceNamespace(Namespace):
             self.node.get_logger().warn("Request: 'app_process failed: no active app'")
             emit('app_process_response',{'success':False})
         else:
-            # self.apps[self.active_app].process(data)
-            process = self.apps[self.active_app].process(data)
-            for step in process:
-                eventlet.greenthread.sleep()
-                print(step)
-                emit('app_process_response',step)
+            self.apps[self.active_app].process(data)
+            # process = self.apps[self.active_app].process(data)
+            # for step in process:
+            #     eventlet.greenthread.sleep()
+            #     #self.node.get_logger().info(str(step))
+            #     emit('app_process_response',step)
 
 
 class InterfaceNode(Node):

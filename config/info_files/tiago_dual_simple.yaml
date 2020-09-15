@@ -470,8 +470,6 @@ joint_types:
   - revolute
   - revolute
   - revolute
-js_define: "from sensor_msgs.msg import JointState\ndef joint_state_define(x):\n\t\
-  return None\n"
 mode: absolute
 objectives:
 - gradient: forward_ad
@@ -536,7 +534,7 @@ objectives:
 - gradient: forward_ad
   type: joint_limit
   weight: 1
-- gradient: forward_ad
+- gradient: finite_diff
   type: collision_nn
   weight: 5
 problem_states:
