@@ -1,1961 +1,301 @@
-all_dynamic_joints:
-- HeadYaw
-- HeadPitch
-- LHipYawPitch
-- LHipRoll
-- LHipPitch
-- LKneePitch
-- LAnklePitch
-- LAnkleRoll
-- RHipYawPitch
-- RHipRoll
-- RHipPitch
-- RKneePitch
-- RAnklePitch
-- RAnkleRoll
-- LShoulderPitch
-- LShoulderRoll
-- LElbowYaw
-- LElbowRoll
-- LWristYaw
-- LHand
-- RShoulderPitch
-- RShoulderRoll
-- RElbowYaw
-- RElbowRoll
-- RWristYaw
-- RHand
-- RFinger13
-- RFinger12
-- LFinger21
-- LFinger13
-- LFinger11
-- RFinger22
-- LFinger22
-- RFinger21
-- LFinger12
-- RFinger23
-- RFinger11
-- LFinger23
-- LThumb1
-- RThumb1
-- RThumb2
-- LThumb2
-all_fixed_joints:
-- gaze_joint
-- LLeg_effector_fixedjoint
-- RLeg_effector_fixedjoint
-- base_link_fixedjoint
-- LArm_effector_fixedjoint
-- RArm_effector_fixedjoint
-- LFoot/Bumper/Right_sensor_fixedjoint
-- RFoot/FSR/RearLeft_sensor_fixedjoint
-- CameraBottom_optical_frame_fixedjoint
-- RFoot/FSR/RearRight_sensor_fixedjoint
-- LFoot/FSR/FrontRight_sensor_fixedjoint
-- LHand/Touch/Left_sensor_fixedjoint
-- RFoot/Bumper/Right_sensor_fixedjoint
-- RFoot/FSR/FrontRight_sensor_fixedjoint
-- LFoot/FSR/RearRight_sensor_fixedjoint
-- Accelerometer_sensor_fixedjoint
-- Head/Touch/Front_sensor_fixedjoint
-- RFoot/Bumper/Left_sensor_fixedjoint
-- Sonar/Right_sensor_fixedjoint
-- RHand/Touch/Right_sensor_fixedjoint
-- RHand/Touch/Back_sensor_fixedjoint
-- RFoot/FSR/FrontLeft_sensor_fixedjoint
-- Sonar/Left_sensor_fixedjoint
-- LFoot/FSR/FrontLeft_sensor_fixedjoint
-- LFoot/FSR/RearLeft_sensor_fixedjoint
-- RHand/Touch/Left_sensor_fixedjoint
-- CameraBottom_sensor_fixedjoint
-- CameraTop_sensor_fixedjoint
-- CameraTop_optical_frame_fixedjoint
-- LHand/Touch/Back_sensor_fixedjoint
-- InfraredL_sensor_fixedjoint
-- Gyrometer_sensor_fixedjoint
-- Head/Touch/Rear_sensor_fixedjoint
-- Head/Touch/Middle_sensor_fixedjoint
-- InfraredR_sensor_fixedjoint
-- ChestBoard/Button_sensor_fixedjoint
-- LFoot/Bumper/Left_sensor_fixedjoint
-- LHand/Touch/Right_sensor_fixedjoint
-all_links:
-- Neck
-- Head
-- gaze
-- LPelvis
-- LHip
-- LThigh
-- LTibia
-- LAnklePitch
-- l_ankle
-- l_sole
-- RPelvis
-- RHip
-- RThigh
-- RTibia
-- RAnklePitch
-- r_ankle
-- r_sole
-- base_link
-- torso
-- LShoulder
-- LBicep
-- LElbow
-- LForeArm
-- l_wrist
-- l_palm
-- l_gripper
-- RShoulder
-- RBicep
-- RElbow
-- RForeArm
-- r_wrist
-- r_palm
-- r_gripper
-- LFootBumperRight_frame
-- RFsrRL_frame
-- CameraBottom_optical_frame
-- RFsrRR_frame
-- LFsrFR_frame
-- LHandTouchLeft_frame
-- RFootBumperRight_frame
-- RFsrFR_frame
-- LFsrRR_frame
-- ImuTorsoAccelerometer_frame
-- HeadTouchFront_frame
-- RFootBumperLeft_frame
-- RSonar_frame
-- RHandTouchRight_frame
-- RHandTouchBack_frame
-- RFsrFL_frame
-- LSonar_frame
-- LFsrFL_frame
-- LFsrRL_frame
-- RHandTouchLeft_frame
-- CameraBottom_frame
-- CameraTop_frame
-- CameraTop_optical_frame
-- LHandTouchBack_frame
-- LInfraRed_frame
-- ImuTorsoGyrometer_frame
-- HeadTouchRear_frame
-- HeadTouchMiddle_frame
-- RInfraRed_frame
-- ChestButton_frame
-- LFootBumperLeft_frame
-- LHandTouchRight_frame
-- RFinger13_link
-- RFinger12_link
-- LFinger21_link
-- LFinger13_link
-- LFinger11_link
-- RFinger22_link
-- LFinger22_link
-- RFinger21_link
-- LFinger12_link
-- RFinger23_link
-- RFinger11_link
-- LFinger23_link
-- LThumb1_link
-- RThumb1_link
-- RThumb2_link
-- LThumb2_link
+all_dynamic_joints: [HeadYaw, HeadPitch, LHipYawPitch, LHipRoll, LHipPitch, LKneePitch,
+  LAnklePitch, LAnkleRoll, RHipYawPitch, RHipRoll, RHipPitch, RKneePitch, RAnklePitch,
+  RAnkleRoll, LShoulderPitch, LShoulderRoll, LElbowYaw, LElbowRoll, LWristYaw, LHand,
+  RShoulderPitch, RShoulderRoll, RElbowYaw, RElbowRoll, RWristYaw, RHand, RFinger13,
+  RFinger12, LFinger21, LFinger13, LFinger11, RFinger22, LFinger22, RFinger21, LFinger12,
+  RFinger23, RFinger11, LFinger23, LThumb1, RThumb1, RThumb2, LThumb2]
+all_fixed_joints: [gaze_joint, LLeg_effector_fixedjoint, RLeg_effector_fixedjoint,
+  base_link_fixedjoint, LArm_effector_fixedjoint, RArm_effector_fixedjoint, LFoot/Bumper/Right_sensor_fixedjoint,
+  RFoot/FSR/RearLeft_sensor_fixedjoint, CameraBottom_optical_frame_fixedjoint, RFoot/FSR/RearRight_sensor_fixedjoint,
+  LFoot/FSR/FrontRight_sensor_fixedjoint, LHand/Touch/Left_sensor_fixedjoint, RFoot/Bumper/Right_sensor_fixedjoint,
+  RFoot/FSR/FrontRight_sensor_fixedjoint, LFoot/FSR/RearRight_sensor_fixedjoint, Accelerometer_sensor_fixedjoint,
+  Head/Touch/Front_sensor_fixedjoint, RFoot/Bumper/Left_sensor_fixedjoint, Sonar/Right_sensor_fixedjoint,
+  RHand/Touch/Right_sensor_fixedjoint, RHand/Touch/Back_sensor_fixedjoint, RFoot/FSR/FrontLeft_sensor_fixedjoint,
+  Sonar/Left_sensor_fixedjoint, LFoot/FSR/FrontLeft_sensor_fixedjoint, LFoot/FSR/RearLeft_sensor_fixedjoint,
+  RHand/Touch/Left_sensor_fixedjoint, CameraBottom_sensor_fixedjoint, CameraTop_sensor_fixedjoint,
+  CameraTop_optical_frame_fixedjoint, LHand/Touch/Back_sensor_fixedjoint, InfraredL_sensor_fixedjoint,
+  Gyrometer_sensor_fixedjoint, Head/Touch/Rear_sensor_fixedjoint, Head/Touch/Middle_sensor_fixedjoint,
+  InfraredR_sensor_fixedjoint, ChestBoard/Button_sensor_fixedjoint, LFoot/Bumper/Left_sensor_fixedjoint,
+  LHand/Touch/Right_sensor_fixedjoint]
+all_links: [Neck, Head, gaze, LPelvis, LHip, LThigh, LTibia, LAnklePitch, l_ankle,
+  l_sole, RPelvis, RHip, RThigh, RTibia, RAnklePitch, r_ankle, r_sole, base_link,
+  torso, LShoulder, LBicep, LElbow, LForeArm, l_wrist, l_palm, l_gripper, RShoulder,
+  RBicep, RElbow, RForeArm, r_wrist, r_palm, r_gripper, LFootBumperRight_frame, RFsrRL_frame,
+  CameraBottom_optical_frame, RFsrRR_frame, LFsrFR_frame, LHandTouchLeft_frame, RFootBumperRight_frame,
+  RFsrFR_frame, LFsrRR_frame, ImuTorsoAccelerometer_frame, HeadTouchFront_frame, RFootBumperLeft_frame,
+  RSonar_frame, RHandTouchRight_frame, RHandTouchBack_frame, RFsrFL_frame, LSonar_frame,
+  LFsrFL_frame, LFsrRL_frame, RHandTouchLeft_frame, CameraBottom_frame, CameraTop_frame,
+  CameraTop_optical_frame, LHandTouchBack_frame, LInfraRed_frame, ImuTorsoGyrometer_frame,
+  HeadTouchRear_frame, HeadTouchMiddle_frame, RInfraRed_frame, ChestButton_frame,
+  LFootBumperLeft_frame, LHandTouchRight_frame, RFinger13_link, RFinger12_link, LFinger21_link,
+  LFinger13_link, LFinger11_link, RFinger22_link, LFinger22_link, RFinger21_link,
+  LFinger12_link, RFinger23_link, RFinger11_link, LFinger23_link, LThumb1_link, RThumb1_link,
+  RThumb2_link, LThumb2_link]
 axis_types:
-- - z
-  - y
-- - y
-  - z
-  - x
-  - z
-  - x
-  - x
-- - y
-  - z
-  - x
-  - z
-  - x
-  - x
-- - -z
-  - x
-  - y
-  - y
-  - y
-  - x
-- - z
-  - x
-  - y
-  - y
-  - y
-  - x
+- [z, y]
+- [y, z, x, z, x, x]
+- [y, z, x, z, x, x]
+- [-z, x, y, y, y, x]
+- [z, x, y, y, y, x]
 boxes: []
 capsules: []
 cylinders: []
 disp_offsets:
-- - 0.0
-  - 0.0
-  - 0.1265
-- - 0.0
-  - 0.098
-  - 0.1
-- - 0.0
-  - -0.098
-  - 0.1
-- - 0.0
-  - 0.05
-  - -0.085
-- - 0.0
-  - -0.05
-  - -0.085
+- [0.0, 0.0, 0.1265]
+- [0.0, 0.098, 0.1]
+- [0.0, -0.098, 0.1]
+- [0.0, 0.05, -0.085]
+- [0.0, -0.05, -0.085]
 displacements:
-- - - 0.0
-    - 0.0
-    - 0.0
-  - - 0.05871
-    - 0.0
-    - 0.06364
-- - - 0.0
-    - 0.0
-    - 0.0
-  - - 0.105
-    - 0.015
-    - 0.0
-  - - 0.0
-    - 0.0
-    - 0.0
-  - - 0.05595
-    - 0.0
-    - 0.0
-  - - 0.05775
-    - 0.0
-    - -0.01231
-  - - 0.0
-    - 0.0
-    - 0.0
-- - - 0.0
-    - 0.0
-    - 0.0
-  - - 0.105
-    - -0.015
-    - 0.0
-  - - 0.0
-    - 0.0
-    - 0.0
-  - - 0.05595
-    - 0.0
-    - 0.0
-  - - 0.05775
-    - 0.0
-    - -0.01213
-  - - 0.0
-    - 0.0
-    - 0.0
-- - - 0.0
-    - 0.0
-    - 0.0
-  - - 0.0
-    - 0.0
-    - 0.0
-  - - 0.0
-    - 0.0
-    - -0.1
-  - - 0.0
-    - 0.0
-    - -0.1029
-  - - 0.0
-    - 0.0
-    - 0.0
-  - - 0.0
-    - 0.0
-    - -0.04511
-- - - 0.0
-    - 0.0
-    - 0.0
-  - - 0.0
-    - 0.0
-    - 0.0
-  - - 0.0
-    - 0.0
-    - -0.1
-  - - 0.0
-    - 0.0
-    - -0.1029
-  - - 0.0
-    - 0.0
-    - 0.0
-  - - 0.0
-    - 0.0
-    - -0.04511
-ee_fixed_joints:
-- gaze_joint
-- LArm_effector_fixedjoint
-- RArm_effector_fixedjoint
-- LLeg_effector_fixedjoint
-- RLeg_effector_fixedjoint
+- - [0.0, 0.0, 0.0]
+  - [0.05871, 0.0, 0.06364]
+- - [0.0, 0.0, 0.0]
+  - [0.105, 0.015, 0.0]
+  - [0.0, 0.0, 0.0]
+  - [0.05595, 0.0, 0.0]
+  - [0.05775, 0.0, -0.01231]
+  - [0.0, 0.0, 0.0]
+- - [0.0, 0.0, 0.0]
+  - [0.105, -0.015, 0.0]
+  - [0.0, 0.0, 0.0]
+  - [0.05595, 0.0, 0.0]
+  - [0.05775, 0.0, -0.01213]
+  - [0.0, 0.0, 0.0]
+- - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, -0.1]
+  - [0.0, 0.0, -0.1029]
+  - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, -0.04511]
+- - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, -0.1]
+  - [0.0, 0.0, -0.1029]
+  - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, -0.04511]
+ee_fixed_joints: [gaze_joint, LArm_effector_fixedjoint, RArm_effector_fixedjoint,
+  LLeg_effector_fixedjoint, RLeg_effector_fixedjoint]
 ellipsoids: []
 fixed_frame: torso
 fixed_frame_noise_frequency: 5
 fixed_frame_noise_scale: 0.015
 joint_limits:
-- - -2.08567
-  - 2.08567
-- - -0.671952
-  - 0.514872
-- - -2.08567
-  - 2.08567
-- - -0.314159
-  - 1.32645
-- - -2.08567
-  - 2.08567
-- - -1.54462
-  - -0.0349066
-- - -1.82387
-  - 1.82387
-- - -2.08567
-  - 2.08567
-- - -1.32645
-  - 0.314159
-- - -2.08567
-  - 2.08567
-- - 0.0349066
-  - 1.54462
-- - -1.82387
-  - 1.82387
-- - -1.14529
-  - 0.740718
-- - -0.379435
-  - 0.79046
-- - -1.53589
-  - 0.48398
-- - -0.0923279
-  - 2.11255
-- - -1.18944
-  - 0.922581
-- - -0.397761
-  - 0.768992
-- - -1.14529
-  - 0.740718
-- - -0.79046
-  - 0.379435
-- - -1.53589
-  - 0.48398
-- - -0.0923279
-  - 2.11255
-- - -1.1863
-  - 0.932006
-- - -0.768992
-  - 0.397761
-- - 0.0
-  - 1.0
-- - 0.0
-  - 1.0
+- [-2.08567, 2.08567]
+- [-0.671952, 0.514872]
+- [-2.08567, 2.08567]
+- [-0.314159, 1.32645]
+- [-2.08567, 2.08567]
+- [-1.54462, -0.0349066]
+- [-1.82387, 1.82387]
+- [-2.08567, 2.08567]
+- [-1.32645, 0.314159]
+- [-2.08567, 2.08567]
+- [0.0349066, 1.54462]
+- [-1.82387, 1.82387]
+- [-1.14529, 0.740718]
+- [-0.379435, 0.79046]
+- [-1.53589, 0.48398]
+- [-0.0923279, 2.11255]
+- [-1.18944, 0.922581]
+- [-0.397761, 0.768992]
+- [-1.14529, 0.740718]
+- [-0.79046, 0.379435]
+- [-1.53589, 0.48398]
+- [-0.0923279, 2.11255]
+- [-1.1863, 0.932006]
+- [-0.768992, 0.397761]
+- [0.0, 1.0]
+- [0.0, 1.0]
 joint_names:
-- - HeadYaw
-  - HeadPitch
-- - LShoulderPitch
-  - LShoulderRoll
-  - LElbowYaw
-  - LElbowRoll
-  - LWristYaw
-  - LHand
-- - RShoulderPitch
-  - RShoulderRoll
-  - RElbowYaw
-  - RElbowRoll
-  - RWristYaw
-  - RHand
-- - LHipYawPitch
-  - LHipRoll
-  - LHipPitch
-  - LKneePitch
-  - LAnklePitch
-  - LAnkleRoll
-- - RHipYawPitch
-  - RHipRoll
-  - RHipPitch
-  - RKneePitch
-  - RAnklePitch
-  - RAnkleRoll
-joint_ordering:
-- HeadYaw
-- HeadPitch
-- LShoulderPitch
-- LShoulderRoll
-- LElbowYaw
-- LElbowRoll
-- LWristYaw
-- RShoulderPitch
-- RShoulderRoll
-- RElbowYaw
-- RElbowRoll
-- RWristYaw
-- LHipYawPitch
-- LHipRoll
-- LHipPitch
-- LKneePitch
-- LAnklePitch
-- LAnkleRoll
-- RHipYawPitch
-- RHipRoll
-- RHipPitch
-- RKneePitch
-- RAnklePitch
-- RAnkleRoll
-- LHand
-- RHand
+- [HeadYaw, HeadPitch]
+- [LShoulderPitch, LShoulderRoll, LElbowYaw, LElbowRoll, LWristYaw, LHand]
+- [RShoulderPitch, RShoulderRoll, RElbowYaw, RElbowRoll, RWristYaw, RHand]
+- [LHipYawPitch, LHipRoll, LHipPitch, LKneePitch, LAnklePitch, LAnkleRoll]
+- [RHipYawPitch, RHipRoll, RHipPitch, RKneePitch, RAnklePitch, RAnkleRoll]
+joint_ordering: [HeadYaw, HeadPitch, LShoulderPitch, LShoulderRoll, LElbowYaw, LElbowRoll,
+  LWristYaw, RShoulderPitch, RShoulderRoll, RElbowYaw, RElbowRoll, RWristYaw, LHipYawPitch,
+  LHipRoll, LHipPitch, LKneePitch, LAnklePitch, LAnkleRoll, RHipYawPitch, RHipRoll,
+  RHipPitch, RKneePitch, RAnklePitch, RAnkleRoll, LHand, RHand]
 joint_types:
-- - revolute
-  - revolute
-- - revolute
-  - revolute
-  - revolute
-  - revolute
-  - revolute
-  - revolute
-- - revolute
-  - revolute
-  - revolute
-  - revolute
-  - revolute
-  - revolute
-- - revolute
-  - revolute
-  - revolute
-  - revolute
-  - revolute
-  - revolute
-- - revolute
-  - revolute
-  - revolute
-  - revolute
-  - revolute
-  - revolute
+- [revolute, revolute]
+- [revolute, revolute, revolute, revolute, revolute, revolute]
+- [revolute, revolute, revolute, revolute, revolute, revolute]
+- [revolute, revolute, revolute, revolute, revolute, revolute]
+- [revolute, revolute, revolute, revolute, revolute, revolute]
 mode: absolute
 objectives:
-- gradient: forward_ad
-  index: 1
-  type: rotation
-  weight: 10
-- frequency: 5
-  gradient: forward_ad
-  index: 1
-  scale: 0.1
-  type: rotational_noise
-  weight: 5
-- gradient: forward_ad
-  index: 2
-  type: position
-  weight: 30
-- gradient: forward_ad
-  index: 3
-  type: position
-  weight: 30
-- gradient: forward_ad
-  index: 4
-  type: position
-  weight: 30
-- gradient: forward_ad
-  index: 5
-  type: position
-  weight: 30
-- frequency: 5
-  gradient: forward_ad
-  index: 2
-  scale: 0.15
-  type: positional_noise
-  weight: 20
-- frequency: 5
-  gradient: forward_ad
-  index: 3
-  scale: 0.15
-  type: positional_noise
-  weight: 20
-- frequency: 5
-  gradient: forward_ad
-  index: 2
-  scale: 1
-  type: rotational_noise
-  weight: 5
-- frequency: 5
-  gradient: forward_ad
-  index: 3
-  scale: 1
-  type: rotational_noise
-  weight: 5
-- gradient: forward_ad
-  index: 3
-  type: dc
-  weight: 30
-- gradient: forward_ad
-  index: 4
-  type: dc
-  weight: 30
-- gradient: forward_ad
-  index: 5
-  type: dc
-  weight: 30
-- gradient: forward_ad
-  index: 6
-  type: dc
-  weight: 30
-- gradient: forward_ad
-  index: 7
-  type: dc
-  weight: 30
-- gradient: forward_ad
-  index: 25
-  type: dc
-  weight: 30
-- gradient: forward_ad
-  index: 26
-  type: dc
-  weight: 30
-- frequency: 5
-  gradient: forward_ad
-  index: 25
-  scale: 1
-  type: dc_noise
-  weight: 20
-- frequency: 5
-  gradient: forward_ad
-  index: 26
-  scale: 1
-  type: dc_noise
-  weight: 20
-- delta: 0
-  gradient: forward_ad
-  index_1: 1
-  index_2: 1
-  type: x_position_match
-  weight: 10
-- delta: 0
-  gradient: forward_ad
-  index_1: 4
-  index_2: 5
-  type: z_position_match
-  weight: 10
-- gradient: forward_ad
-  index_1: 4
-  index_2: 5
-  type: rotation_match
-  weight: 10
-- gradient: forward_ad
-  type: min_jt_vel
-  weight: 5
-- gradient: forward_ad
-  type: min_jt_accel
-  weight: 2
-- gradient: forward_ad
-  type: min_jt_jerk
-  weight: 0.1
-- gradient: forward_ad
-  type: joint_limit
-  weight: 2
-- gradient: finite_diff
-  type: collision_nn
-  weight: 5
+- {gradient: forward_ad, index: 1, type: rotation, weight: 10}
+- {frequency: 5, gradient: forward_ad, index: 1, scale: 0.1, type: rotational_noise,
+  weight: 5}
+- {gradient: forward_ad, index: 2, type: position, weight: 30}
+- {gradient: forward_ad, index: 3, type: position, weight: 30}
+- {gradient: forward_ad, index: 4, type: position, weight: 30}
+- {gradient: forward_ad, index: 5, type: position, weight: 30}
+- {frequency: 5, gradient: forward_ad, index: 2, scale: 0.15, type: positional_noise,
+  weight: 20}
+- {frequency: 5, gradient: forward_ad, index: 3, scale: 0.15, type: positional_noise,
+  weight: 20}
+- {frequency: 5, gradient: forward_ad, index: 2, scale: 1, type: rotational_noise,
+  weight: 5}
+- {frequency: 5, gradient: forward_ad, index: 3, scale: 1, type: rotational_noise,
+  weight: 5}
+- {gradient: forward_ad, index: 3, type: dc, weight: 30}
+- {gradient: forward_ad, index: 4, type: dc, weight: 30}
+- {gradient: forward_ad, index: 5, type: dc, weight: 30}
+- {gradient: forward_ad, index: 6, type: dc, weight: 30}
+- {gradient: forward_ad, index: 7, type: dc, weight: 30}
+- {gradient: forward_ad, index: 25, type: dc, weight: 30}
+- {gradient: forward_ad, index: 26, type: dc, weight: 30}
+- {frequency: 5, gradient: forward_ad, index: 25, scale: 1, type: dc_noise, weight: 20}
+- {frequency: 5, gradient: forward_ad, index: 26, scale: 1, type: dc_noise, weight: 20}
+- {delta: 0, gradient: forward_ad, index_1: 1, index_2: 1, type: x_position_match,
+  weight: 10}
+- {delta: 0, gradient: forward_ad, index_1: 4, index_2: 5, type: z_position_match,
+  weight: 10}
+- {gradient: forward_ad, index_1: 4, index_2: 5, type: rotation_match, weight: 10}
+- {gradient: forward_ad, type: min_jt_vel, weight: 5}
+- {gradient: forward_ad, type: min_jt_accel, weight: 2}
+- {gradient: forward_ad, type: min_jt_jerk, weight: 0.1}
+- {gradient: forward_ad, type: joint_limit, weight: 2}
+- {gradient: finite_diff, type: collision_nn, weight: 5}
 problem_states:
-- - 0
-  - 0
-  - -0.81
-  - 0.38
-  - -0.5
-  - -0.5
-  - -0.01
-  - -1.46
-  - -0.19
-  - -0.04
-  - 1.35
-  - 1.3
-  - 0
-  - 0.2
-  - 0
-  - 0.15
-  - -0.15
-  - -0.2
-  - 0
-  - -0.2
-  - 0
-  - 0.15
-  - -0.15
-  - 0.2
-  - 0.5
-  - 0.5
-- - 0
-  - 0
-  - -0.81
-  - -0.2
-  - -0.14
-  - -1.14
-  - -0.01
-  - -1.46
-  - -0.19
-  - -0.04
-  - 0.99
-  - 1.3
-  - 0
-  - 0.2
-  - 0
-  - 0.15
-  - -0.15
-  - -0.2
-  - 0
-  - -0.2
-  - 0
-  - 0.15
-  - -0.15
-  - 0.2
-  - 0.5
-  - 0.5
-- - 0
-  - 0
-  - 1.65
-  - 0.08
-  - -0.5
-  - -0.5
-  - -1.3
-  - 1.31
-  - -0.15
-  - 0.5
-  - 0.5
-  - 1.3
-  - 0
-  - 0.2
-  - 0
-  - 0.15
-  - -0.15
-  - -0.2
-  - 0
-  - -0.2
-  - 0
-  - 0.15
-  - -0.15
-  - 0.2
-  - 0.5
-  - 0.5
-- - 0
-  - 0
-  - 1.65
-  - 0.08
-  - -0.5
-  - -0.5
-  - -1.3
-  - 1.31
-  - -0.15
-  - 0.5
-  - 0.5
-  - 1.3
-  - 0
-  - 0.2
-  - 0
-  - 0.15
-  - -0.15
-  - -0.2
-  - 0
-  - -0.2
-  - 0
-  - 0.15
-  - -0.15
-  - 0.2
-  - 0.5
-  - 0.5
-- - 0
-  - 0
-  - 1.31
-  - 1.33
-  - -0.5
-  - -0.5
-  - -1.3
-  - 1.31
-  - -0.15
-  - 0.5
-  - 0.5
-  - 1.3
-  - 0
-  - 0.2
-  - 0
-  - 0.15
-  - -0.15
-  - -0.2
-  - 0
-  - -0.2
-  - 0
-  - 0.15
-  - -0.15
-  - 0.2
-  - 0.5
-  - 0.5
-- - 0
-  - 0
-  - 1.31
-  - 1.33
-  - -0.5
-  - -0.5
-  - -1.3
-  - 1.31
-  - -0.15
-  - 0.5
-  - 0.5
-  - 1.3
-  - 0
-  - 0.2
-  - 0
-  - 0.15
-  - -0.15
-  - -0.2
-  - 0
-  - -0.2
-  - 0
-  - 0.15
-  - -0.15
-  - 0.2
-  - 0.5
-  - 0.5
-- - 0
-  - 0
-  - 1.31
-  - 1.33
-  - -0.5
-  - -0.5
-  - -1.3
-  - 1.31
-  - -1.33
-  - 0.5
-  - 0.5
-  - 1.3
-  - 0
-  - 0.2
-  - 0
-  - 0.15
-  - -0.15
-  - -0.2
-  - 0
-  - -0.2
-  - 0
-  - 0.15
-  - -0.15
-  - 0.2
-  - 0.5
-  - 0.5
-- - 0
-  - 0
-  - 2.09
-  - 1.33
-  - -0.5
-  - -0.5
-  - -1.3
-  - 1.31
-  - -1.33
-  - 0.5
-  - 0.5
-  - 1.3
-  - 0
-  - 0.2
-  - 0
-  - 0.15
-  - -0.15
-  - -0.2
-  - 0
-  - -0.2
-  - 0
-  - 0.15
-  - -0.15
-  - 0.2
-  - 0.5
-  - 0.5
-- - 0
-  - 0
-  - 2.09
-  - 1.33
-  - -0.5
-  - -0.5
-  - -1.3
-  - 1.31
-  - -1.33
-  - 0.5
-  - 0.5
-  - 1.3
-  - 0
-  - 0.2
-  - 0
-  - 0.15
-  - -0.15
-  - -0.2
-  - 0
-  - -0.2
-  - 0
-  - 0.15
-  - -0.15
-  - 0.2
-  - 0.5
-  - 0.5
-- - 0
-  - 0
-  - 2.09
-  - 1.33
-  - -0.5
-  - -0.5
-  - -1.3
-  - 2.09
-  - -1.33
-  - 0.5
-  - 0.5
-  - 1.3
-  - 0
-  - 0.2
-  - 0
-  - 0.15
-  - -0.15
-  - -0.2
-  - 0
-  - -0.2
-  - 0
-  - 0.15
-  - -0.15
-  - 0.2
-  - 0.5
-  - 0.5
+- [0, 0, -0.81, 0.38, -0.5, -0.5, -0.01, -1.46, -0.19, -0.04, 1.35, 1.3, 0, 0.2, 0,
+  0.15, -0.15, -0.2, 0, -0.2, 0, 0.15, -0.15, 0.2, 0.5, 0.5]
+- [0, 0, -0.81, -0.2, -0.14, -1.14, -0.01, -1.46, -0.19, -0.04, 0.99, 1.3, 0, 0.2,
+  0, 0.15, -0.15, -0.2, 0, -0.2, 0, 0.15, -0.15, 0.2, 0.5, 0.5]
+- [0, 0, 1.65, 0.08, -0.5, -0.5, -1.3, 1.31, -0.15, 0.5, 0.5, 1.3, 0, 0.2, 0, 0.15,
+  -0.15, -0.2, 0, -0.2, 0, 0.15, -0.15, 0.2, 0.5, 0.5]
+- [0, 0, 1.65, 0.08, -0.5, -0.5, -1.3, 1.31, -0.15, 0.5, 0.5, 1.3, 0, 0.2, 0, 0.15,
+  -0.15, -0.2, 0, -0.2, 0, 0.15, -0.15, 0.2, 0.5, 0.5]
+- [0, 0, 1.31, 1.33, -0.5, -0.5, -1.3, 1.31, -0.15, 0.5, 0.5, 1.3, 0, 0.2, 0, 0.15,
+  -0.15, -0.2, 0, -0.2, 0, 0.15, -0.15, 0.2, 0.5, 0.5]
+- [0, 0, 1.31, 1.33, -0.5, -0.5, -1.3, 1.31, -0.15, 0.5, 0.5, 1.3, 0, 0.2, 0, 0.15,
+  -0.15, -0.2, 0, -0.2, 0, 0.15, -0.15, 0.2, 0.5, 0.5]
+- [0, 0, 1.31, 1.33, -0.5, -0.5, -1.3, 1.31, -1.33, 0.5, 0.5, 1.3, 0, 0.2, 0, 0.15,
+  -0.15, -0.2, 0, -0.2, 0, 0.15, -0.15, 0.2, 0.5, 0.5]
+- [0, 0, 2.09, 1.33, -0.5, -0.5, -1.3, 1.31, -1.33, 0.5, 0.5, 1.3, 0, 0.2, 0, 0.15,
+  -0.15, -0.2, 0, -0.2, 0, 0.15, -0.15, 0.2, 0.5, 0.5]
+- [0, 0, 2.09, 1.33, -0.5, -0.5, -1.3, 1.31, -1.33, 0.5, 0.5, 1.3, 0, 0.2, 0, 0.15,
+  -0.15, -0.2, 0, -0.2, 0, 0.15, -0.15, 0.2, 0.5, 0.5]
+- [0, 0, 2.09, 1.33, -0.5, -0.5, -1.3, 2.09, -1.33, 0.5, 0.5, 1.3, 0, 0.2, 0, 0.15,
+  -0.15, -0.2, 0, -0.2, 0, 0.15, -0.15, 0.2, 0.5, 0.5]
 robot_link_radius: 0.02
 robot_name: nao_v5
 rot_offsets:
-- - - 0.0
-    - 0.0
-    - 0.0
-  - - 0.0
-    - 0.0
-    - 0.0
-  - - 0.0
-    - 0.0
-    - 0.0
-- - - 0.0
-    - 0.0
-    - 0.0
-  - - 0.0
-    - 0.0
-    - 0.0
-  - - 0.0
-    - 0.0
-    - 0.0
-  - - 0.0
-    - 0.0
-    - 0.0
-  - - 0.0
-    - 0.0
-    - 0.0
-  - - 0.0
-    - 0.0
-    - 0.0
-  - - 0.0
-    - 0.0
-    - 0.0
-- - - 0.0
-    - 0.0
-    - 0.0
-  - - 0.0
-    - 0.0
-    - 0.0
-  - - 0.0
-    - 0.0
-    - 0.0
-  - - 0.0
-    - 0.0
-    - 0.0
-  - - 0.0
-    - 0.0
-    - 0.0
-  - - 0.0
-    - 0.0
-    - 0.0
-  - - 0.0
-    - 0.0
-    - 0.0
-- - - 0.0
-    - 0.0
-    - 0.0
-  - - 0.0
-    - 0.0
-    - 0.0
-  - - 0.0
-    - 0.0
-    - 0.0
-  - - 0.0
-    - 0.0
-    - 0.0
-  - - 0.0
-    - 0.0
-    - 0.0
-  - - 0.0
-    - 0.0
-    - 0.0
-  - - 0.0
-    - 0.0
-    - 0.0
-- - - 0.0
-    - 0.0
-    - 0.0
-  - - 0.0
-    - 0.0
-    - 0.0
-  - - 0.0
-    - 0.0
-    - 0.0
-  - - 0.0
-    - 0.0
-    - 0.0
-  - - 0.0
-    - 0.0
-    - 0.0
-  - - 0.0
-    - 0.0
-    - 0.0
-  - - 0.0
-    - 0.0
-    - 0.0
+- - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+- - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+- - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+- - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+- - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
 sample_states:
-- - 0
-  - 0
-  - 1.31
-  - 0.15
-  - -0.5
-  - -0.5
-  - -1.3
-  - 1.31
-  - -0.15
-  - 0.5
-  - 0.5
-  - 1.3
-  - 0
-  - 0.2
-  - 0
-  - 0.15
-  - -0.15
-  - -0.2
-  - 0
-  - -0.2
-  - 0
-  - 0.15
-  - -0.15
-  - 0.2
-  - 0.5
-  - 0.5
-- - 0
-  - 0
-  - -0.81
-  - 0.38
-  - -0.5
-  - -0.5
-  - -0.01
-  - 1.31
-  - -0.71
-  - 0.5
-  - 0.5
-  - 1.3
-  - 0
-  - 0.2
-  - 0
-  - 0.15
-  - -0.15
-  - -0.2
-  - 0
-  - -0.2
-  - 0
-  - 0.15
-  - -0.15
-  - 0.2
-  - 0.5
-  - 0.5
-- - 0
-  - 0
-  - -0.81
-  - 0.38
-  - -0.5
-  - -0.5
-  - -0.01
-  - -0.19
-  - -0.71
-  - 0.5
-  - 0.5
-  - 1.3
-  - 0
-  - 0.2
-  - 0
-  - 0.15
-  - -0.15
-  - -0.2
-  - 0
-  - -0.2
-  - 0
-  - 0.15
-  - -0.15
-  - 0.2
-  - 0.5
-  - 0.5
-- - 0
-  - 0
-  - -0.81
-  - 0.38
-  - -0.5
-  - -0.5
-  - -0.01
-  - -1.06
-  - -0.55
-  - 0.5
-  - 0.5
-  - 1.3
-  - 0
-  - 0.2
-  - 0
-  - 0.15
-  - -0.15
-  - -0.2
-  - 0
-  - -0.2
-  - 0
-  - 0.15
-  - -0.15
-  - 0.2
-  - 0.5
-  - 0.5
-- - 0
-  - 0
-  - 1.65
-  - 0.08
-  - -1.82
-  - -0.5
-  - -1.3
-  - 1.31
-  - -0.15
-  - 0.5
-  - 0.5
-  - 1.3
-  - 0
-  - 0.2
-  - 0
-  - 0.15
-  - -0.15
-  - -0.2
-  - 0
-  - -0.2
-  - 0
-  - 0.15
-  - -0.15
-  - 0.2
-  - 0.5
-  - 0.5
-- - 0
-  - 0
-  - 2.09
-  - 0.74
-  - -0.5
-  - -0.5
-  - -1.3
-  - 2.09
-  - -0.59
-  - 0.5
-  - 0.5
-  - 1.3
-  - 0
-  - 0.2
-  - 0
-  - 0.15
-  - -0.15
-  - -0.2
-  - 0
-  - -0.2
-  - 0
-  - 0.15
-  - -0.15
-  - 0.2
-  - 0.5
-  - 0.5
-- - 0
-  - 0
-  - 2.09
-  - 0.74
-  - -1.06
-  - -0.5
-  - -1.3
-  - 2.09
-  - -0.59
-  - 0.5
-  - 0.5
-  - 1.3
-  - 0
-  - 0.2
-  - 0
-  - 0.15
-  - -0.15
-  - -0.2
-  - 0
-  - -0.2
-  - 0
-  - 0.15
-  - -0.15
-  - 0.2
-  - 0.5
-  - 0.5
-- - 0
-  - 0
-  - 2.09
-  - 0.74
-  - -1.06
-  - -0.5
-  - -1.3
-  - 2.09
-  - -0.59
-  - 1.4
-  - 0.5
-  - 1.3
-  - 0
-  - 0.2
-  - 0
-  - 0.15
-  - -0.15
-  - -0.2
-  - 0
-  - -0.2
-  - 0
-  - 0.15
-  - -0.15
-  - 0.2
-  - 0.5
-  - 0.5
-- - 0
-  - 0
-  - 1.31
-  - 0.15
-  - -0.5
-  - -0.5
-  - -1.3
-  - 1.31
-  - -0.15
-  - 0.5
-  - 0.5
-  - 1.3
-  - -0.48
-  - 0.41
-  - -0.09
-  - 0.59
-  - -0.07
-  - -0.17
-  - -0.11
-  - -0.2
-  - 0
-  - 0.19
-  - -0.53
-  - -0.01
-  - 0.42
-  - 0.42
-- - 0
-  - 0
-  - 1.31
-  - 0.15
-  - -0.5
-  - -0.5
-  - -1.3
-  - 1.31
-  - -1.01
-  - 0.5
-  - 0.5
-  - 1.3
-  - 0.12
-  - 0.41
-  - -0.09
-  - 0.59
-  - -0.45
-  - -0.17
-  - -0.11
-  - -0.2
-  - 0
-  - 0.19
-  - -0.53
-  - -0.01
-  - 0.42
-  - 0.42
-- - 0.61
-  - -0.11
-  - 1.31
-  - 0.15
-  - -0.5
-  - -0.5
-  - -1.3
-  - 1.31
-  - -1.01
-  - 0.5
-  - 0.5
-  - 1.3
-  - 0.12
-  - 0.41
-  - -0.09
-  - 0.59
-  - -0.45
-  - -0.17
-  - -0.11
-  - -0.2
-  - 0
-  - 0.19
-  - -0.53
-  - -0.01
-  - 0.42
-  - 0.42
-- - 0.61
-  - -0.11
-  - 1.31
-  - 0.97
-  - -0.5
-  - -0.5
-  - -1.3
-  - 1.31
-  - -0.52
-  - 0.5
-  - 0.5
-  - 1.3
-  - 0.12
-  - 0.41
-  - -0.09
-  - 0.59
-  - -0.45
-  - -0.17
-  - -0.11
-  - -0.2
-  - -0.29
-  - 1.23
-  - -0.53
-  - -0.26
-  - 0.42
-  - 0.42
-- - 0.61
-  - -0.11
-  - 1.31
-  - 0.97
-  - -0.5
-  - -0.5
-  - -1.3
-  - 1.31
-  - -0.52
-  - 0.5
-  - 0.5
-  - 1.3
-  - 0.12
-  - 0.41
-  - -0.09
-  - 0.59
-  - -0.45
-  - -0.17
-  - -0.11
-  - -0.2
-  - -1.1
-  - 1.9
-  - -0.53
-  - -0.26
-  - 0.42
-  - 0.42
+- [0, 0, 1.31, 0.15, -0.5, -0.5, -1.3, 1.31, -0.15, 0.5, 0.5, 1.3, 0, 0.2, 0, 0.15,
+  -0.15, -0.2, 0, -0.2, 0, 0.15, -0.15, 0.2, 0.5, 0.5]
+- [0, 0, -0.81, 0.38, -0.5, -0.5, -0.01, 1.31, -0.71, 0.5, 0.5, 1.3, 0, 0.2, 0, 0.15,
+  -0.15, -0.2, 0, -0.2, 0, 0.15, -0.15, 0.2, 0.5, 0.5]
+- [0, 0, -0.81, 0.38, -0.5, -0.5, -0.01, -0.19, -0.71, 0.5, 0.5, 1.3, 0, 0.2, 0, 0.15,
+  -0.15, -0.2, 0, -0.2, 0, 0.15, -0.15, 0.2, 0.5, 0.5]
+- [0, 0, -0.81, 0.38, -0.5, -0.5, -0.01, -1.06, -0.55, 0.5, 0.5, 1.3, 0, 0.2, 0, 0.15,
+  -0.15, -0.2, 0, -0.2, 0, 0.15, -0.15, 0.2, 0.5, 0.5]
+- [0, 0, 1.65, 0.08, -1.82, -0.5, -1.3, 1.31, -0.15, 0.5, 0.5, 1.3, 0, 0.2, 0, 0.15,
+  -0.15, -0.2, 0, -0.2, 0, 0.15, -0.15, 0.2, 0.5, 0.5]
+- [0, 0, 2.09, 0.74, -0.5, -0.5, -1.3, 2.09, -0.59, 0.5, 0.5, 1.3, 0, 0.2, 0, 0.15,
+  -0.15, -0.2, 0, -0.2, 0, 0.15, -0.15, 0.2, 0.5, 0.5]
+- [0, 0, 2.09, 0.74, -1.06, -0.5, -1.3, 2.09, -0.59, 0.5, 0.5, 1.3, 0, 0.2, 0, 0.15,
+  -0.15, -0.2, 0, -0.2, 0, 0.15, -0.15, 0.2, 0.5, 0.5]
+- [0, 0, 2.09, 0.74, -1.06, -0.5, -1.3, 2.09, -0.59, 1.4, 0.5, 1.3, 0, 0.2, 0, 0.15,
+  -0.15, -0.2, 0, -0.2, 0, 0.15, -0.15, 0.2, 0.5, 0.5]
+- [0, 0, 1.31, 0.15, -0.5, -0.5, -1.3, 1.31, -0.15, 0.5, 0.5, 1.3, -0.48, 0.41, -0.09,
+  0.59, -0.07, -0.17, -0.11, -0.2, 0, 0.19, -0.53, -0.01, 0.42, 0.42]
+- [0, 0, 1.31, 0.15, -0.5, -0.5, -1.3, 1.31, -1.01, 0.5, 0.5, 1.3, 0.12, 0.41, -0.09,
+  0.59, -0.45, -0.17, -0.11, -0.2, 0, 0.19, -0.53, -0.01, 0.42, 0.42]
+- [0.61, -0.11, 1.31, 0.15, -0.5, -0.5, -1.3, 1.31, -1.01, 0.5, 0.5, 1.3, 0.12, 0.41,
+  -0.09, 0.59, -0.45, -0.17, -0.11, -0.2, 0, 0.19, -0.53, -0.01, 0.42, 0.42]
+- [0.61, -0.11, 1.31, 0.97, -0.5, -0.5, -1.3, 1.31, -0.52, 0.5, 0.5, 1.3, 0.12, 0.41,
+  -0.09, 0.59, -0.45, -0.17, -0.11, -0.2, -0.29, 1.23, -0.53, -0.26, 0.42, 0.42]
+- [0.61, -0.11, 1.31, 0.97, -0.5, -0.5, -1.3, 1.31, -0.52, 0.5, 0.5, 1.3, 0.12, 0.41,
+  -0.09, 0.59, -0.45, -0.17, -0.11, -0.2, -1.1, 1.9, -0.53, -0.26, 0.42, 0.42]
 spheres: []
-starting_config:
-- 0
-- 0
-- 1.31
-- 0.15
-- -0.5
-- -0.5
-- -1.3
-- 1.31
-- -0.15
-- 0.5
-- 0.5
-- 1.3
-- 0
-- 0.2
-- 0
-- 0.15
-- -0.15
-- -0.2
-- 0
-- -0.2
-- 0
-- 0.15
-- -0.15
-- 0.2
-- 0.5
-- 0.5
+starting_config: [0, 0, 1.31, 0.15, -0.5, -0.5, -1.3, 1.31, -0.15, 0.5, 0.5, 1.3,
+  0, 0.2, 0, 0.15, -0.15, -0.2, 0, -0.2, 0, 0.15, -0.15, 0.2, 0.5, 0.5]
 training_states:
-- - 0
-  - 0
-  - 1.31
-  - 0.15
-  - -0.5
-  - -0.5
-  - -1.3
-  - 1.31
-  - -0.15
-  - 0.5
-  - 0.5
-  - 1.3
-  - 0
-  - 0.2
-  - 0
-  - 0.15
-  - -0.15
-  - -0.2
-  - 0
-  - -0.2
-  - 0
-  - 0.15
-  - -0.15
-  - 0.2
-  - 0.5
-  - 0.5
-- - 0
-  - 0
-  - 0.81
-  - 0.15
-  - -0.5
-  - -0.5
-  - -1.3
-  - 1.31
-  - -0.15
-  - 0.5
-  - 0.5
-  - 1.3
-  - 0
-  - 0.2
-  - 0
-  - 0.15
-  - -0.15
-  - -0.2
-  - 0
-  - -0.2
-  - 0
-  - 0.15
-  - -0.15
-  - 0.2
-  - 0.5
-  - 0.5
-- - 0
-  - 0
-  - 0.1
-  - 0.15
-  - -0.5
-  - -0.5
-  - -1.3
-  - 1.31
-  - -0.15
-  - 0.5
-  - 0.5
-  - 1.3
-  - 0
-  - 0.2
-  - 0
-  - 0.15
-  - -0.15
-  - -0.2
-  - 0
-  - -0.2
-  - 0
-  - 0.15
-  - -0.15
-  - 0.2
-  - 0.5
-  - 0.5
-- - 0
-  - 0
-  - -0.43
-  - 0.15
-  - -0.5
-  - -0.5
-  - -1.3
-  - 1.31
-  - -0.15
-  - 0.5
-  - 0.5
-  - 1.3
-  - 0
-  - 0.2
-  - 0
-  - 0.15
-  - -0.15
-  - -0.2
-  - 0
-  - -0.2
-  - 0
-  - 0.15
-  - -0.15
-  - 0.2
-  - 0.5
-  - 0.5
-- - 0
-  - 0
-  - -0.81
-  - 0.15
-  - -0.5
-  - -0.5
-  - -1.3
-  - 1.31
-  - -0.15
-  - 0.5
-  - 0.5
-  - 1.3
-  - 0
-  - 0.2
-  - 0
-  - 0.15
-  - -0.15
-  - -0.2
-  - 0
-  - -0.2
-  - 0
-  - 0.15
-  - -0.15
-  - 0.2
-  - 0.5
-  - 0.5
-- - 0
-  - 0
-  - -0.81
-  - 0.38
-  - -0.5
-  - -0.5
-  - -1.3
-  - 1.31
-  - -0.15
-  - 0.5
-  - 0.5
-  - 1.3
-  - 0
-  - 0.2
-  - 0
-  - 0.15
-  - -0.15
-  - -0.2
-  - 0
-  - -0.2
-  - 0
-  - 0.15
-  - -0.15
-  - 0.2
-  - 0.5
-  - 0.5
-- - 0
-  - 0
-  - -0.81
-  - 0.38
-  - -0.5
-  - -0.5
-  - -1.3
-  - 1.31
-  - -0.15
-  - 0.5
-  - 0.5
-  - 1.3
-  - 0
-  - 0.2
-  - 0
-  - 0.15
-  - -0.15
-  - -0.2
-  - 0
-  - -0.2
-  - 0
-  - 0.15
-  - -0.15
-  - 0.2
-  - 0.5
-  - 0.5
-- - 0
-  - 0
-  - -0.81
-  - 0.38
-  - -0.5
-  - -0.5
-  - -0.01
-  - 1.31
-  - -0.15
-  - 0.5
-  - 0.5
-  - 1.3
-  - 0
-  - 0.2
-  - 0
-  - 0.15
-  - -0.15
-  - -0.2
-  - 0
-  - -0.2
-  - 0
-  - 0.15
-  - -0.15
-  - 0.2
-  - 0.5
-  - 0.5
-- - 0
-  - 0
-  - -0.81
-  - 0.38
-  - -0.5
-  - -0.5
-  - -0.01
-  - 1.31
-  - -0.15
-  - 0.5
-  - 0.5
-  - 1.3
-  - 0
-  - 0.2
-  - 0
-  - 0.15
-  - -0.15
-  - -0.2
-  - 0
-  - -0.2
-  - 0
-  - 0.15
-  - -0.15
-  - 0.2
-  - 0.5
-  - 0.5
-- - 0
-  - 0
-  - -0.81
-  - 0.38
-  - -0.5
-  - -0.5
-  - -0.01
-  - 1.31
-  - -0.71
-  - 0.5
-  - 0.5
-  - 1.3
-  - 0
-  - 0.2
-  - 0
-  - 0.15
-  - -0.15
-  - -0.2
-  - 0
-  - -0.2
-  - 0
-  - 0.15
-  - -0.15
-  - 0.2
-  - 0.5
-  - 0.5
-- - 0
-  - 0
-  - -0.81
-  - 0.38
-  - -0.5
-  - -0.5
-  - -0.01
-  - 1.31
-  - -0.71
-  - 0.5
-  - 0.5
-  - 1.3
-  - 0
-  - 0.2
-  - 0
-  - 0.15
-  - -0.15
-  - -0.2
-  - 0
-  - -0.2
-  - 0
-  - 0.15
-  - -0.15
-  - 0.2
-  - 0.5
-  - 0.5
-- - 0
-  - 0
-  - -0.81
-  - 0.38
-  - -0.5
-  - -0.5
-  - -0.01
-  - -0.19
-  - -0.71
-  - 0.5
-  - 0.5
-  - 1.3
-  - 0
-  - 0.2
-  - 0
-  - 0.15
-  - -0.15
-  - -0.2
-  - 0
-  - -0.2
-  - 0
-  - 0.15
-  - -0.15
-  - 0.2
-  - 0.5
-  - 0.5
-- - 0
-  - 0
-  - -0.81
-  - 0.38
-  - -0.5
-  - -0.5
-  - -0.01
-  - -1.06
-  - -0.55
-  - 0.5
-  - 0.5
-  - 1.3
-  - 0
-  - 0.2
-  - 0
-  - 0.15
-  - -0.15
-  - -0.2
-  - 0
-  - -0.2
-  - 0
-  - 0.15
-  - -0.15
-  - 0.2
-  - 0.5
-  - 0.5
-- - 0
-  - 0
-  - -0.81
-  - 0.38
-  - -0.5
-  - -0.5
-  - -0.01
-  - -1.06
-  - -0.55
-  - 0.37
-  - 0.5
-  - 1.3
-  - 0
-  - 0.2
-  - 0
-  - 0.15
-  - -0.15
-  - -0.2
-  - 0
-  - -0.2
-  - 0
-  - 0.15
-  - -0.15
-  - 0.2
-  - 0.5
-  - 0.5
-- - 0
-  - 0
-  - -0.81
-  - 0.38
-  - -0.5
-  - -0.5
-  - -0.01
-  - -1.06
-  - -0.55
-  - 0.37
-  - 1.47
-  - 1.3
-  - 0
-  - 0.2
-  - 0
-  - 0.15
-  - -0.15
-  - -0.2
-  - 0
-  - -0.2
-  - 0
-  - 0.15
-  - -0.15
-  - 0.2
-  - 0.5
-  - 0.5
-- - 0
-  - 0
-  - -0.81
-  - 0.38
-  - -0.5
-  - -0.5
-  - -0.01
-  - -1.06
-  - -0.55
-  - -0.05
-  - 1.47
-  - 1.3
-  - 0
-  - 0.2
-  - 0
-  - 0.15
-  - -0.15
-  - -0.2
-  - 0
-  - -0.2
-  - 0
-  - 0.15
-  - -0.15
-  - 0.2
-  - 0.5
-  - 0.5
-- - 0
-  - 0
-  - -0.81
-  - 0.07
-  - -0.14
-  - -1.14
-  - -0.01
-  - -1.46
-  - -0.19
-  - -0.04
-  - 0.99
-  - 1.3
-  - 0
-  - 0.2
-  - 0
-  - 0.15
-  - -0.15
-  - -0.2
-  - 0
-  - -0.2
-  - 0
-  - 0.15
-  - -0.15
-  - 0.2
-  - 0.5
-  - 0.5
-- - 0
-  - 0
-  - 1.65
-  - 0.08
-  - -1.82
-  - -0.5
-  - -1.3
-  - 0.23
-  - 0.22
-  - 0.23
-  - 1.21
-  - 1.3
-  - 0
-  - 0.2
-  - 0
-  - 0.15
-  - -0.15
-  - -0.2
-  - 0
-  - -0.2
-  - 0
-  - 0.15
-  - -0.15
-  - 0.2
-  - 0.5
-  - 0.5
-- - 0
-  - 0
-  - 1.65
-  - 0.08
-  - -1.82
-  - -0.5
-  - -1.3
-  - 0.23
-  - 0.22
-  - -0.84
-  - 0.71
-  - 1.3
-  - 0
-  - 0.2
-  - 0
-  - 0.15
-  - -0.15
-  - -0.2
-  - 0
-  - -0.2
-  - 0
-  - 0.15
-  - -0.15
-  - 0.2
-  - 0.5
-  - 0.5
-- - 0
-  - 0
-  - 1.65
-  - 0.08
-  - -1.82
-  - -0.5
-  - -1.3
-  - 0.23
-  - 0.22
-  - -0.84
-  - 0.71
-  - 1.3
-  - 0
-  - 0.2
-  - 0
-  - 0.15
-  - -0.15
-  - -0.2
-  - 0
-  - -0.2
-  - 0
-  - 0.15
-  - -0.15
-  - 0.2
-  - 0.5
-  - 0.5
-- - 0
-  - 0
-  - 2.09
-  - 0.74
-  - -1.06
-  - -0.5
-  - -1.3
-  - 2.09
-  - -0.81
-  - 1.4
-  - 0.5
-  - 1.3
-  - 0
-  - 0.2
-  - 0
-  - 0.15
-  - -0.15
-  - -0.2
-  - 0
-  - -0.2
-  - 0
-  - 0.15
-  - -0.15
-  - 0.2
-  - 0.5
-  - 0.5
-- - 0.61
-  - -0.11
-  - 1.31
-  - 0.15
-  - -0.5
-  - -0.5
-  - -1.3
-  - 1.31
-  - -1.01
-  - 0.5
-  - 0.5
-  - 1.3
-  - 0.12
-  - 0.41
-  - -0.09
-  - 0.59
-  - -0.45
-  - -0.17
-  - -0.11
-  - -0.2
-  - -0.29
-  - 1.23
-  - -0.53
-  - -0.17
-  - 0.42
-  - 0.42
-- - 0.61
-  - -0.11
-  - 1.31
-  - 0.15
-  - -0.5
-  - -0.5
-  - -1.3
-  - 1.31
-  - -1.01
-  - 0.5
-  - 0.5
-  - 1.3
-  - 0.12
-  - 0.41
-  - -0.09
-  - 0.59
-  - -0.45
-  - -0.17
-  - -0.11
-  - -0.2
-  - -0.29
-  - 1.23
-  - -0.53
-  - -0.26
-  - 0.42
-  - 0.42
-- - 0.61
-  - -0.11
-  - 1.31
-  - 0.97
-  - -0.5
-  - -0.5
-  - -1.3
-  - 1.31
-  - -0.52
-  - 0.5
-  - 0.5
-  - 1.3
-  - 0.12
-  - 0.41
-  - -0.09
-  - 0.59
-  - -0.45
-  - -0.17
-  - -0.11
-  - -0.2
-  - -0.29
-  - 1.9
-  - -0.53
-  - -0.26
-  - 0.42
-  - 0.42
-- - 0.61
-  - -0.11
-  - 1.31
-  - 0.97
-  - -0.5
-  - -0.5
-  - -1.3
-  - 1.31
-  - -0.52
-  - 0.5
-  - 0.5
-  - 1.3
-  - 0.12
-  - 0.41
-  - -0.09
-  - 0.59
-  - -0.45
-  - -0.17
-  - -0.11
-  - -0.2
-  - -1.1
-  - 1.9
-  - -0.53
-  - -0.26
-  - 0.42
-  - 0.42
-- - 0.61
-  - -0.11
-  - 1.31
-  - 0.97
-  - -0.5
-  - -0.5
-  - -1.3
-  - 1.31
-  - -0.52
-  - 0.5
-  - 0.5
-  - 1.3
-  - 0.12
-  - 0.41
-  - -0.09
-  - 1.63
-  - -0.45
-  - -0.17
-  - -0.11
-  - -0.2
-  - -1.1
-  - 1.9
-  - -0.53
-  - -0.26
-  - 0.42
-  - 0.42
+- [0, 0, 1.31, 0.15, -0.5, -0.5, -1.3, 1.31, -0.15, 0.5, 0.5, 1.3, 0, 0.2, 0, 0.15,
+  -0.15, -0.2, 0, -0.2, 0, 0.15, -0.15, 0.2, 0.5, 0.5]
+- [0, 0, 0.81, 0.15, -0.5, -0.5, -1.3, 1.31, -0.15, 0.5, 0.5, 1.3, 0, 0.2, 0, 0.15,
+  -0.15, -0.2, 0, -0.2, 0, 0.15, -0.15, 0.2, 0.5, 0.5]
+- [0, 0, 0.1, 0.15, -0.5, -0.5, -1.3, 1.31, -0.15, 0.5, 0.5, 1.3, 0, 0.2, 0, 0.15,
+  -0.15, -0.2, 0, -0.2, 0, 0.15, -0.15, 0.2, 0.5, 0.5]
+- [0, 0, -0.43, 0.15, -0.5, -0.5, -1.3, 1.31, -0.15, 0.5, 0.5, 1.3, 0, 0.2, 0, 0.15,
+  -0.15, -0.2, 0, -0.2, 0, 0.15, -0.15, 0.2, 0.5, 0.5]
+- [0, 0, -0.81, 0.15, -0.5, -0.5, -1.3, 1.31, -0.15, 0.5, 0.5, 1.3, 0, 0.2, 0, 0.15,
+  -0.15, -0.2, 0, -0.2, 0, 0.15, -0.15, 0.2, 0.5, 0.5]
+- [0, 0, -0.81, 0.38, -0.5, -0.5, -1.3, 1.31, -0.15, 0.5, 0.5, 1.3, 0, 0.2, 0, 0.15,
+  -0.15, -0.2, 0, -0.2, 0, 0.15, -0.15, 0.2, 0.5, 0.5]
+- [0, 0, -0.81, 0.38, -0.5, -0.5, -1.3, 1.31, -0.15, 0.5, 0.5, 1.3, 0, 0.2, 0, 0.15,
+  -0.15, -0.2, 0, -0.2, 0, 0.15, -0.15, 0.2, 0.5, 0.5]
+- [0, 0, -0.81, 0.38, -0.5, -0.5, -0.01, 1.31, -0.15, 0.5, 0.5, 1.3, 0, 0.2, 0, 0.15,
+  -0.15, -0.2, 0, -0.2, 0, 0.15, -0.15, 0.2, 0.5, 0.5]
+- [0, 0, -0.81, 0.38, -0.5, -0.5, -0.01, 1.31, -0.15, 0.5, 0.5, 1.3, 0, 0.2, 0, 0.15,
+  -0.15, -0.2, 0, -0.2, 0, 0.15, -0.15, 0.2, 0.5, 0.5]
+- [0, 0, -0.81, 0.38, -0.5, -0.5, -0.01, 1.31, -0.71, 0.5, 0.5, 1.3, 0, 0.2, 0, 0.15,
+  -0.15, -0.2, 0, -0.2, 0, 0.15, -0.15, 0.2, 0.5, 0.5]
+- [0, 0, -0.81, 0.38, -0.5, -0.5, -0.01, 1.31, -0.71, 0.5, 0.5, 1.3, 0, 0.2, 0, 0.15,
+  -0.15, -0.2, 0, -0.2, 0, 0.15, -0.15, 0.2, 0.5, 0.5]
+- [0, 0, -0.81, 0.38, -0.5, -0.5, -0.01, -0.19, -0.71, 0.5, 0.5, 1.3, 0, 0.2, 0, 0.15,
+  -0.15, -0.2, 0, -0.2, 0, 0.15, -0.15, 0.2, 0.5, 0.5]
+- [0, 0, -0.81, 0.38, -0.5, -0.5, -0.01, -1.06, -0.55, 0.5, 0.5, 1.3, 0, 0.2, 0, 0.15,
+  -0.15, -0.2, 0, -0.2, 0, 0.15, -0.15, 0.2, 0.5, 0.5]
+- [0, 0, -0.81, 0.38, -0.5, -0.5, -0.01, -1.06, -0.55, 0.37, 0.5, 1.3, 0, 0.2, 0,
+  0.15, -0.15, -0.2, 0, -0.2, 0, 0.15, -0.15, 0.2, 0.5, 0.5]
+- [0, 0, -0.81, 0.38, -0.5, -0.5, -0.01, -1.06, -0.55, 0.37, 1.47, 1.3, 0, 0.2, 0,
+  0.15, -0.15, -0.2, 0, -0.2, 0, 0.15, -0.15, 0.2, 0.5, 0.5]
+- [0, 0, -0.81, 0.38, -0.5, -0.5, -0.01, -1.06, -0.55, -0.05, 1.47, 1.3, 0, 0.2, 0,
+  0.15, -0.15, -0.2, 0, -0.2, 0, 0.15, -0.15, 0.2, 0.5, 0.5]
+- [0, 0, -0.81, 0.07, -0.14, -1.14, -0.01, -1.46, -0.19, -0.04, 0.99, 1.3, 0, 0.2,
+  0, 0.15, -0.15, -0.2, 0, -0.2, 0, 0.15, -0.15, 0.2, 0.5, 0.5]
+- [0, 0, 1.65, 0.08, -1.82, -0.5, -1.3, 0.23, 0.22, 0.23, 1.21, 1.3, 0, 0.2, 0, 0.15,
+  -0.15, -0.2, 0, -0.2, 0, 0.15, -0.15, 0.2, 0.5, 0.5]
+- [0, 0, 1.65, 0.08, -1.82, -0.5, -1.3, 0.23, 0.22, -0.84, 0.71, 1.3, 0, 0.2, 0, 0.15,
+  -0.15, -0.2, 0, -0.2, 0, 0.15, -0.15, 0.2, 0.5, 0.5]
+- [0, 0, 1.65, 0.08, -1.82, -0.5, -1.3, 0.23, 0.22, -0.84, 0.71, 1.3, 0, 0.2, 0, 0.15,
+  -0.15, -0.2, 0, -0.2, 0, 0.15, -0.15, 0.2, 0.5, 0.5]
+- [0, 0, 2.09, 0.74, -1.06, -0.5, -1.3, 2.09, -0.81, 1.4, 0.5, 1.3, 0, 0.2, 0, 0.15,
+  -0.15, -0.2, 0, -0.2, 0, 0.15, -0.15, 0.2, 0.5, 0.5]
+- [0.61, -0.11, 1.31, 0.15, -0.5, -0.5, -1.3, 1.31, -1.01, 0.5, 0.5, 1.3, 0.12, 0.41,
+  -0.09, 0.59, -0.45, -0.17, -0.11, -0.2, -0.29, 1.23, -0.53, -0.17, 0.42, 0.42]
+- [0.61, -0.11, 1.31, 0.15, -0.5, -0.5, -1.3, 1.31, -1.01, 0.5, 0.5, 1.3, 0.12, 0.41,
+  -0.09, 0.59, -0.45, -0.17, -0.11, -0.2, -0.29, 1.23, -0.53, -0.26, 0.42, 0.42]
+- [0.61, -0.11, 1.31, 0.97, -0.5, -0.5, -1.3, 1.31, -0.52, 0.5, 0.5, 1.3, 0.12, 0.41,
+  -0.09, 0.59, -0.45, -0.17, -0.11, -0.2, -0.29, 1.9, -0.53, -0.26, 0.42, 0.42]
+- [0.61, -0.11, 1.31, 0.97, -0.5, -0.5, -1.3, 1.31, -0.52, 0.5, 0.5, 1.3, 0.12, 0.41,
+  -0.09, 0.59, -0.45, -0.17, -0.11, -0.2, -1.1, 1.9, -0.53, -0.26, 0.42, 0.42]
+- [0.61, -0.11, 1.31, 0.97, -0.5, -0.5, -1.3, 1.31, -0.52, 0.5, 0.5, 1.3, 0.12, 0.41,
+  -0.09, 1.63, -0.45, -0.17, -0.11, -0.2, -1.1, 1.9, -0.53, -0.26, 0.42, 0.42]
 urdf: "<?xml version=\"1.0\" ?>\n<!-- ===================================================================================\
   \ -->\n<!-- |    This document was autogenerated by xacro from nao_robot.xacro \
   \               | -->\n<!-- |    EDITING THIS FILE BY HAND IS NOT RECOMMENDED  \
@@ -3084,30 +1424,6 @@ urdf: "<?xml version=\"1.0\" ?>\n<!-- ==========================================
   \ -->\n      <hardwareInterface>PositionJointInterface</hardwareInterface>\n   \
   \   <mechanicalReduction>201.3</mechanicalReduction>\n    </actuator>\n  </transmission>\n\
   </robot>\n"
-velocity_limits:
-- 8.26797
-- 7.19407
-- 8.26797
-- 7.19407
-- 8.26797
-- 7.19407
-- 24.6229
-- 8.26797
-- 7.19407
-- 8.26797
-- 7.19407
-- 24.6229
-- 4.16174
-- 4.16174
-- 6.40239
-- 6.40239
-- 6.40239
-- 4.16174
-- 4.16174
-- 4.16174
-- 6.40239
-- 6.40239
-- 6.40239
-- 4.16174
-- 8.33
-- 8.33
+velocity_limits: [8.26797, 7.19407, 8.26797, 7.19407, 8.26797, 7.19407, 24.6229, 8.26797,
+  7.19407, 8.26797, 7.19407, 24.6229, 4.16174, 4.16174, 6.40239, 6.40239, 6.40239,
+  4.16174, 4.16174, 4.16174, 6.40239, 6.40239, 6.40239, 4.16174, 8.33, 8.33]
