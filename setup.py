@@ -54,7 +54,6 @@ setup(
     scripts=['lively_ik/Node.jl'],
     entry_points={
         'console_scripts': [
-            'manager = lively_ik.manager:main',
             'visualize = lively_ik.visualize:main',
             'control = lively_ik.control:main',
             'param = lively_ik.param:main',

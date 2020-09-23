@@ -182,7 +182,7 @@ objectives:
   index: 1
   scale: .1
   type: rotational_noise
-  weight: 20
+  weight: 2
 - gradient: forward_ad
   index: 2
   type: position

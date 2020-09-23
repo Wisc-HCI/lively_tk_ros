@@ -26,3 +26,6 @@ class App(object):
 
     def error(self,message):
         self.node.get_logger().error(message)
+
+    def handle_goal_update(self,request,response):
+        return response

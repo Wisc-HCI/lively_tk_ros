@@ -6,8 +6,6 @@ from lively_ik.utils.urdf_load import urdf_load_from_string
 from lively_ik.spacetime.robot import Robot
 from lively_ik import BASE, SRC
 import rclpy
-from rcl_interfaces.srv import SetParameters
-from rcl_interfaces.msg import Parameter, ParameterValue
 from sensor_msgs.msg import JointState
 from tf2_msgs.msg import TFMessage
 from std_msgs.msg import Header
@@ -24,11 +22,8 @@ class ConfigCreator(App):
 
     def __init__(self, node):
         super(ConfigCreator,self).__init__(node,'Config Creator','config_creator')
-        self.js_pub = self.node.create_publisher(JointState,'/joint_states',10)
-        self.tf_pub = self.node.create_publisher(TFMessage,'tf_static',10)
         self.js_timer = self.node.create_timer(0.05,self.publish_joint_states)
         self.tf_timer = self.node.create_timer(1,self.publish_tf)
-        self.robot_description_client = self.node.create_client(SetParameters, '/robot_state_publisher/set_parameters')
         self.robot_setup = False
         self.is_preprocessing = False
         self.preprocessing_steps = ['write_yaml','julia_nn','julia_params','python']
@@ -132,7 +127,7 @@ class ConfigCreator(App):
         if self.robot and self.robot_setup and len(self.joint_ordering) == len(self.displayed_state):
             js_msg = JointState(name=self.joint_ordering,position=self.displayed_state)
             js_msg.header.stamp = self.node.get_clock().now().to_msg()
-            self.js_pub.publish(js_msg)
+            self.node.js_pub.publish(js_msg)
 
     def publish_tf(self):
         tf1 = TransformStamped(header=Header(stamp=self.node.get_clock().now().to_msg(),
@@ -147,7 +142,7 @@ class ConfigCreator(App):
                                                    rotation=Quaternion(w=1.0,x=0.0,y=0.0,z=0.0)))
 
         tf_msg = TFMessage(transforms=[tf1,tf2])
-        self.tf_pub.publish(tf_msg)
+        self.node.tf_pub.publish(tf_msg)
 
     def preprocess_cb(self,key,progress):
         p = round(progress)
@@ -159,7 +154,7 @@ class ConfigCreator(App):
     def write_config(self, cb):
         cb(0.0)
         with open(SRC+'/config/info_files/'+self.robot_name+'.yaml','w') as src_save:
-            yaml.dump(self.config,src_save)
+            yaml.dump(self.config,src_save,default_flow_style=None)
         cb(100.0)
 
     def preprocess(self):
@@ -343,7 +338,6 @@ class ConfigCreator(App):
 
         # make robot
         self.robot = Robot(arms, self.joint_names, self.joint_ordering, extra_joints=self.extra_joints)
-        self.log(str(self.joint_limits))
         self.starting_config = [(limit[0]+limit[1])/2.0 for limit in self.joint_limits]
         self.displayed_state = self.starting_config
 
@@ -395,7 +389,7 @@ class ConfigCreator(App):
         self.joint_types = joint_types
 
         # Setup so the robot appears in RVIZ
-        self.robot_setup = self.update_robot_description()
+        self.robot_setup = self.node.update_robot_description(self.urdf)
 
 
     @property
@@ -435,14 +429,6 @@ class ConfigCreator(App):
             return True
         else:
             return True
-
-    def update_robot_description(self):
-        request = SetParameters.Request()
-        request.parameters = [Parameter(name='robot_description',value=ParameterValue(type=4,string_value=self.urdf))]
-        future = self.robot_description_client.call_async(request)
-        rclpy.spin_until_future_complete(self.node, future)
-        response = future.result()
-        return response.results[0].successful
 
     @property
     def extra_joints(self):

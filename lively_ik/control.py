@@ -27,7 +27,7 @@ class ControllerNode(Node):
         self.ims = InteractiveMarkerServer(self,'control')
         self.goal_pub = self.create_publisher(LivelyGoals,'robot_goals',5)
         self.temp_js_pub = self.create_publisher(JointState,'joint_states',5)
-        self.rik_container = RelaxedIKContainer(self.info,self)
+        self.rik_container = RelaxedIKContainer(self.info)
         ee_positions = self.rik_container.robot.get_ee_positions(self.info['starting_config'])
         ee_rotations = self.rik_container.robot.get_ee_rotations(self.info['starting_config'])
         self.marker_lookup = []

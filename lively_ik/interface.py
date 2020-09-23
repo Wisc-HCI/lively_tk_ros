@@ -6,7 +6,12 @@ from threading import Thread
 import rclpy
 from rclpy.node import Node
 
+from rcl_interfaces.srv import SetParameters
+from rcl_interfaces.msg import Parameter, ParameterValue
 from sensor_msgs.msg import JointState
+from tf2_msgs.msg import TFMessage
+from wisc_msgs.msg import GoalUpdate
+from wisc_msgs.srv import UpdateGoals
 
 from flask import Flask, request, jsonify, make_response
 from flask_socketio import SocketIO, emit, Namespace
@@ -79,22 +84,35 @@ class InterfaceNode(Node):
         self.namespace = InterfaceNamespace(self)
         self.socketio = SocketIO(self.app, cors_allowed_origins="*")
         self.socketio.on_namespace(self.namespace)
-        #self.process_timer = self.create_timer(.1,self.namespace.tick)
         self.ros_thread = Thread(target=self.process,daemon=True)
         self.ros_thread.start()
-        # self.publish_initial()
+
+        # Services and Topics
+        self.robot_description_client = self.create_client(SetParameters, '/robot_state_publisher/set_parameters')
+        self.js_pub = self.create_publisher(JointState,'/joint_states',10)
+        self.tf_pub = self.create_publisher(TFMessage,'tf_static',10)
+        self.goal_update_service = self.create_service(UpdateGoals,'goal_update',self.handle_goal_update)
         self.get_logger().info('Initialized!')
+
+    def handle_goal_update(request,response):
+        if self.namespace.active_app:
+            return self.apps[self.active_app].handle_goal_update(request,response)
+        else:
+            response.success = False
+            return response
+
+    def update_robot_description(self,urdf):
+        request = SetParameters.Request()
+        request.parameters = [Parameter(name='robot_description',value=ParameterValue(type=4,string_value=urdf))]
+        future = self.robot_description_client.call_async(request)
+        rclpy.spin_until_future_complete(self, future)
+        response = future.result()
+        return response.results[0].successful
 
     def process(self):
         while rclpy.ok():
             rclpy.spin_once(self,timeout_sec=0.01)
             eventlet.greenthread.sleep()
-
-    # def publish_initial(self):
-    #     js_pub = self.create_publisher(JointState,'/joint_states',10)
-    #     js_msg = JointState(name=['default_link'],position=[0])
-    #     js_msg.header.stamp = self.node.get_clock().now().to_msg()
-    #     js_pub.publish(js_msg)
 
 def main():
     rclpy.init(args=None)

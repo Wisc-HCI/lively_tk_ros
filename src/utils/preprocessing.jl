@@ -95,15 +95,15 @@ function get_batched_data(ins, outs, batch_size)
     return batched_data
 end
 
-function preprocess_phase1(info_yaml, rcl_node, cb)
+function preprocess_phase1(info_yaml, cb)
     collision_transfer = pyimport("lively_ik.utils.collision_transfer")
     lively_ik = pyimport("lively_ik")
     info = YAML.load(info_yaml)
     cb(0)
 
 
-    relaxedIK = LivelyIK.get_standard(info, rcl_node; preconfigured=true)
-    cv = collision_transfer.CollisionVars(info, rcl_node)
+    relaxedIK = LivelyIK.get_standard(info; preconfigured=true)
+    cv = collision_transfer.CollisionVars(info)
 
     num_dof = relaxedIK.relaxedIK_vars.robot.num_dof
     state_to_joint_pts_closure = (x) -> state_to_joint_pts(x, relaxedIK.relaxedIK_vars)
@@ -282,14 +282,14 @@ function preprocess_phase1(info_yaml, rcl_node, cb)
 
 end
 
-function preprocess_phase2(info_yaml, rcl_node, cb)
+function preprocess_phase2(info_yaml, cb)
     collision_transfer = pyimport("lively_ik.utils.collision_transfer")
     lively_ik = pyimport("lively_ik")
     info = YAML.load(info_yaml)
     cb(0)
 
-    relaxedIK = LivelyIK.get_standard(info, rcl_node; preconfigured=true)
-    cv = collision_transfer.CollisionVars(info, rcl_node)
+    relaxedIK = LivelyIK.get_standard(info; preconfigured=true)
+    cv = collision_transfer.CollisionVars(info)
 
     w1 = BSON.load(lively_ik.SRC * "/config/collision_nn/" * info["robot_name"] * "_1")[:w1]
     model1 = (x) -> predict(w1, x)[1]

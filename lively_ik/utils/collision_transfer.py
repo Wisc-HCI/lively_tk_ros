@@ -7,8 +7,8 @@ import sys
 
 
 class CollisionVars:
-    def __init__(self, info, rcl_node):
-        self.vars = RelaxedIKContainer(info,rcl_node,config_override=False, pre_config=True)
+    def __init__(self, info):
+        self.vars = RelaxedIKContainer(info,config_override=False, pre_config=True)
 
 
 def get_score(x, CollisionVars):
@@ -17,13 +17,13 @@ def get_score(x, CollisionVars):
 
 if __name__ == "__main__":
     file = sys.argv[1]
-    import rclpy
-    from rclpy.node import Node
-    rclpy.init()
-    node = Node('lively_ik')
+    # import rclpy
+    # from rclpy.node import Node
+    # rclpy.init()
+    # node = Node('lively_ik')
 
     with open(file,'r') as data:
         info = yaml.safe_load(data)
 
-    cv = CollisionVars(info, node)
+    cv = CollisionVars(info)
     print(get_score(info["starting_config"],cv))

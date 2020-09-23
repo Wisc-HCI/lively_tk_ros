@@ -3,14 +3,14 @@ import numpy as np
 from .colors import bcolors as bc
 from visualization_msgs.msg import Marker
 from .transformations import quaternion_from_euler, quaternion_from_matrix, quaternion_multiply
-import rclpy
-from rclpy.node import Node
+# import rclpy
+# from rclpy.node import Node
 
 
 class CollisionObjectContainer(object):
-    def __init__(self, info, rcl_node):
-        self.rcl_node = rcl_node
-        self.collision_object_publisher = self.rcl_node.create_publisher(Marker,'visualization_marker',10)
+    def __init__(self, info):
+        # self.rcl_node = rcl_node
+        # self.collision_object_publisher = self.rcl_node.create_publisher(Marker,'visualization_marker',10)
         self.collision_objects = []
 
         keys = info.keys()
@@ -43,11 +43,11 @@ class CollisionObjectContainer(object):
         else:
             raise Exception('Must specify at least one sample state in collision yaml file!')
 
-        self.set_rviz_ids()
+        # self.set_rviz_ids()
 
-    def set_rviz_ids(self):
-        for i,c in enumerate(self.collision_objects):
-            c.marker.id = i
+    # def set_rviz_ids(self):
+    #     for i,c in enumerate(self.collision_objects):
+    #         c.marker.id = i
 
     def get_min_distance(self, a, b):
         obja = self.collision_objects[a].obj
@@ -83,7 +83,7 @@ class CollisionObjectContainer(object):
                     cylinder.type = 'robot_link'
                     self.collision_objects.append(cylinder)
 
-        self.set_rviz_ids()
+        # self.set_rviz_ids()
 
     def update_all_transforms(self, all_frames):
 
@@ -146,10 +146,10 @@ class CollisionObjectContainer(object):
 
             c.update_transform(final_pos, final_quat)
 
-    def draw_all(self):
-        for c in self.collision_objects:
-            if c.__class__ == Collision_Mesh: continue
-            else: c.draw_rviz(self.publisher)
+    # def draw_all(self):
+    #     for c in self.collision_objects:
+    #         if c.__class__ == Collision_Mesh: continue
+    #         else: c.draw_rviz(self.publisher)
 
     def __str__(self): return str([str(c.name) for c in self.collision_objects])
 
@@ -165,7 +165,7 @@ class Collision_Object:
         self.params = collision_dict['parameters']
         self.id = 0
         self.type = ''
-        self.make_rviz_marker_super()
+        # self.make_rviz_marker_super()
 
     @classmethod
     def init_with_arguments(self, name, coordinate_frame, rotation, translation, params):
@@ -177,33 +177,33 @@ class Collision_Object:
             translation = translation[0]
         self.t = fcl.Transform(rotation, translation)
         self.obj.setTransform(self.t)
-        self.marker.pose.position.x = translation[0]
-        self.marker.pose.position.y = translation[1]
-        self.marker.pose.position.z = translation[2]
-        self.marker.pose.orientation.w = rotation[0]
-        self.marker.pose.orientation.x = rotation[1]
-        self.marker.pose.orientation.y = rotation[2]
-        self.marker.pose.orientation.z = rotation[3]
-
-    def update_rviz_color(self, r, g, b, a):
-        self.marker.color.r = float(r)
-        self.marker.color.g = float(g)
-        self.marker.color.b = float(b)
-        self.marker.color.a = float(a)
-
-    def make_rviz_marker_super(self):
-        self.marker = Marker()
-        self.marker.header.frame_id = 'common_world'
-        self.marker.id = self.id
-        self.marker.color.a = 0.4
-        self.marker.color.g = 1.0
-        self.marker.color.b = 0.7
-        self.marker.text = self.name
-
-    def make_rviz_marker(self): pass
-
-    def draw_rviz(self,publisher):
-        publisher.publish(self.marker)
+        # self.marker.pose.position.x = translation[0]
+        # self.marker.pose.position.y = translation[1]
+        # self.marker.pose.position.z = translation[2]
+        # self.marker.pose.orientation.w = rotation[0]
+        # self.marker.pose.orientation.x = rotation[1]
+        # self.marker.pose.orientation.y = rotation[2]
+        # self.marker.pose.orientation.z = rotation[3]
+    #
+    # def update_rviz_color(self, r, g, b, a):
+    #     self.marker.color.r = float(r)
+    #     self.marker.color.g = float(g)
+    #     self.marker.color.b = float(b)
+    #     self.marker.color.a = float(a)
+    #
+    # def make_rviz_marker_super(self):
+    #     self.marker = Marker()
+    #     self.marker.header.frame_id = 'common_world'
+    #     self.marker.id = self.id
+    #     self.marker.color.a = 0.4
+    #     self.marker.color.g = 1.0
+    #     self.marker.color.b = 0.7
+    #     self.marker.text = self.name
+    #
+    # def make_rviz_marker(self): pass
+    #
+    # def draw_rviz(self,publisher):
+    #     publisher.publish(self.marker)
 
 
 class Collision_Box(Collision_Object):
@@ -217,13 +217,13 @@ class Collision_Box(Collision_Object):
         self.g = fcl.Box(self.x, self.y, self.z)
         self.t = fcl.Transform()
         self.obj = fcl.CollisionObject(self.g, self.t)
-        self.make_rviz_marker()
+        # self.make_rviz_marker()
 
-    def make_rviz_marker(self):
-        self.marker.type = self.marker.CUBE
-        self.marker.scale.x = float(self.x)
-        self.marker.scale.y = float(self.y)
-        self.marker.scale.z = float(self.z)
+    # def make_rviz_marker(self):
+    #     self.marker.type = self.marker.CUBE
+    #     self.marker.scale.x = float(self.x)
+    #     self.marker.scale.y = float(self.y)
+    #     self.marker.scale.z = float(self.z)
 
 class Collision_Sphere(Collision_Object):
     def __init__(self, collision_dict):
@@ -235,13 +235,13 @@ class Collision_Sphere(Collision_Object):
         self.g = fcl.Sphere(self.r)
         self.t = fcl.Transform()
         self.obj = fcl.CollisionObject(self.g, self.t)
-        self.make_rviz_marker()
+        # self.make_rviz_marker()
 
-    def make_rviz_marker(self):
-        self.marker.type = self.marker.SPHERE
-        self.marker.scale.x = float(self.r*2)
-        self.marker.scale.y = float(self.r*2)
-        self.marker.scale.z = float(self.r*2)
+    # def make_rviz_marker(self):
+    #     self.marker.type = self.marker.SPHERE
+    #     self.marker.scale.x = float(self.r*2)
+    #     self.marker.scale.y = float(self.r*2)
+    #     self.marker.scale.z = float(self.r*2)
 
 class Collision_Ellipsoid(Collision_Object):
     def __init__(self, collision_dict):
@@ -253,13 +253,13 @@ class Collision_Ellipsoid(Collision_Object):
         self.g = fcl.Ellipsoid(self.x, self.y, self.z)
         self.t = fcl.Transform()
         self.obj = fcl.CollisionObject(self.g, self.t)
-        self.make_rviz_marker()
+        # self.make_rviz_marker()
 
-    def make_rviz_marker(self):
-        self.marker.type = self.marker.SPHERE
-        self.marker.scale.x = float(self.x*2)
-        self.marker.scale.y = float(self.y*2)
-        self.marker.scale.z = float(self.z*2)
+    # def make_rviz_marker(self):
+    #     self.marker.type = self.marker.SPHERE
+    #     self.marker.scale.x = float(self.x*2)
+    #     self.marker.scale.y = float(self.y*2)
+    #     self.marker.scale.z = float(self.z*2)
 
 
 class Collision_Capsule(Collision_Object):
@@ -272,13 +272,13 @@ class Collision_Capsule(Collision_Object):
         self.g = fcl.Capsule(self.r, self.lz)
         self.t = fcl.Transform()
         self.obj = fcl.CollisionObject(self.g, self.t)
-        self.make_rviz_marker()
+        # self.make_rviz_marker()
 
-    def make_rviz_marker(self):
-        self.marker.type = self.marker.CYLINDER
-        self.marker.scale.x = float(self.r*2)
-        self.marker.scale.y = float(self.r*2)
-        self.marker.scale.z = float(self.lz)
+    # def make_rviz_marker(self):
+    #     self.marker.type = self.marker.CYLINDER
+    #     self.marker.scale.x = float(self.r*2)
+    #     self.marker.scale.y = float(self.r*2)
+    #     self.marker.scale.z = float(self.lz)
 
 
 class Collision_Cone(Collision_Object):
@@ -291,13 +291,13 @@ class Collision_Cone(Collision_Object):
         self.g = fcl.Capsule(self.r, self.lz)
         self.t = fcl.Transform()
         self.obj = fcl.CollisionObject(self.g, self.t)
-        self.make_rviz_marker()
+        # self.make_rviz_marker()
 
-    def make_rviz_marker(self):
-        self.marker.type = self.marker.CYLINDER
-        self.marker.scale.x = float(self.r*2)
-        self.marker.scale.y = float(self.r*2)
-        self.marker.scale.z = float(self.lz)
+    # def make_rviz_marker(self):
+    #     self.marker.type = self.marker.CYLINDER
+    #     self.marker.scale.x = float(self.r*2)
+    #     self.marker.scale.y = float(self.r*2)
+    #     self.marker.scale.z = float(self.lz)
 
 
 class Collision_Cylinder(Collision_Object):
@@ -310,13 +310,13 @@ class Collision_Cylinder(Collision_Object):
         self.g = fcl.Cylinder(self.r, self.lz)
         self.t = fcl.Transform()
         self.obj = fcl.CollisionObject(self.g, self.t)
-        self.make_rviz_marker()
+        # self.make_rviz_marker()
 
-    def make_rviz_marker(self):
-        self.marker.type = self.marker.CYLINDER
-        self.marker.scale.x = float(self.r*2)
-        self.marker.scale.y = float(self.r*2)
-        self.marker.scale.z = float(self.lz)
+    # def make_rviz_marker(self):
+    #     self.marker.type = self.marker.CYLINDER
+    #     self.marker.scale.x = float(self.r*2)
+    #     self.marker.scale.y = float(self.r*2)
+    #     self.marker.scale.z = float(self.lz)
 
 
 class Collision_Mesh(Collision_Object):
@@ -337,10 +337,10 @@ class Collision_Mesh(Collision_Object):
         self.g.endModel()
         self.t = fcl.Transform()
         self.obj = fcl.CollisionObject(self.g, self.t)
-        self.make_rviz_marker()
+        # self.make_rviz_marker()
 
-    def make_rviz_marker(self):
-        print(bc.WARNING + 'WARNING: Mesh collision object not supported in rviz visualization' + bc.ENDC)
-        self.marker.scale.x = 0.0001
-        self.marker.scale.y = 0.0001
-        self.marker.scale.z = 0.0001
+    # def make_rviz_marker(self):
+    #     print(bc.WARNING + 'WARNING: Mesh collision object not supported in rviz visualization' + bc.ENDC)
+    #     self.marker.scale.x = 0.0001
+    #     self.marker.scale.y = 0.0001
+    #     self.marker.scale.z = 0.0001

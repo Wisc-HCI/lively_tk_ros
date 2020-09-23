@@ -101,6 +101,14 @@ class Objectives extends React.Component {
     this.props.updateObjectives(objectives)
   }
 
+  onChangeDelta = (futureDelta,idx) => {
+    let objective = this.props.objectives[idx];
+    objective.delta = futureDelta;
+    let objectives = [...this.props.objectives];
+    objectives[idx] = objective;
+    this.props.updateObjectives(objectives)
+  }
+
   getObjective = (objective,idx) => {
     return (
       <Card.Grid style={{width:'100%'}}>
@@ -125,7 +133,7 @@ class Objectives extends React.Component {
               <Option value="joint_match">Match Joints</Option>
             </Select>
           </Descriptions.Item>
-          {objective.index ? (
+          {objective.index != null ? (
             <Descriptions.Item label="Index">
               {(objective.type === 'dc' || objective.type === 'dc_noise' || objective.type === 'dc_noise') ? (
                 <Select style={{width:250}} onChange={(e)=>this.onChangeIndex(e,idx)} value={objective.index}>
@@ -144,7 +152,7 @@ class Objectives extends React.Component {
           ) : (
             <></>
           )}
-          {objective.index_1 ? (
+          {objective.index_1 != null ? (
             <Descriptions.Item label="Index 1">
               {(objective.type === 'joint_match') ? (
                 <Select style={{width:200}} onChange={(e)=>this.onChangeIndexOne(e,idx)} value={objective.index_1}>
@@ -163,7 +171,7 @@ class Objectives extends React.Component {
           ) : (
             <></>
           )}
-          {objective.index_2 ? (
+          {objective.index_2 != null ? (
             <Descriptions.Item label="Index 2">
               {(objective.type === 'joint_match') ? (
                 <Select style={{width:200}} onChange={(e)=>this.onChangeIndexTwo(e,idx)} value={objective.index_2}>
@@ -198,16 +206,23 @@ class Objectives extends React.Component {
               <Option value='finite_diff'>Finite Diff</Option>
             </Select>
           </Descriptions.Item>
-          {objective.frequency ? (
+          {objective.frequency != null ? (
             <Descriptions.Item label="Frequency">
               <InputNumber value={objective.frequency} min={0} max={50} step={0.1} onChange={(e)=>this.onChangeFrequency(e,idx)} />
             </Descriptions.Item>
           ) : (
             <></>
           )}
-          {objective.scale ? (
+          {objective.scale != null ? (
             <Descriptions.Item label="Scale">
               <InputNumber value={objective.scale} min={0} max={50} step={0.1} onChange={(e)=>this.onChangeScale(e,idx)} />
+            </Descriptions.Item>
+          ) : (
+            <></>
+          )}
+          {objective.delta != null ? (
+            <Descriptions.Item label="Delta">
+              <InputNumber value={objective.delta} min={-25} max={25} step={0.1} onChange={(e)=>this.onChangeDelta(e,idx)} />
             </Descriptions.Item>
           ) : (
             <></>

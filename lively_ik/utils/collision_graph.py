@@ -4,8 +4,8 @@ import math
 from .collision_utils import CollisionObjectContainer
 
 class CollisionGraph:
-    def __init__(self, info, rcl_node, robot, link_exclusion_list = []):
-        self.c = CollisionObjectContainer(info, rcl_node)
+    def __init__(self, info, robot, link_exclusion_list = []):
+        self.c = CollisionObjectContainer(info)
         self.c.add_collision_objects_from_robot(robot, link_exclusion_list)
         self.robot = robot
         self.sample_states = self.c.sample_states
@@ -41,22 +41,22 @@ class CollisionGraph:
             if not c == 0.0:
                 val = self.b_value * (math.e ** ((-(dis) ** 4.0) / (2.0 * c ** 2)))
                 if val > self.b_value / 2.0:
-                    self.c.collision_objects[l1].update_rviz_color(1.0,0,0,0.4)
-                    self.c.collision_objects[l2].update_rviz_color(1.0,0,0,0.4)
+                    # self.c.collision_objects[l1].update_rviz_color(1.0,0,0,0.4)
+                    # self.c.collision_objects[l2].update_rviz_color(1.0,0,0,0.4)
                     self.collision_color_array[l1] = 2
                     self.collision_color_array[l2] = 2
                 elif val > self.b_value / 2.0 and val < self.b_value:
                     if not self.collision_color_array[l1] > 1:
-                        self.c.collision_objects[l1].update_rviz_color(1.0,1.0,0.0,0.4)
+                        # self.c.collision_objects[l1].update_rviz_color(1.0,1.0,0.0,0.4)
                         self.collision_color_array[l1] = 1
                     if not self.collision_color_array[l2] > 1:
-                        self.c.collision_objects[l2].update_rviz_color(1.0,1.0,0.0,0.4)
+                        # self.c.collision_objects[l2].update_rviz_color(1.0,1.0,0.0,0.4)
                         self.collision_color_array[l2] = 1
-                else:
-                    if not self.collision_color_array[l1] > 0:
-                        self.c.collision_objects[l1].update_rviz_color(0,1.0,0.7,0.4)
-                    if not self.collision_color_array[l2] > 0:
-                        self.c.collision_objects[l2].update_rviz_color(0,1.0,0.7,0.4)
+                # else:
+                #     if not self.collision_color_array[l1] > 0:
+                #         self.c.collision_objects[l1].update_rviz_color(0,1.0,0.7,0.4)
+                #     if not self.collision_color_array[l2] > 0:
+                #         self.c.collision_objects[l2].update_rviz_color(0,1.0,0.7,0.4)
 
                 sum += val
 

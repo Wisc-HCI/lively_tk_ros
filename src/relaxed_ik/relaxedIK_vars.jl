@@ -33,7 +33,7 @@ mutable struct RelaxedIK_vars
     additional_vars
 end
 
-function RelaxedIK_vars(info, rcl_node, objectives, grad_types, weight_priors, inequality_constraints, ineq_grad_types, equality_constraints, eq_grad_types; position_mode = "relative", rotation_mode = "relative", preconfigured=false)
+function RelaxedIK_vars(info, objectives, grad_types, weight_priors, inequality_constraints, ineq_grad_types, equality_constraints, eq_grad_types; position_mode = "relative", rotation_mode = "relative", preconfigured=false)
     lively_ik = pyimport("lively_ik")
     collision_transfer = pyimport("lively_ik.utils.collision_transfer")
 
@@ -159,7 +159,7 @@ function RelaxedIK_vars(info, rcl_node, objectives, grad_types, weight_priors, i
             end
         end
 
-        cv = collision_transfer.CollisionVars(info,rcl_node)
+        cv = collision_transfer.CollisionVars(info)
 
         function in_collision_groundtruth(cv, x)
             score = collision_transfer.get_score(x, cv)
