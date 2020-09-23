@@ -169,13 +169,13 @@ class ConfigCreator(App):
                         if not os.path.exists(BASE+'/config/info_files/'+self.robot_name+'.yaml'):
                             os.symlink(SRC+'/config/info_files/'+self.robot_name+'.yaml',BASE+'/config/info_files/'+self.robot_name+'.yaml')
                     elif step == 'julia_nn':
-                        LivelyIK.preprocess_phase1(self.yaml,self.node,lambda progress: self.preprocess_cb(step,progress))
+                        LivelyIK.preprocess_phase1(self.yaml,lambda progress: self.preprocess_cb(step,progress))
                         # Create a symlink between LivelyIK SRC and BASE
                         for nn_suffix in ['_1','_2','_3']:
                             if not os.path.exists(BASE+"/config/collision_nn/"+self.robot_name+nn_suffix):
                                 os.symlink(SRC+"/config/collision_nn/"+self.robot_name+nn_suffix,BASE+"/config/collision_nn/"+self.robot_name+nn_suffix)
                     elif step == 'julia_params':
-                        LivelyIK.preprocess_phase2(self.yaml,self.node,lambda progress: self.preprocess_cb(step,progress))
+                        LivelyIK.preprocess_phase2(self.yaml,lambda progress: self.preprocess_cb(step,progress))
                         # Create a symlink between LivelyIK SRC and BASE
                         for nn_suffix in ['_params_1','_params_2','_params_3','_network_rank']:
                             if not os.path.exists(BASE+"/config/collision_nn/"+self.robot_name+nn_suffix):
