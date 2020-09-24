@@ -44,7 +44,7 @@ function joint_match_obj(x, vars, idx1, idx2)
     return groove_loss(x_val, 0., 2, .1, 10., 2)
 end
 
-function orientation_match_obj(x, vars, idx1, idx2)
+function rotation_match_obj(x, vars, idx1, idx2)
 
     vars.robot.arms[idx1].getFrames(x[vars.robot.subchain_indices[idx1]])
     vars.robot.arms[idx2].getFrames(x[vars.robot.subchain_indices[idx2]])

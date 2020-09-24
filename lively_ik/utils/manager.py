@@ -3,6 +3,63 @@ from julia import LivelyIK, Rotations
 from interactive_markers.interactive_marker_server import *
 from visualization_msgs.msg import InteractiveMarkerFeedback, InteractiveMarker, InteractiveMarkerControl, Marker
 from pyquaternion import Quaternion as pyQuaternion
+import json
+from copy import deepcopy
+import random
+
+JOINT_SCALES = {'ur5_robotiq_85':{'elbow_joint': 0.04943172615553592,
+                                  'shoulder_lift_joint': 0.06519351163038933,
+                                  'shoulder_pan_joint': 0.05981500545991754,
+                                  'wrist_1_joint': 0.060635328273466516,
+                                  'wrist_2_joint': 0.03854340782800793,
+                                  'wrist_3_joint': 0.08667862514476901,
+                                  'gripper_finger1_joint':0,
+                                  'gripper_finger2_joint':0
+                },
+                'panda':{'panda_joint1':0,
+                         'panda_joint2':0,
+                         'panda_joint3':0,
+                         'panda_joint4':0,
+                         'panda_joint5':0,
+                         'panda_joint6':0,
+                         'panda_joint7':0,
+                         'panda_finger_joint1':0,
+                         'panda_finger_joint2':0
+                },
+                'nao_v5':{'HeadPitch': 0.03241025901778748,
+                         'HeadYaw': 0.03487730221459542,
+                         'LAnklePitch': 0.01959773277218994,
+                         'LAnkleRoll': 0.017679353837950794,
+                         'LElbowRoll': 0.006171122449291864,
+                         'LElbowYaw': 0.07014936768535909,
+                         'LHand': 0.06780014567033442,
+                         'LHipPitch': 0.019179325881739477,
+                         'LHipRoll': 0.03467096850855242,
+                         'LHipYawPitch': 0.035268050925749216,
+                         'LKneePitch': 0.0039363565040527355,
+                         'LShoulderPitch': 0.01499393991605014,
+                         'LShoulderRoll': 0.012639605328994576,
+                         'LWristYaw': 0.06573754145897988,
+                         'RAnklePitch': 0.02066244887363038,
+                         'RAnkleRoll': 0.01746599550689567,
+                         'RElbowRoll': 0.01501447245298513,
+                         'RElbowYaw': 0.09027797095715812,
+                         'RHand': 0.0704930839703507,
+                         'RHipPitch': 0.021021206596846108,
+                         'RHipRoll': 0.03479924641126292,
+                         'RHipYawPitch': 0.035266210267831555,
+                         'RKneePitch': 0.014729152274376534,
+                         'RShoulderPitch': 0.019397132143749468,
+                         'RShoulderRoll': 0.017491677632176367,
+                         'RWristYaw': 0.07781985791058026
+                }
+        }
+
+ALLOWED_NAIVE_JOINTS = {
+                    'ur5_robotiq_85':['elbow_joint','shoulder_lift_joint','shoulder_pan_joint','wrist_1_joint','wrist_2_joint','wrist_3_joint','gripper_finger1_joint','gripper_finger2_joint'],
+                    'panda':['panda_joint1','panda_joint2','panda_joint3','panda_joint4','panda_joint5','panda_joint6','panda_joint7','panda_finger_joint1','panda_finger_joint2'],
+                    'nao_v5':['HeadPitch','HeadYaw','LElbowRoll','LElbowYaw','LHand','LShoulderPitch','LShoulderRoll','LWristYaw','RElbowRoll','RElbowYaw','RHand','RShoulderPitch','RShoulderRoll','RWristYaw']
+                    }
 
 class Goal(object):
     def __init__(self,goal_value,goal_time):
@@ -43,6 +100,10 @@ class Manager(object):
         self.info = info
         self.ims = InteractiveMarkerServer(self,'manager')
         self.rik_container = RelaxedIKContainer(self.info)
+        self.out_contents = ''
+        self.out_file = None
+        self.collecting = False
+        self.conditions = []
         ee_positions = self.rik_container.robot.get_ee_positions(self.info['starting_config'])
         ee_rotations = self.rik_container.robot.get_ee_rotations(self.info['starting_config'])
         self.marker_lookup = []
@@ -85,12 +146,35 @@ class Manager(object):
             self.current_goal['weights'].append(float(objective['weight']))
             self.future_goal['weights'].append(Goal(float(objective['weight']),0))
 
-        self.lik_solver = LivelyIK.get_standard(yaml.dump(self.info),self.node)
+        self.objective_types = [objective['type'] for objective in self.info['objectives']]
+        self.noise_objective_mask = [True if 'noise' in objective_name else False for objective in self.objective_types]
+        rik_info = deepcopy(self.info)
+        for idx,objective in rik_info['objectives']:
+            if self.noise_objective_mask[idx]:
+                rik_info['objectives'][idx] = 0.0
+        rik_info['fixed_frame_noise_scale'] = 0.0
+        self.seeds = [random.random()*1000 for j in self.info['joint_ordering']]
+
+        self.lik_solver = LivelyIK.get_standard(yaml.dump(self.info))
+        self.rik_solver = LivelyIK.get_standard(yaml.dump(rik_info))
         self.create_timer(0.05,self.step)
+
+    def write_to_file(self):
+        self.collecting = False
+        with open(self.out_file,'w') as stream:
+            stream.write(self.out_contents)
+        self.out_contents = ''
+
+    def start_collection(self,file):
+        self.out_contents = ','.join(['condition']+self.info['joint_ordering'])
+        self.out_file = file
+        self.collecting = True
 
     def teardown(self):
         self.ims.clear()
         self.ims.applyChanges()
+        if self.collecting:
+            self.write_to_file()
 
     def feedback_cb(self,msg):
         #self.get_logger().info("EE CB: {0} {1}".format(idx, msg))
@@ -101,20 +185,38 @@ class Manager(object):
         self.set_rotation_goal(idx,rotation,.05)
 
     def step(self):
-        dc = [dc if dc is not None else self.current_goal['dc_prev'][i] for i,dc in enumerate(self.current_goal['dc'])]
-        sol = LivelyIK.solve(self.lik_solver,
+        self.update_from_goals()
+        standard_sol = LivelyIK.solve(self.rik_solver,
+                                      self.current_goal['positions'],
+                                      self.current_goal['rotations'],
+                                      self.current_goal['dc'],
+                                      self.time_as_seconds,
+                                      self.current_goal['bias'],
+                                      [0 if self.noise_objective_mask[i] else o for i,o in enumerate(self.current_goal['weights'])])
+        lively_sol = LivelyIK.solve(self.lik_solver,
                              self.current_goal['positions'],
                              self.current_goal['rotations'],
                              self.current_goal['dc'],
                              self.time_as_seconds,
                              self.current_goal['bias'],
                              self.current_goal['weights'])
-        self.current_goal['dc'] = sol
+        self.current_goal['dc'] = standard_sol
 
+        naive_sol = [v for v in standard_sol]
+        for idx,joint in enumerate(self.info['joint_ordering']):
+            if joint in ALLOWED_NAIVE_JOINTS[self.info['robot_name']]:
+                naive_sol += LivelyIK.noise1D(self.time_as_seconds,self.seeds[idx],5)
+                x, seed, freq
         # Publish
-        js_msg = JointState(name=self.info['joint_ordering'],position=sol)
+        js_msg = JointState(name=self.info['joint_ordering'],position=lively_sol)
         js_msg.header.stamp = self.time_as_msg
         self.js_pub.publish(js_msg)
+
+        # Store data if collecting
+        if self.collecting:
+            self.out_contents += '\n'+','.join(['static']+[str(v) for v in standard_sol])
+            self.out_contents += '\n'+','.join(['naive']+[str(v) for v in naive_sol])
+            self.out_contents += '\n'+','.join(['lively']+[str(v) for v in lively_sol])
 
     def set_position_goal(self,idx,position,time=0):
         t = self.time_as_seconds
@@ -124,19 +226,19 @@ class Manager(object):
 
     def set_rotation_goal(self,idx,rotation,time=0):
         t = self.time_as_seconds
-        self.future_goal['rotations'][idx].update_goal(rotation,t)
+        self.future_goal['rotations'][idx].update_goal(rotation,t+time)
 
     def set_dc_goal(self,idx,value,time=0):
         t = self.time_as_seconds
-        self.future_goal['dc'][idx].update_goal(value,t)
+        self.future_goal['dc'][idx].update_goal(value,t+time)
 
     def set_bias_goal(self,idx,value,time=0):
         t = self.time_as_seconds
-        self.future_goal['bias'][idx].update_goal(value,t)
+        self.future_goal['bias'][idx].update_goal(value,t+time)
 
     def set_weight_goal(self,idx,value,time=0):
         t = self.time_as_seconds
-        self.future_goal['weights'][idx].update_goal(value,t)
+        self.future_goal['weights'][idx].update_goal(value,t+time)
 
     def update_from_goals(self):
         t = self.time_as_seconds

@@ -1,322 +1,120 @@
-all_dynamic_joints:
-- shoulder_pan_joint
-- shoulder_lift_joint
-- elbow_joint
-- wrist_1_joint
-- wrist_2_joint
-- wrist_3_joint
-- gripper_finger1_joint
-- gripper_finger2_joint
-- gripper_finger1_inner_knuckle_joint
-- gripper_finger2_inner_knuckle_joint
-- gripper_finger1_finger_tip_joint
-- gripper_finger2_finger_tip_joint
-all_fixed_joints:
-- ee_fixed_joint
-- base_link-base_fixed_joint
-- wrist_3_link-tool0_fixed_joint
-- world_joint
-- gripper_base_joint
-- gripper_finger1_finger_joint
-- gripper_finger2_finger_joint
-all_links:
-- base_link
-- shoulder_link
-- upper_arm_link
-- forearm_link
-- wrist_1_link
-- wrist_2_link
-- wrist_3_link
-- ee_link
-- base
-- tool0
-- world
-- gripper_base_link
-- gripper_finger1_knuckle_link
-- gripper_finger2_knuckle_link
-- gripper_finger1_finger_link
-- gripper_finger2_finger_link
-- gripper_finger1_inner_knuckle_link
-- gripper_finger2_inner_knuckle_link
-- gripper_finger1_finger_tip_link
-- gripper_finger2_finger_tip_link
+all_dynamic_joints: [shoulder_pan_joint, shoulder_lift_joint, elbow_joint, wrist_1_joint,
+  wrist_2_joint, wrist_3_joint, gripper_finger1_joint, gripper_finger2_joint, gripper_finger1_inner_knuckle_joint,
+  gripper_finger2_inner_knuckle_joint, gripper_finger1_finger_tip_joint, gripper_finger2_finger_tip_joint]
+all_fixed_joints: [ee_fixed_joint, base_link-base_fixed_joint, wrist_3_link-tool0_fixed_joint,
+  world_joint, gripper_base_joint, gripper_finger1_finger_joint, gripper_finger2_finger_joint]
+all_links: [base_link, shoulder_link, upper_arm_link, forearm_link, wrist_1_link,
+  wrist_2_link, wrist_3_link, ee_link, base, tool0, world, gripper_base_link, gripper_finger1_knuckle_link,
+  gripper_finger2_knuckle_link, gripper_finger1_finger_link, gripper_finger2_finger_link,
+  gripper_finger1_inner_knuckle_link, gripper_finger2_inner_knuckle_link, gripper_finger1_finger_tip_link,
+  gripper_finger2_finger_tip_link]
 axis_types:
-- - z
-  - y
-  - y
-  - y
-  - z
-  - y
+- [z, y, y, y, z, y]
 boxes:
 - coordinate_frame: 0
   name: table
-  parameters:
-  - 3
-  - 3
-  - 0.05
-  rotation:
-  - 0
-  - 0
-  - 0
-  translation:
-  - 0
-  - 0
-  - -0.15
+  parameters: [3, 3, 0.05]
+  rotation: [0, 0, 0]
+  translation: [0, 0, -0.15]
 capsules: []
 cylinders: []
 disp_offsets:
-- - 0.0
-  - 0.0
-  - 0.089159
+- [0.0, 0.0, 0.089159]
 displacements:
-- - - 0.0
-    - 0.13585
-    - 0.0
-  - - 0.0
-    - -0.1197
-    - 0.425
-  - - 0.0
-    - 0.0
-    - 0.39225
-  - - 0.0
-    - 0.093
-    - 0.0
-  - - 0.0
-    - 0.0
-    - 0.09465
-  - - 0.0
-    - 0.0823
-    - 0.0
-ee_fixed_joints:
-- ee_fixed_joint
+- - [0.0, 0.13585, 0.0]
+  - [0.0, -0.1197, 0.425]
+  - [0.0, 0.0, 0.39225]
+  - [0.0, 0.093, 0.0]
+  - [0.0, 0.0, 0.09465]
+  - [0.0, 0.0823, 0.0]
+ee_fixed_joints: [ee_fixed_joint]
 ellipsoids: []
 fixed_frame: base_link
 fixed_frame_noise_frequency: 0
 fixed_frame_noise_scale: 0
 joint_limits:
-- - -6.2831853
-  - 6.2831853
-- - -6.2831853
-  - 6.2831853
-- - -6.2831853
-  - 6.2831853
-- - -6.2831853
-  - 6.2831853
-- - -6.2831853
-  - 6.2831853
-- - -6.2831853
-  - 6.2831853
-- - 0.0
-  - 0.804
-- - -3.14
-  - 3.14
+- [-6.2831853, 6.2831853]
+- [-6.2831853, 6.2831853]
+- [-6.2831853, 6.2831853]
+- [-6.2831853, 6.2831853]
+- [-6.2831853, 6.2831853]
+- [-6.2831853, 6.2831853]
+- [0.0, 0.804]
+- [-3.14, 3.14]
 joint_names:
-- - shoulder_pan_joint
-  - shoulder_lift_joint
-  - elbow_joint
-  - wrist_1_joint
-  - wrist_2_joint
-  - wrist_3_joint
-joint_ordering:
-- shoulder_pan_joint
-- shoulder_lift_joint
-- elbow_joint
-- wrist_1_joint
-- wrist_2_joint
-- wrist_3_joint
-- gripper_finger1_joint
-- gripper_finger2_joint
+- [shoulder_pan_joint, shoulder_lift_joint, elbow_joint, wrist_1_joint, wrist_2_joint,
+  wrist_3_joint]
+joint_ordering: [shoulder_pan_joint, shoulder_lift_joint, elbow_joint, wrist_1_joint,
+  wrist_2_joint, wrist_3_joint, gripper_finger1_joint, gripper_finger2_joint]
 joint_types:
-- - revolute
-  - revolute
-  - revolute
-  - revolute
-  - revolute
-  - revolute
+- [revolute, revolute, revolute, revolute, revolute, revolute]
 mode: absolute
 objectives:
-- gradient: forward_ad
-  index: 1
-  type: position
-  weight: 30
-- gradient: forward_ad
-  index: 1
-  type: rotation
-  weight: 10
-- frequency: 5
-  gradient: forward_ad
-  index: 1
-  scale: 0.15
-  type: positional_noise
-  weight: 20
-- frequency: 5
-  gradient: forward_ad
-  index: 1
-  scale: 0.5
-  type: rotational_noise
-  weight: 5
-- frequency: 5
-  gradient: forward_ad
-  index: 3
-  scale: 0.5
-  type: dc_noise
-  weight: 0
-- gradient: forward_ad
-  type: min_jt_vel
-  weight: 5
-- gradient: forward_ad
-  type: min_jt_accel
-  weight: 2
-- gradient: forward_ad
-  type: min_jt_jerk
-  weight: 0.1
-- gradient: forward_ad
-  type: joint_limit
-  weight: 1
-- gradient: finite_diff
-  type: collision_nn
-  weight: 5
+- {gradient: forward_ad, index: 1, type: position, weight: 30}
+- {gradient: forward_ad, index: 1, type: rotation, weight: 10}
+- {frequency: 10, gradient: forward_ad, index: 1, scale: 0.15, type: positional_noise,weight: 0} # Negative Affect
+- {frequency: 10, gradient: forward_ad, index: 1, scale: 0.5, type: rotational_noise,weight: 0}  # Negative Affect
+- {frequency: 5, gradient: forward_ad, index: 1, scale: 0.15, type: positional_noise,weight: 20} # Neutral Affect
+- {frequency: 5, gradient: forward_ad, index: 1, scale: 0.5, type: rotational_noise,weight: 5}   # Neutral Affect
+- {frequency: 3, gradient: forward_ad, index: 1, scale: 0.15, type: positional_noise,weight: 0}  # Positive Affect
+- {frequency: 3, gradient: forward_ad, index: 1, scale: 0.5, type: rotational_noise,weight: 0}   # Positive Affect
+- {frequency: 10, gradient: forward_ad, index: 1, scale: 0.5, type: dc_noise, weight: 0} # Negative Affect
+- {frequency: 10, gradient: forward_ad, index: 2, scale: 0.5, type: dc_noise, weight: 0} # Negative Affect
+- {frequency: 10, gradient: forward_ad, index: 3, scale: 0.5, type: dc_noise, weight: 0} # Negative Affect
+- {frequency: 10, gradient: forward_ad, index: 4, scale: 0.5, type: dc_noise, weight: 0} # Negative Affect
+- {frequency: 10, gradient: forward_ad, index: 5, scale: 0.5, type: dc_noise, weight: 0} # Negative Affect
+- {frequency: 10, gradient: forward_ad, index: 6, scale: 0.5, type: dc_noise, weight: 0} # Negative Affect
+- {frequency: 10, gradient: forward_ad, index: 7, scale: 0.5, type: dc_noise, weight: 0} # Negative Affect
+- {frequency: 10, gradient: forward_ad, index: 8, scale: 0.5, type: dc_noise, weight: 0} # Negative Affect
+- {frequency:  5, gradient: forward_ad, index: 1, scale: 0.5, type: dc_noise, weight: 0} # Neutral Affect
+- {frequency:  5, gradient: forward_ad, index: 2, scale: 0.5, type: dc_noise, weight: 0} # Neutral Affect
+- {frequency:  5, gradient: forward_ad, index: 3, scale: 0.5, type: dc_noise, weight: 0} # Neutral Affect
+- {frequency:  5, gradient: forward_ad, index: 4, scale: 0.5, type: dc_noise, weight: 0} # Neutral Affect
+- {frequency:  5, gradient: forward_ad, index: 5, scale: 0.5, type: dc_noise, weight: 0} # Neutral Affect
+- {frequency:  5, gradient: forward_ad, index: 6, scale: 0.5, type: dc_noise, weight: 0} # Neutral Affect
+- {frequency:  5, gradient: forward_ad, index: 7, scale: 0.5, type: dc_noise, weight: 0} # Neutral Affect
+- {frequency:  5, gradient: forward_ad, index: 8, scale: 0.5, type: dc_noise, weight: 0} # Neutral Affect
+- {frequency:  3, gradient: forward_ad, index: 1, scale: 0.5, type: dc_noise, weight: 0} # Positive Affect
+- {frequency:  3, gradient: forward_ad, index: 2, scale: 0.5, type: dc_noise, weight: 0} # Positive Affect
+- {frequency:  3, gradient: forward_ad, index: 3, scale: 0.5, type: dc_noise, weight: 0} # Positive Affect
+- {frequency:  3, gradient: forward_ad, index: 4, scale: 0.5, type: dc_noise, weight: 0} # Positive Affect
+- {frequency:  3, gradient: forward_ad, index: 5, scale: 0.5, type: dc_noise, weight: 0} # Positive Affect
+- {frequency:  3, gradient: forward_ad, index: 6, scale: 0.5, type: dc_noise, weight: 0} # Positive Affect
+- {frequency:  3, gradient: forward_ad, index: 7, scale: 0.5, type: dc_noise, weight: 0} # Positive Affect
+- {frequency:  3, gradient: forward_ad, index: 8, scale: 0.5, type: dc_noise, weight: 0} # Positive Affect
+- {gradient: forward_ad, type: min_jt_vel, weight: 5}
+- {gradient: forward_ad, type: min_jt_accel, weight: 2}
+- {gradient: forward_ad, type: min_jt_jerk, weight: 0.1}
+- {gradient: forward_ad, type: joint_limit, weight: 2}
+- {gradient: finite_diff, type: collision_nn, weight: 5}
 problem_states:
-- - 0
-  - -1.14
-  - 3.01
-  - 0
-  - 0
-  - 0
-  - 0.402
-  - 0
-- - 0
-  - 0.9
-  - 3.01
-  - 0
-  - 0
-  - 0
-  - 0.402
-  - 0
-- - 0
-  - 0.9
-  - 3.01
-  - 2.39
-  - 0
-  - 0
-  - 0.402
-  - 0
-- - 0
-  - 0.9
-  - 3.01
-  - 2.39
-  - 1.22
-  - 0
-  - 0.402
-  - 0
+- [0, -1.14, 3.01, 0, 0, 0, 0.402, 0]
+- [0, 0.9, 3.01, 0, 0, 0, 0.402, 0]
+- [0, 0.9, 3.01, 2.39, 0, 0, 0.402, 0]
+- [0, 0.9, 3.01, 2.39, 1.22, 0, 0.402, 0]
 robot_link_radius: 0.05
 robot_name: ur5_robotiq_85
 rot_offsets:
-- - - 0.0
-    - 0.0
-    - 0.0
-  - - 0.0
-    - 0.0
-    - 0.0
-  - - 0.0
-    - 0.0
-    - 0.0
-  - - 0.0
-    - 0.0
-    - 0.0
-  - - 0.0
-    - 0.0
-    - 0.0
-  - - 0.0
-    - 0.0
-    - 0.0
-  - - 0.0
-    - 0.0
-    - 1.570796325
+- - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 1.570796325]
 sample_states:
-- - 0
-  - 0.9
-  - -0.59
-  - 2.39
-  - 1.22
-  - 0
-  - 0.402
-  - 0
-- - 0
-  - 0.9
-  - -2.14
-  - -1.18
-  - -0.43
-  - 0
-  - 0.402
-  - 0.4
-- - 0
-  - 0.9
-  - -2.14
-  - -1.18
-  - -4.49
-  - 0
-  - 0.402
-  - 0.4
+- [0, 0.9, -0.59, 2.39, 1.22, 0, 0.402, 0]
+- [0, 0.9, -2.14, -1.18, -0.43, 0, 0.402, 0.4]
+- [0, 0.9, -2.14, -1.18, -4.49, 0, 0.402, 0.4]
 spheres: []
-starting_config:
-- 0
-- 0
-- 0
-- 0
-- 0
-- 0
-- 0.402
-- 0
+starting_config: [0, 0, 0, 0, 0, 0, 0.402, 0]
 training_states:
-- - 0
-  - 0.9
-  - 3.44
-  - 2.39
-  - 1.22
-  - 0
-  - 0.402
-  - 0
-- - 0
-  - 0.9
-  - -0.59
-  - 2.39
-  - 1.22
-  - 0
-  - 0.402
-  - 0
-- - 0
-  - 0.9
-  - -0.59
-  - 2.39
-  - -0.43
-  - 0
-  - 0.402
-  - 0.4
-- - 0
-  - 0.9
-  - -0.59
-  - -1.18
-  - -0.43
-  - 0
-  - 0.402
-  - 0.4
-- - 0
-  - 0.9
-  - -2.14
-  - -1.18
-  - -4.49
-  - 0
-  - 0.402
-  - 0.4
-- - 0
-  - 0.9
-  - -2.14
-  - -1.18
-  - -4.49
-  - -1.77
-  - 0.402
-  - 0.4
+- [0, 0.9, 3.44, 2.39, 1.22, 0, 0.402, 0]
+- [0, 0.9, -0.59, 2.39, 1.22, 0, 0.402, 0]
+- [0, 0.9, -0.59, 2.39, -0.43, 0, 0.402, 0.4]
+- [0, 0.9, -0.59, -1.18, -0.43, 0, 0.402, 0.4]
+- [0, 0.9, -2.14, -1.18, -4.49, 0, 0.402, 0.4]
+- [0, 0.9, -2.14, -1.18, -4.49, -1.77, 0.402, 0.4]
 urdf: "<?xml version=\"1.0\" ?>\n<!-- ===================================================================================\
   \ -->\n<!-- |    This document was autogenerated by xacro from ur5_robotiq.xacro\
   \              | -->\n<!-- |    EDITING THIS FILE BY HAND IS NOT RECOMMENDED   \
@@ -629,12 +427,4 @@ urdf: "<?xml version=\"1.0\" ?>\n<!-- ==========================================
   mimic_robotiq_85_5\">\n      <joint>gripper_finger1_joint</joint>\n      <mimicJoint>gripper_finger2_finger_tip_joint</mimicJoint>\n\
   \      <multiplier>-1.0</multiplier>\n      <offset>0.0</offset>\n    </plugin>\n\
   \  </gazebo>\n</robot>\n"
-velocity_limits:
-- 3.15
-- 3.15
-- 3.15
-- 3.2
-- 3.2
-- 3.2
-- 2.0
-- 100.0
+velocity_limits: [3.15, 3.15, 3.15, 3.2, 3.2, 3.2, 2.0, 100.0]

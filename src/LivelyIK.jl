@@ -9,6 +9,6 @@ include("spacetime/spacetime.jl")
 include("utils/utils.jl")
 include("relaxed_ik/relaxed_ik.jl")
 
-export RelaxedIK, get_standard, solve, Goals, update!, preprocess_phase1, preprocess_phase2
+export RelaxedIK, get_standard, solve, Goals, update!, preprocess_phase1, preprocess_phase2, noise1D, noise3D
 
 end # module

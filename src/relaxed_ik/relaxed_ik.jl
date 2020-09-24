@@ -90,8 +90,8 @@ function get_standard(info; solver_name = "slsqp", preconfigured=false)
             push!(objectives,(x,vars)->x_match_obj(x,vars,objective_info[i]["index_1"],objective_info[i]["index_2"]))
             push!(grad_types, objective_info[i]["gradient"])
             push!(weight_priors, objective_info[i]["weight"])
-        elseif objective_info[i]["type"] == "orientation_match"
-            push!(objectives,(x,vars)->orientation_match_obj(x,vars,objective_info[i]["index_1"],objective_info[i]["index_2"]))
+        elseif objective_info[i]["type"] == "rotation_match"
+            push!(objectives,(x,vars)->rotation_match_obj(x,vars,objective_info[i]["index_1"],objective_info[i]["index_2"]))
             push!(grad_types, objective_info[i]["gradient"])
             push!(weight_priors, objective_info[i]["weight"])
         elseif objective_info[i]["type"] == "joint_match"

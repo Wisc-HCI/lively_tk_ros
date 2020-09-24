@@ -53,6 +53,12 @@ class Commander(App):
         self.node.update_robot_description(self.configs[config]['urdf'])
         self.manager = Manager(self.node,self.configs[config])
 
+    def set_output(self,out_file):
+        if out_file == '' and self.manager.collecting:
+            self.manager.write_to_file()
+        elif out_file != '':
+            self.manager.start_collection(BASE+'/eval/'+out_file)
+
     def publish_tf(self):
         if self.manager:
             tf1 = TransformStamped(header=Header(stamp=self.node.get_clock().now().to_msg(),
