@@ -154,8 +154,10 @@ class Manager(object):
         rik_info['fixed_frame_noise_scale'] = 0.0
         self.seeds = [random.random()*1000 for j in self.info['joint_ordering']]
 
-        self.lik_solver = LivelyIK.get_standard(yaml.dump(self.info))
-        self.rik_solver = LivelyIK.get_standard(yaml.dump(rik_info))
+        lik_config = yaml.dump(self.info)
+        rik_config = yaml.dump(rik_info)
+        self.lik_solver = LivelyIK.get_standard(lik_config)
+        self.rik_solver = LivelyIK.get_standard(rik_config)
         self.create_timer(0.05,self.step)
 
     def write_to_file(self):
