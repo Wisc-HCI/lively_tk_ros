@@ -25,7 +25,7 @@ function RelaxedIK(info, objectives, grad_types, weight_priors, inequality_const
     return RelaxedIK(relaxedIK_vars, groove, ema_filter)
 end
 
-function get_standard(info::Dict{String,Any}; solver_name = "slsqp", preconfigured=false)
+function get_standard(info::Dict{Any,Any}; solver_name = "slsqp", preconfigured=false)
     joint_ordering = info["joint_ordering"]
     joint_names = info["joint_names"]
     objective_info = info["objectives"]
