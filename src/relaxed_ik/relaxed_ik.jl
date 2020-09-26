@@ -109,7 +109,7 @@ function get_standard(info; solver_name = "slsqp", preconfigured=false)
 end
 
 function get_standard(yaml_string::String; solver_name = "slsqp", preconfigured=false)
-    info = YAML.load(info_string)
+    info = YAML.load(yaml_string)
     return get_standard(info;solver_name,preconfigured)
 end
 

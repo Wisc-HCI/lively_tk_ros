@@ -5,47 +5,29 @@ from lively_ik.applications.app import App
 from lively_ik.utils.urdf_load import urdf_load_from_string
 from lively_ik.spacetime.robot import Robot
 from lively_ik.utils.manager import Manager
-from lively_ik import BASE, SRC
+from lively_ik import BASE, SRC, INFO_PARAMS, get_configs
 from wisc_actions.elements import Position
 from wisc_msgs.msg import GoalUpdate
 from wisc_msgs.srv import UpdateGoals
 import rclpy
 from sensor_msgs.msg import JointState
 from tf2_msgs.msg import TFMessage
-from std_msgs.msg import Header
+from std_msgs.msg import Header, String
 from geometry_msgs.msg import TransformStamped, Transform, Vector3, Quaternion
 import xml.etree.ElementTree as et
 import yaml
 from julia import LivelyIK, Rotations
 import os
-
-REQUIRED_CONFIG_PARAMETERS = ['all_dynamic_joints','all_fixed_joints','all_links',
-                              'axis_types','boxes','capsules','cylinders','displacements',
-                              'disp_offsets','ee_fixed_joints','ellipsoids','fixed_frame',
-                              'fixed_frame_noise_scale','fixed_frame_noise_frequency',
-                              'joint_limits','joint_names','joint_ordering','joint_types',
-                              'mode','objectives','problem_states','robot_link_radius',
-                              'robot_name','rot_offsets','sample_states','spheres',
-                              'starting_config','training_states','urdf','velocity_limits']
+import json
 
 class Commander(App):
 
     def __init__(self, node):
         super(Commander,self).__init__(node,'Commander','commander')
-        self.configs = self.get_configs()
+        self.configs = get_configs()
         self.tf_timer = self.node.create_timer(1,self.publish_tf)
+        self.setup_sub = self.node.create_subscription(String,'setup',self.setup_cb,10)
         self.manager = None
-
-
-    def get_configs(self):
-        configs = {}
-        config_files = [f for f in os.listdir(BASE+'/config/info_files') if os.path.isfile(os.path.join(BASE+'/config/info_files', f))]
-        for config_file in config_files:
-            with open(BASE+'/config/info_files/'+config_file) as io:
-                config_data = yaml.safe_load(io)
-            if set(REQUIRED_CONFIG_PARAMETERS).issubset(set(config_data.keys())):
-                configs[config_data['robot_name']] = config_data
-        return configs
 
     def set_robot(self,config):
         if self.manager:
@@ -53,11 +35,23 @@ class Commander(App):
         self.node.update_robot_description(self.configs[config]['urdf'])
         self.manager = Manager(self.node,self.configs[config])
 
-    def set_output(self,out_file):
+    def set_output(self,out_file,valence):
         if out_file == '' and self.manager.collecting:
             self.manager.write_to_file()
         elif out_file != '':
+            self.manager.valence = valence
             self.manager.start_collection(BASE+'/eval/'+out_file)
+
+    def setup_cb(self,msg):
+        setup_info = json.loads(msg.data)
+        if 'file' in setup_info and 'valence' in setup_info:
+            self.log('File -> {0}'.format(setup_info['file']))
+            self.set_output(setup_info['file'],setup_info['valence'])
+        elif 'config' in setup_info:
+            self.log('Setting Robot to {0}'.format(setup_info['config']))
+            self.set_robot(setup_info['config'])
+        else:
+            self.warn('Unknown command: {0}'.format(setup_info))
 
     def publish_tf(self):
         if self.manager:
@@ -91,7 +85,8 @@ class Commander(App):
         elif data['action'] == 'fetch':
             return {'success':True,'action':'fetch','config':self.json_config,'app':self.json_app}
 
-    def goal_update_cb(self,request,response):
+    def handle_goal_update(self,request,response):
+        self.log("Received update request")
         if self.manager:
             response.success = True
             for goal_update in request.updates:

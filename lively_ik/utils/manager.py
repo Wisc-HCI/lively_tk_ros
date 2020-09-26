@@ -1,11 +1,18 @@
 import yaml
 from julia import LivelyIK, Rotations
-from interactive_markers.interactive_marker_server import *
-from visualization_msgs.msg import InteractiveMarkerFeedback, InteractiveMarker, InteractiveMarkerControl, Marker
 from pyquaternion import Quaternion as pyQuaternion
+from lively_ik.groove.relaxed_ik_container import RelaxedIKContainer
 import json
 from copy import deepcopy
 import random
+
+def clamp(x, lo, hi):
+    if lo <= x <= hi:
+        return x
+    elif x < lo:
+        return lo
+    elif x > hi:
+        return hi
 
 JOINT_SCALES = {'ur5_robotiq_85':{'elbow_joint': 0.04943172615553592,
                                   'shoulder_lift_joint': 0.06519351163038933,
@@ -98,15 +105,15 @@ class Manager(object):
     def __init__(self,node,info):
         self.node = node
         self.info = info
-        self.ims = InteractiveMarkerServer(self,'manager')
         self.rik_container = RelaxedIKContainer(self.info)
         self.out_contents = ''
         self.out_file = None
         self.collecting = False
+        self.valence = 'neutral'
+        self.valence_lookup = {'neutral':5.0,'positive':3.0,'negative':10.0}
         self.conditions = []
         ee_positions = self.rik_container.robot.get_ee_positions(self.info['starting_config'])
         ee_rotations = self.rik_container.robot.get_ee_rotations(self.info['starting_config'])
-        self.marker_lookup = []
 
         self.current_goal = {
             'positions':[],
@@ -131,14 +138,6 @@ class Manager(object):
             self.future_goal['positions'].append([Goal(v,0) for v in ee_positions[ee_idx][0:3]])
             self.future_goal['rotations'].append(Goal(Rotations.Quat(*ee_rotations[ee_idx][0:4]),0))
 
-            # Add a marker for control
-            name = self.info['ee_fixed_joints'][ee_idx]
-            self.marker_lookup.append('interactive_marker_'+name)
-            marker = self.create_marker(name,ee_positions[ee_idx][0:3],ee_rotations[ee_idx][0:4],self.info['fixed_frame'])
-            self.ims.insert(marker,feedback_callback=self.feedback_cb)
-
-        self.ims.applyChanges()
-
         self.current_goal['dc'] = self.info['starting_config']
         self.future_goal['dc'] = [Goal(v,0) for v in self.info['starting_config']]
 
@@ -147,9 +146,9 @@ class Manager(object):
             self.future_goal['weights'].append(Goal(float(objective['weight']),0))
 
         self.objective_types = [objective['type'] for objective in self.info['objectives']]
-        self.noise_objective_mask = [True if 'noise' in objective_name else False for objective in self.objective_types]
+        self.noise_objective_mask = [True if 'noise' in objective else False for objective in self.objective_types]
         rik_info = deepcopy(self.info)
-        for idx,objective in rik_info['objectives']:
+        for idx,objective in enumerate(rik_info['objectives']):
             if self.noise_objective_mask[idx]:
                 rik_info['objectives'][idx] = 0.0
         rik_info['fixed_frame_noise_scale'] = 0.0
@@ -171,33 +170,24 @@ class Manager(object):
         self.collecting = True
 
     def teardown(self):
-        self.ims.clear()
-        self.ims.applyChanges()
         if self.collecting:
             self.write_to_file()
 
-    def feedback_cb(self,msg):
-        #self.get_logger().info("EE CB: {0} {1}".format(idx, msg))
-        idx = self.marker_lookup.index(msg.marker_name)
-        position = [msg.pose.position.x,msg.pose.position.y,msg.pose.position.z]
-        rotation = Rotations.Quat(msg.pose.orientation.w,msg.pose.orientation.x,msg.pose.orientation.y,msg.pose.orientation.z)
-        self.set_position_goal(idx,position,.05)
-        self.set_rotation_goal(idx,rotation,.05)
-
     def step(self):
         self.update_from_goals()
+        current_time = self.time_as_seconds
         standard_sol = LivelyIK.solve(self.rik_solver,
                                       self.current_goal['positions'],
                                       self.current_goal['rotations'],
                                       self.current_goal['dc'],
-                                      self.time_as_seconds,
+                                      current_time,
                                       self.current_goal['bias'],
                                       [0 if self.noise_objective_mask[i] else o for i,o in enumerate(self.current_goal['weights'])])
         lively_sol = LivelyIK.solve(self.lik_solver,
                              self.current_goal['positions'],
                              self.current_goal['rotations'],
                              self.current_goal['dc'],
-                             self.time_as_seconds,
+                             current_time,
                              self.current_goal['bias'],
                              self.current_goal['weights'])
         self.current_goal['dc'] = standard_sol
@@ -205,8 +195,9 @@ class Manager(object):
         naive_sol = [v for v in standard_sol]
         for idx,joint in enumerate(self.info['joint_ordering']):
             if joint in ALLOWED_NAIVE_JOINTS[self.info['robot_name']]:
-                naive_sol += LivelyIK.noise1D(self.time_as_seconds,self.seeds[idx],5)
-                x, seed, freq
+                naive_sol += LivelyIK.noise1D(current_time,self.seeds[idx],self.valence_lookup[self.valence]) * JOINT_SCALES[self.info['robot_name']][joint]
+        naive_sol = [clamp(v,self.info['joint_limits'][i][0],self.info['joint_limits'][i][1]) for i,v in enumerate(naive_sol)]
+
         # Publish
         js_msg = JointState(name=self.info['joint_ordering'],position=lively_sol)
         js_msg.header.stamp = self.time_as_msg
@@ -266,106 +257,3 @@ class Manager(object):
     @property
     def time_as_msg(self):
         return self.node.get_clock().now().to_msg()
-
-    @staticmethod
-    def create_marker(name,ee_pos,ee_rot,frame_id):
-        # create an interactive marker for our server
-        marker = InteractiveMarker()
-        marker.header.frame_id = frame_id
-        marker.name = "interactive_marker_" + name
-        marker.pose.position.x = float(ee_pos[0])
-        marker.pose.position.y = float(ee_pos[1])
-        marker.pose.position.z = float(ee_pos[2])
-        marker.pose.orientation.w = float(ee_rot[0])
-        marker.pose.orientation.x = float(ee_rot[1])
-        marker.pose.orientation.y = float(ee_rot[2])
-        marker.pose.orientation.z = float(ee_rot[3])
-        marker.scale = 0.2
-
-        # create a grey box marker
-        box_marker = Marker()
-        box_marker.type = Marker.CUBE
-        box_marker.scale.x = 0.07
-        box_marker.scale.y = 0.07
-        box_marker.scale.z = 0.07
-        box_marker.color.r = 0.0
-        box_marker.color.g = 0.5
-        box_marker.color.b = 0.5
-        box_marker.color.a = 0.6
-
-        # create a non-interactive control which contains the box
-        box_control = InteractiveMarkerControl()
-        box_control.always_visible = True
-        box_control.markers.append(box_marker)
-
-        marker.controls.append(box_control)
-
-        # Add Translation Controls
-        control = InteractiveMarkerControl()
-        control.orientation.w = 1.0
-        control.orientation.x = 1.0
-        control.orientation.y = 0.0
-        control.orientation.z = 0.0
-        control.name = "move_1"
-        control.always_visible = True
-        control.interaction_mode = InteractiveMarkerControl.MOVE_AXIS
-
-        marker.controls.append(control)
-
-        control = InteractiveMarkerControl()
-        control.orientation.w = 1.0
-        control.orientation.x = 0.0
-        control.orientation.y = 1.0
-        control.orientation.z = 0.0
-        control.name = "move_2"
-        control.always_visible = True
-        control.interaction_mode = InteractiveMarkerControl.MOVE_AXIS
-
-        marker.controls.append(control)
-
-        control = InteractiveMarkerControl()
-        control.orientation.w = 1.0
-        control.orientation.x = 0.0
-        control.orientation.y = 0.0
-        control.orientation.z = 1.0
-        control.name = "move_3"
-        control.always_visible = True
-        control.interaction_mode = InteractiveMarkerControl.MOVE_AXIS
-
-        marker.controls.append(control)
-
-        # Add Rotation Controls
-        control = InteractiveMarkerControl()
-        control.orientation.w = 1.0
-        control.orientation.x = 1.0
-        control.orientation.y = 0.0
-        control.orientation.z = 0.0
-        control.name = "rotate_1"
-        control.always_visible = True
-        control.interaction_mode = InteractiveMarkerControl.ROTATE_AXIS
-
-        marker.controls.append(control)
-
-        control = InteractiveMarkerControl()
-        control.orientation.w = 1.0
-        control.orientation.x = 0.0
-        control.orientation.y = 1.0
-        control.orientation.z = 0.0
-        control.name = "rotate_2"
-        control.always_visible = True
-        control.interaction_mode = InteractiveMarkerControl.ROTATE_AXIS
-
-        marker.controls.append(control)
-
-        control = InteractiveMarkerControl()
-        control.orientation.w = 1.0
-        control.orientation.x = 0.0
-        control.orientation.y = 0.0
-        control.orientation.z = 1.0
-        control.name = "rotate_3"
-        control.always_visible = True
-        control.interaction_mode = InteractiveMarkerControl.ROTATE_AXIS
-
-        marker.controls.append(control)
-
-        return marker

@@ -10,7 +10,7 @@ from rcl_interfaces.srv import SetParameters
 from rcl_interfaces.msg import Parameter, ParameterValue
 from sensor_msgs.msg import JointState
 from tf2_msgs.msg import TFMessage
-from wisc_msgs.msg import GoalUpdate
+from wisc_msgs.msg import GoalUpdate, GoalUpdates
 from wisc_msgs.srv import UpdateGoals
 
 from flask import Flask, request, jsonify, make_response
@@ -91,12 +91,13 @@ class InterfaceNode(Node):
         self.robot_description_client = self.create_client(SetParameters, '/robot_state_publisher/set_parameters')
         self.js_pub = self.create_publisher(JointState,'/joint_states',10)
         self.tf_pub = self.create_publisher(TFMessage,'tf_static',10)
-        self.goal_update_service = self.create_service(UpdateGoals,'goal_update',self.handle_goal_update)
+        self.goal_update_sub = self.create_subscription(GoalUpdates,'/lively_apps/goal_update',self.handle_goal_update,10)
         self.get_logger().info('Initialized!')
 
-    def handle_goal_update(request,response):
+    def handle_goal_update(msg):
+        self.get_logger().info('Interface: Received update request')
         if self.namespace.active_app:
-            return self.apps[self.active_app].handle_goal_update(request,response)
+            return self.apps[self.active_app].handle_goal_update(msg)
         else:
             response.success = False
             return response
