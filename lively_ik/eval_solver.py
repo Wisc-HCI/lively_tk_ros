@@ -43,7 +43,7 @@ class SolverNode(Node):
         if out_file == '' and self.manager and self.manager.collecting:
             self.manager.write_to_file()
         elif out_file != '' and self.manager and not self.manager.collecting:
-            self.manager.start_collection(BASE+'/eval/'+out_file)
+            self.manager.start_collection(SRC+'/eval/'+out_file)
         elif out_file == '':
             self.get_logger().info('output file is empty')
         elif out_file != '':
@@ -72,7 +72,7 @@ class SolverNode(Node):
     def goal_update_cb(self,msg):
         self.get_logger().info("Received update request")
         if self.manager:
-            for goal_update in request.updates:
+            for goal_update in msg.updates:
                 idx = goal_update.idx.data
                 t = goal_update.time.data
                 if goal_update.type.data == 0:
@@ -80,8 +80,8 @@ class SolverNode(Node):
                     self.manager.set_position_goal(idx,position,t)
                 elif goal_update.type.data == 1:
                     # Update rotation goal
-                    rotation = Rotations.Quat(w=goal_update.rotation.w,x=goal_update.rotation.x,y=goal_update.rotation.y,z=goal_update.rotation.z)
-                    self.manager.set_position_goal(idx,position,t)
+                    rotation = Rotations.Quat(goal_update.rotation.w,goal_update.rotation.x,goal_update.rotation.y,goal_update.rotation.z)
+                    self.manager.set_rotation_goal(idx,rotation,t)
                 elif goal_update.type.data == 2:
                     # Update dc goal
                     self.manager.set_dc_goal(idx,goal_update.dc.data,t)

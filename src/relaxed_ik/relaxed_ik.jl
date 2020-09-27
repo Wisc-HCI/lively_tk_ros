@@ -29,8 +29,6 @@ function get_standard(info::Dict{Any,Any}; solver_name = "slsqp", preconfigured=
     joint_ordering = info["joint_ordering"]
     joint_names = info["joint_names"]
     objective_info = info["objectives"]
-    println(objective_info)
-    println(typeof(objective_info))
     objectives =    []
     grad_types =    []
     weight_priors = []

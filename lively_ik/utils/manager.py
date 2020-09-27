@@ -150,7 +150,7 @@ class Manager(object):
         rik_info = deepcopy(self.info)
         for idx,objective in enumerate(rik_info['objectives']):
             if self.noise_objective_mask[idx]:
-                rik_info['objectives'][idx] = 0.0
+                rik_info['objectives'][idx]['weight'] = 0.0
         rik_info['fixed_frame_noise_scale'] = 0.0
         self.seeds = [random.random()*1000 for j in self.info['joint_ordering']]
 
@@ -158,7 +158,7 @@ class Manager(object):
         rik_config = yaml.dump(rik_info)
         self.lik_solver = LivelyIK.get_standard(lik_config)
         self.rik_solver = LivelyIK.get_standard(rik_config)
-        self.create_timer(0.05,self.step)
+        self.node.create_timer(0.05,self.step)
 
     def write_to_file(self):
         self.collecting = False
@@ -197,13 +197,8 @@ class Manager(object):
         naive_sol = [v for v in standard_sol]
         for idx,joint in enumerate(self.info['joint_ordering']):
             if joint in ALLOWED_NAIVE_JOINTS[self.info['robot_name']]:
-                naive_sol += LivelyIK.noise1D(current_time,self.seeds[idx],self.valence_lookup[self.valence]) * JOINT_SCALES[self.info['robot_name']][joint]
+                naive_sol[idx] += LivelyIK.noise1D(current_time,self.seeds[idx],self.valence_lookup[self.valence]) * JOINT_SCALES[self.info['robot_name']][joint]
         naive_sol = [clamp(v,self.info['joint_limits'][i][0],self.info['joint_limits'][i][1]) for i,v in enumerate(naive_sol)]
-
-        # Publish
-        js_msg = JointState(name=self.info['joint_ordering'],position=lively_sol)
-        js_msg.header.stamp = self.time_as_msg
-        self.js_pub.publish(js_msg)
 
         # Store data if collecting
         if self.collecting:
@@ -237,7 +232,9 @@ class Manager(object):
         t = self.time_as_seconds
         # Positions
         for idx,goals in enumerate(self.future_goal['positions']):
-            self.current_goal['positions'][idx] = [g.increment_towards(self.current_goal['positions'][i],t) for i,g in enumerate(goals)]
+            self.current_goal['positions'][idx][0] = self.future_goal['positions'][idx][0].increment_towards(self.current_goal['positions'][idx][0],t)
+            self.current_goal['positions'][idx][1] = self.future_goal['positions'][idx][1].increment_towards(self.current_goal['positions'][idx][1],t)
+            self.current_goal['positions'][idx][2] = self.future_goal['positions'][idx][2].increment_towards(self.current_goal['positions'][idx][2],t)
         # Rotations
         for idx,goal in enumerate(self.future_goal['rotations']):
             self.current_goal['rotations'][idx] = goal.increment_towards(self.current_goal['rotations'][idx],t)
