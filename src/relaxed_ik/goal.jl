@@ -56,10 +56,10 @@ function update!(goal,msg,time::Float64)
     if goal.metadata == "" && new_metadata != "" && new_metadata != "terminate"
         goal.metadata = new_metadata
         println("Metadata -> $new_metadata")
-    else if goal.metadata == "terminate" and new_metadata == ""
+    elseif goal.metadata == "terminate" and new_metadata == ""
         goal.metadata = new_metadata
         println("Metadata -> $new_metadata")
-    else if goal.metadata != "terminate" && new_metadata != "terminate"
+    elseif goal.metadata != "terminate" && new_metadata != "terminate"
         goal.metadata = new_metadata
         println("Metadata -> $new_metadata")
     end
