@@ -6,6 +6,7 @@ mutable struct Goals
     time     ::Float64
     bias     #::Array{Float64}
     weights  #::Array{Float64}
+    metadata
 end
 
 function update!(goal,msg,time::Float64)
@@ -50,6 +51,7 @@ function update!(goal,msg,time::Float64)
         push!(weights,msg.objective_weights[i].data)
     end
     goal.weights = weights
+    goal.metadata = msg.metadata
 end
 
 function Goals(lively_ik,info_data)
@@ -76,5 +78,5 @@ function Goals(lively_ik,info_data)
     # Extract Weights
     weights = lively_ik.relaxedIK_vars.vars.weight_priors
 
-    return Goals(positions, quats, dc, time, bias, weights)
+    return Goals(positions, quats, dc, time, bias, weights, "")
 end

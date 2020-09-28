@@ -41,8 +41,10 @@ class SolverNode(Node):
 
     def set_output(self,out_file):
         if out_file == '' and self.manager and self.manager.collecting:
+            self.get_logger().info('Writing File')
             self.manager.write_to_file()
         elif out_file != '' and self.manager and not self.manager.collecting:
+            self.get_logger().info('Starting collection to {0}/eval/{1}'.format(SRC,out_file))
             self.manager.start_collection(SRC+'/eval/'+out_file)
         elif out_file == '':
             self.get_logger().info('output file is empty')
@@ -52,6 +54,7 @@ class SolverNode(Node):
     def setup_cb(self,msg):
         setup_info = json.loads(msg.data)
         executed = False
+        self.get_logger().info(str(setup_info))
         if 'file' in setup_info:
             self.get_logger().info('File -> {0}'.format(setup_info['file']))
             self.set_output(setup_info['file'])

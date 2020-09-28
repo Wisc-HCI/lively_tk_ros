@@ -51,7 +51,7 @@ setup(
     description='The LivelyIK Package',
     license='TODO: License declaration',
     tests_require=['pytest'],
-    scripts=['lively_ik/Node.jl'],
+    scripts=['lively_ik/Node.jl','lively_ik/EvalNode.jl'],
     entry_points={
         'console_scripts': [
             'commander = lively_ik.eval_commander:main',
