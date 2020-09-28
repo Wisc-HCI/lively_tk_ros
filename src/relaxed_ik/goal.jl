@@ -51,6 +51,11 @@ function update!(goal,msg,time::Float64)
         push!(weights,msg.objective_weights[i].data)
     end
     goal.weights = weights
+
+    if msg.metadata.data != goal.metadata
+        new_metadata = msg.metadata.data
+        println("Metadata -> $new_metadata")
+    end
     goal.metadata = msg.metadata.data
 end
 

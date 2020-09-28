@@ -79,8 +79,9 @@ while rclpy.ok()
     rik_weights = strip_noise(rik_info_data["objectives"],goals.weights)
     lik_sol = LivelyIK.solve(lik, goals.positions, goals.quats, goals.dc, time, goals.bias, goals.weights)
     rik_sol = LivelyIK.solve(rik, goals.positions, goals.quats, goals.dc, time, [0.0,0.0,0.0], rik_weights)
-    # println("SOL: $sol")
-    msg = wisc_msgs.EvalResult(metadata=std_msgs.String(data=goals.metadata),lively_joints=lik_sol,relaxed_joints=rik_sol)
-    msg.header.stamp = node.get_clock().now().to_msg()
+
+    msg = wisc_msgs.EvalResult(metadata=std_msgs.String(data=goals.metadata),
+                               lively_joints=map(x->std_msgs.Float64(data=x),lik_sol),
+                               relaxed_joints=map(x->std_msgs.Float64(data=x),rik_sol))
     solutions_pub.publish(msg)
 end

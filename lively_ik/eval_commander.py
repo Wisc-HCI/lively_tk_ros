@@ -164,9 +164,11 @@ class Test(object):
 
     def results_cb(self,msg):
         metadata = msg.metadata.data
+        self.node.get_logger().info('{0} CB | {1}'.format(self.name,metadata))
         current_time = self.node.time_as_seconds
         if metadata == '' and self.active:
             self.active = False
+            self.node.get_logger().info('Writing File for {0}'.format(self.name))
             with open(SRC+'/eval/'+self.name+'.csv','w') as stream:
                 stream.write(self.contents)
             return
