@@ -3,8 +3,9 @@ import lively_ik
 import rclpy
 from rclpy.node import Node
 import os
-from lively_ik import BASE, INFO_PARAMS, get_configs
+from lively_ik import SRC, BASE, INFO_PARAMS, get_configs
 from julia import LivelyIK
+import random
 from lively_ik.groove.relaxed_ik_container import RelaxedIKContainer
 from std_msgs.msg import String, Float64, Int16
 from wisc_actions.elements import Pose, Position, Orientation, ModeTrajectory, PoseTrajectory
@@ -17,6 +18,7 @@ class Test(object):
     def __init__(self,name,config,valence):
         self.name = name
         self.config = config
+        self.active = False
         self.container = RelaxedIKContainer(config)
         self.valence = valence
         self.bias = [0.5,0.5,0.5]
@@ -32,6 +34,7 @@ class Test(object):
         self.initial_weights = [obj['weight'] for obj in self.objectives]
         self.objective_types = [obj['type'] for obj in self.objectives]
         self.contents = ','.join(['condition']+self.config['joint_ordering'])
+        self.seeds = [random.random()*1000 for j in self.config['joint_ordering']]
 
     @property
     def initial_positions(self):
@@ -136,51 +139,59 @@ class Test(object):
         return update
 
     def execute(self,node):
-        self.active = True
+
         self.node = node
         # Set the callback for listening
         self.node.get_logger().info('Setting Listener for {0}'.format(self.name))
-        self.node.results_cb = self.results_cb
+        self.node.callbacks.append(self.results_cb)
 
         # Initialize for 60 seconds
         self.node.get_logger().info('Initializing {0}'.format(self.name))
         start_time = self.node.time_as_seconds
         elapsed_time = 0
         while elapsed_time <= 60:
-            self.node.goal_pub.publish(self.node.create_update(self.initial,metadata=''))
+            self.node.goal_pub.publish(self.node.create_update(self.initial,''))
             elapsed_time = self.node.time_as_seconds - start_time
+            for i in range(100):
+                rclpy.spin_once(node)
 
+        self.active = True
         # Execute for the length of the task
         self.node.get_logger().info('Executing {0}'.format(self.name))
         start_time = self.node.time_as_seconds
         elapsed_time = 0
         while elapsed_time <= self.duration:
-            self.node.goal_pub.publish(self.node.create_update(self[elapsed_time],metadata=self.name))
+            self.node.goal_pub.publish(self.node.create_update(self[elapsed_time],self.name))
             elapsed_time = self.node.time_as_seconds - start_time
+            for i in range(50):
+                rclpy.spin_once(node)
         self.node.get_logger().info('Task Complete {0}'.format(self.name))
 
         while self.active:
-            rclpy.spin_once(node)
+            self.node.goal_pub.publish(self.node.create_update(self[self.duration],'terminate'))
+            for i in range(100):
+                rclpy.spin_once(node)
 
     def results_cb(self,msg):
         metadata = msg.metadata.data
         self.node.get_logger().info('{0} CB | {1}'.format(self.name,metadata))
-        current_time = self.node.time_as_seconds
-        if metadata == '' and self.active:
+        if metadata == 'terminate':
             self.active = False
+            self.node.callbacks.remove(self.results_cb)
             self.node.get_logger().info('Writing File for {0}'.format(self.name))
             with open(SRC+'/eval/'+self.name+'.csv','w') as stream:
                 stream.write(self.contents)
             return
         elif metadata == '':
             return
+        current_time = self.node.time_as_seconds
         r_joints = [d.data for d in msg.relaxed_joints]
         l_joints = [d.data for d in msg.lively_joints]
 
         n_joints = [v for v in r_joints]
         for idx,joint in enumerate(self.config['joint_ordering']):
             if joint in ALLOWED_NAIVE_JOINTS[self.config['robot_name']]:
-                n_joints[idx] += LivelyIK.noise1D(current_time,self.seeds[idx],self.valence_lookup[self.valence]) * JOINT_SCALES[self.config['robot_name']][joint]
+                n_joints[idx] += LivelyIK.noise1D(current_time,self.seeds[idx],self.frequency) * JOINT_SCALES[self.config['robot_name']][joint]
         n_joints = [clamp(v,self.config['joint_limits'][i][0],self.config['joint_limits'][i][1]) for i,v in enumerate(r_joints)]
 
         self.contents += '\n'+','.join(['static']+[str(v) for v in r_joints])
@@ -317,12 +328,15 @@ class CommanderNode(Node):
     def __init__(self):
         super(CommanderNode,self).__init__('evaluator')
         #self.manager_pub = self.create_publisher(GoalUpdates,'/lively_apps/goal_update',10)
-        self.results_cb = lambda msg: None
-        self.goal_pub = self.create_publisher(LivelyGoals,'/robot_goals',10)
+        self.callbacks = []
+        self.results_cb = lambda msg: [cb(msg) for cb in self.callbacks]
+        self.goal_pub = self.create_publisher(LivelyGoals,'/robot_goals',1)
         self.results_pub = self.create_subscription(EvalResult,'/eval_results',self.results_cb,10)
         self.active_task = None
 
-    def create_update(self,update,metadata=''):
+
+    def create_update(self,update,metadata):
+        self.get_logger().info('Metadata: {0}'.format(metadata))
         metadata_msg = String(data=metadata)
         pose_msg     = [pose.ros_pose for pose in update['pose']]
         dc_msg       = [Float64(data=float(dc)) for dc in update['dc']]
@@ -334,7 +348,7 @@ class CommanderNode(Node):
                           dc_values=dc_msg,
                           objective_weights=weight_msg,
                           bias=bias_msg)
-
+        msg.header.stamp = self.time_as_msg
         return msg
 
     @property

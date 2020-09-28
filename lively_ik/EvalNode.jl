@@ -62,11 +62,13 @@ function goal_cb(msg)
     # Handle the goal message
     global goals
     # println("MSG: $msg")
+    meta = msg.metadata.data
+    println("Metadata in cb: $meta")
     time = rclpy_time.Time.from_msg(msg.header.stamp).nanoseconds * 10^-9
     LivelyIK.update!(goals,msg,time)
 end
 
-goal_sub = node.create_subscription(wisc_msgs.LivelyGoals,"/robot_goals",goal_cb,5)
+goal_sub = node.create_subscription(wisc_msgs.LivelyGoals,"/robot_goals",goal_cb,1)
 
 # Process Until Interrupted
 println("\033[92mRunning LivelyIK Node\033[0m")

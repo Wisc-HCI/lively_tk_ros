@@ -52,11 +52,17 @@ function update!(goal,msg,time::Float64)
     end
     goal.weights = weights
 
-    if msg.metadata.data != goal.metadata
-        new_metadata = msg.metadata.data
+    new_metadata = msg.metadata.data
+    if goal.metadata == "" && new_metadata != "" && new_metadata != "terminate"
+        goal.metadata = new_metadata
+        println("Metadata -> $new_metadata")
+    else if goal.metadata == "terminate" and new_metadata == ""
+        goal.metadata = new_metadata
+        println("Metadata -> $new_metadata")
+    else if goal.metadata != "terminate" && new_metadata != "terminate"
+        goal.metadata = new_metadata
         println("Metadata -> $new_metadata")
     end
-    goal.metadata = msg.metadata.data
 end
 
 function Goals(lively_ik,info_data)
