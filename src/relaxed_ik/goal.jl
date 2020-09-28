@@ -51,7 +51,7 @@ function update!(goal,msg,time::Float64)
         push!(weights,msg.objective_weights[i].data)
     end
     goal.weights = weights
-    goal.metadata = msg.metadata
+    goal.metadata = msg.metadata.data
 end
 
 function Goals(lively_ik,info_data)

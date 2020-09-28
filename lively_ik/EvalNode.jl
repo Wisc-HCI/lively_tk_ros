@@ -80,7 +80,7 @@ while rclpy.ok()
     lik_sol = LivelyIK.solve(lik, goals.positions, goals.quats, goals.dc, time, goals.bias, goals.weights)
     rik_sol = LivelyIK.solve(rik, goals.positions, goals.quats, goals.dc, time, [0.0,0.0,0.0], rik_weights)
     # println("SOL: $sol")
-    msg = wisc_msgs.EvalResult(metadata=goals.metadata,lively_joints=lik_sol,relaxed_joints=rik_sol)
+    msg = wisc_msgs.EvalResult(metadata=std_msgs.String(data=goals.metadata),lively_joints=lik_sol,relaxed_joints=rik_sol)
     msg.header.stamp = node.get_clock().now().to_msg()
     solutions_pub.publish(msg)
 end
