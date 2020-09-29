@@ -26,15 +26,8 @@ def launch_setup(context, *args, **kwargs):
              parameters=[{'info':info_string},
                          {'output_topic':output_topic}]),
         Node(package='lively_ik',
-             executable='control',
-             output='screen'),
-        Node(package='lively_ik',
              executable='EvalNode.jl',
-             output='screen'),
-        # Node(package='rviz2',
-        #      executable='rviz2',
-        #      name='rviz2',
-        #      arguments=['-d',rviz_file])
+             output='screen')
     ]
 
     return nodes
