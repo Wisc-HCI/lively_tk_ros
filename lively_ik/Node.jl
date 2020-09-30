@@ -36,7 +36,7 @@ global info_data = YAML.load(info_string)
 global solutions_pub = node.create_publisher(sensor_msgs.JointState,output_topic,5)
 
 # LivelyIK Setup
-global lik = LivelyIK.get_standard(info_data,node)
+global lik = LivelyIK.get_standard(info_data)
 
 global goals = LivelyIK.Goals(lik,info_data)
 

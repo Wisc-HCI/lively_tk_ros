@@ -50,6 +50,12 @@ for i=1:length(goals)
 
     lik_sol = LivelyIK.solve(lik, positions, quats, dc, time, lik_bias, lik_weights)
     rik_sol = LivelyIK.solve(rik, positions, quats, dc, time, rik_bias, rik_weights)
+
+    diff = []
+    for v=1:length(lik_sol)
+        push!(diff,lik_sol[v]-rik_sol[v])
+    end
+    println("$time: $diff")
     if goal["metadata"] != "buffer"
         push!(solutions,Dict("time"=>time,"lik_sol"=>lik_sol,"rik_sol"=>rik_sol,"dc"=>dc))
     end

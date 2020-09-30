@@ -51,35 +51,35 @@ objectives:
 - {gradient: forward_ad, index: 1, type: rotation, weight: 25}
 - {frequency: 10, gradient: forward_ad, index: 1, scale: 0.15, type: positional_noise,weight: 0} # Negative Affect
 - {frequency: 10, gradient: forward_ad, index: 1, scale: 1, type: rotational_noise,weight: 0}    # Negative Affect
-- {frequency:  5, gradient: forward_ad, index: 1, scale: 0.15, type: positional_noise,weight: 20} # Negative Affect
-- {frequency:  5, gradient: forward_ad, index: 1, scale: 1, type: rotational_noise,weight: 5}    # Negative Affect
+- {frequency:  5, gradient: forward_ad, index: 1, scale: 0.15, type: positional_noise,weight: 20} # Neutral Affect
+- {frequency:  5, gradient: forward_ad, index: 1, scale: 1, type: rotational_noise,weight: 5}    # Neutral Affect
 - {frequency:  3, gradient: forward_ad, index: 1, scale: 0.15, type: positional_noise,weight: 0} # Negative Affect
 - {frequency:  3, gradient: forward_ad, index: 1, scale: 1, type: rotational_noise,weight: 0}    # Negative Affect
-- {frequency: 10, gradient: forward_ad, index: 1, scale: 0.5, type: dc_noise, weight: 0} # Negative Affect
-- {frequency: 10, gradient: forward_ad, index: 2, scale: 0.5, type: dc_noise, weight: 0} # Negative Affect
-- {frequency: 10, gradient: forward_ad, index: 3, scale: 0.5, type: dc_noise, weight: 0} # Negative Affect
-- {frequency: 10, gradient: forward_ad, index: 4, scale: 0.5, type: dc_noise, weight: 0} # Negative Affect
-- {frequency: 10, gradient: forward_ad, index: 5, scale: 0.5, type: dc_noise, weight: 0} # Negative Affect
-- {frequency: 10, gradient: forward_ad, index: 6, scale: 0.5, type: dc_noise, weight: 0} # Negative Affect
-- {frequency: 10, gradient: forward_ad, index: 7, scale: 0.5, type: dc_noise, weight: 0} # Negative Affect
+# - {frequency: 10, gradient: forward_ad, index: 1, scale: 0.5, type: dc_noise, weight: 0} # Negative Affect
+# - {frequency: 10, gradient: forward_ad, index: 2, scale: 0.5, type: dc_noise, weight: 0} # Negative Affect
+# - {frequency: 10, gradient: forward_ad, index: 3, scale: 0.5, type: dc_noise, weight: 0} # Negative Affect
+# - {frequency: 10, gradient: forward_ad, index: 4, scale: 0.5, type: dc_noise, weight: 0} # Negative Affect
+# - {frequency: 10, gradient: forward_ad, index: 5, scale: 0.5, type: dc_noise, weight: 0} # Negative Affect
+# - {frequency: 10, gradient: forward_ad, index: 6, scale: 0.5, type: dc_noise, weight: 0} # Negative Affect
+# - {frequency: 10, gradient: forward_ad, index: 7, scale: 0.5, type: dc_noise, weight: 0} # Negative Affect
 - {frequency: 10, gradient: forward_ad, index: 8, scale: 0.5, type: dc_noise, weight: 0} # Negative Affect
 - {frequency: 10, gradient: forward_ad, index: 9, scale: 0.5, type: dc_noise, weight: 0} # Negative Affect
-- {frequency:  5, gradient: forward_ad, index: 1, scale: 0.5, type: dc_noise, weight: 0} # Neutral Affect
-- {frequency:  5, gradient: forward_ad, index: 2, scale: 0.5, type: dc_noise, weight: 0} # Neutral Affect
-- {frequency:  5, gradient: forward_ad, index: 3, scale: 0.5, type: dc_noise, weight: 0} # Neutral Affect
-- {frequency:  5, gradient: forward_ad, index: 4, scale: 0.5, type: dc_noise, weight: 0} # Neutral Affect
-- {frequency:  5, gradient: forward_ad, index: 5, scale: 0.5, type: dc_noise, weight: 0} # Neutral Affect
-- {frequency:  5, gradient: forward_ad, index: 6, scale: 0.5, type: dc_noise, weight: 0} # Neutral Affect
-- {frequency:  5, gradient: forward_ad, index: 7, scale: 0.5, type: dc_noise, weight: 0} # Neutral Affect
-- {frequency:  5, gradient: forward_ad, index: 8, scale: 0.5, type: dc_noise, weight: 0} # Neutral Affect
-- {frequency:  5, gradient: forward_ad, index: 9, scale: 0.5, type: dc_noise, weight: 0} # Neutral Affect
-- {frequency:  3, gradient: forward_ad, index: 1, scale: 0.5, type: dc_noise, weight: 0} # Positive Affect
-- {frequency:  3, gradient: forward_ad, index: 2, scale: 0.5, type: dc_noise, weight: 0} # Positive Affect
-- {frequency:  3, gradient: forward_ad, index: 3, scale: 0.5, type: dc_noise, weight: 0} # Positive Affect
-- {frequency:  3, gradient: forward_ad, index: 4, scale: 0.5, type: dc_noise, weight: 0} # Positive Affect
-- {frequency:  3, gradient: forward_ad, index: 5, scale: 0.5, type: dc_noise, weight: 0} # Positive Affect
-- {frequency:  3, gradient: forward_ad, index: 6, scale: 0.5, type: dc_noise, weight: 0} # Positive Affect
-- {frequency:  3, gradient: forward_ad, index: 7, scale: 0.5, type: dc_noise, weight: 0} # Positive Affect
+# - {frequency:  5, gradient: forward_ad, index: 1, scale: 0.5, type: dc_noise, weight: 0} # Neutral Affect
+# - {frequency:  5, gradient: forward_ad, index: 2, scale: 0.5, type: dc_noise, weight: 0} # Neutral Affect
+# - {frequency:  5, gradient: forward_ad, index: 3, scale: 0.5, type: dc_noise, weight: 0} # Neutral Affect
+# - {frequency:  5, gradient: forward_ad, index: 4, scale: 0.5, type: dc_noise, weight: 0} # Neutral Affect
+# - {frequency:  5, gradient: forward_ad, index: 5, scale: 0.5, type: dc_noise, weight: 0} # Neutral Affect
+# - {frequency:  5, gradient: forward_ad, index: 6, scale: 0.5, type: dc_noise, weight: 0} # Neutral Affect
+# - {frequency:  5, gradient: forward_ad, index: 7, scale: 0.5, type: dc_noise, weight: 0} # Neutral Affect
+- {frequency:  5, gradient: forward_ad, index: 8, scale: 0.5, type: dc_noise, weight: 2} # Neutral Affect
+- {frequency:  5, gradient: forward_ad, index: 9, scale: 0.5, type: dc_noise, weight: 2} # Neutral Affect
+# - {frequency:  3, gradient: forward_ad, index: 1, scale: 0.5, type: dc_noise, weight: 0} # Positive Affect
+# - {frequency:  3, gradient: forward_ad, index: 2, scale: 0.5, type: dc_noise, weight: 0} # Positive Affect
+# - {frequency:  3, gradient: forward_ad, index: 3, scale: 0.5, type: dc_noise, weight: 0} # Positive Affect
+# - {frequency:  3, gradient: forward_ad, index: 4, scale: 0.5, type: dc_noise, weight: 0} # Positive Affect
+# - {frequency:  3, gradient: forward_ad, index: 5, scale: 0.5, type: dc_noise, weight: 0} # Positive Affect
+# - {frequency:  3, gradient: forward_ad, index: 6, scale: 0.5, type: dc_noise, weight: 0} # Positive Affect
+# - {frequency:  3, gradient: forward_ad, index: 7, scale: 0.5, type: dc_noise, weight: 0} # Positive Affect
 - {frequency:  3, gradient: forward_ad, index: 8, scale: 0.5, type: dc_noise, weight: 0} # Positive Affect
 - {frequency:  3, gradient: forward_ad, index: 9, scale: 0.5, type: dc_noise, weight: 0} # Positive Affect
 - {gradient: forward_ad, type: min_jt_vel, weight: 5}
@@ -105,7 +105,7 @@ sample_states:
 - [0, 0, 0, -1.52715, 0, 1.8675, 0, 0.02, 0.02]
 - [1.08, -0.01, 0, -1.71, 0, 1.8675, 0.8, 0.02, 0.02]
 spheres: []
-starting_config: [0, 0, 0, -1.52715, 0, 1.8675, 0, 0.02, 0.02]
+starting_config: [0, 0, 0, -1.52715, 0, 1.8675, 0.8, 0.02, 0.02]
 training_states:
 - [0, 0, 0, -1.52715, 0, 1.8675, 0, 0.02, 0.02]
 - [-1.74, -0.05, 0, -1.71, 0, 1.8675, 0, 0.02, 0.02]
