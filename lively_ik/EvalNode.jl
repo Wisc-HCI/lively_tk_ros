@@ -38,6 +38,7 @@ println("\033[92mRunning LivelyIK Node\033[0m")
 for i=1:length(goals)
     global solutions
     goal=goals[i]
+    println(goal)
     time = goal["time"]
     update = goal["update"]
     lik_weights = update["weight"]

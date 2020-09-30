@@ -34,7 +34,6 @@ function rotational_noise_obj(x, vars, objidx, eeidx)
     disp2 = norm(quaternion_disp(goal_quat, ee_quat2))
 
     x_val = min(disp, disp2)
-    println(x_val)
 
     # return groove_loss(x_val, 0.,2.,.1,10.,2.)
     return groove_loss(x_val, 0., 2, .1, 10., 2)
