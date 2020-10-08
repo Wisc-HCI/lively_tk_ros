@@ -38,10 +38,11 @@ println("\033[92mRunning LivelyIK Node\033[0m")
 for i=1:length(goals)
     global solutions
     goal=goals[i]
-    println(goal)
+    # println(goal)
     time = goal["time"]
     update = goal["update"]
-    lik_weights = update["weight"]
+    lik_weights = map(w->w,update["weight"])
+    rik_weights = map(w->w,update["weight"])
     rik_weights = strip_noise(rik_info_data["objectives"],update["weight"])
     positions = map(p->[p["position"]["x"],p["position"]["y"],p["position"]["z"]],update["pose"])
     quats = map(p->Rotations.Quat(p["orientation"]["w"],p["orientation"]["x"],p["orientation"]["y"],p["orientation"]["z"]),update["pose"])
@@ -56,7 +57,7 @@ for i=1:length(goals)
     for v=1:length(lik_sol)
         push!(diff,lik_sol[v]-rik_sol[v])
     end
-    println("$time: $diff")
+    # println("$time: $diff")
     if goal["metadata"] != "buffer"
         push!(solutions,Dict("time"=>time,"lik_sol"=>lik_sol,"rik_sol"=>rik_sol,"dc"=>dc))
     end

@@ -142,3 +142,4 @@ point_cloud_pub.py
 install.out
 
 gui/node_modules/*
+eval/*

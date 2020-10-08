@@ -10,6 +10,7 @@ from wisc_msgs.msg import LivelyGoals
 from wisc_actions.elements.structures import Position, Pose
 from argparse import ArgumentParser
 from lively_ik.groove.relaxed_ik_container import RelaxedIKContainer
+from lively_ik.utils.collision_utils import *
 from interactive_markers.interactive_marker_server import *
 from visualization_msgs.msg import InteractiveMarkerFeedback, InteractiveMarker, InteractiveMarkerControl, Marker
 
@@ -27,6 +28,7 @@ class ControllerNode(Node):
         self.ims = InteractiveMarkerServer(self,'control')
         self.goal_pub = self.create_publisher(LivelyGoals,'robot_goals',5)
         self.temp_js_pub = self.create_publisher(JointState,'joint_states',5)
+        self.collision_pub = self.create_publisher(Marker,'/visualization_marker',5)
         self.rik_container = RelaxedIKContainer(self.info)
         ee_positions = self.rik_container.robot.get_ee_positions(self.info['starting_config'])
         ee_rotations = self.rik_container.robot.get_ee_rotations(self.info['starting_config'])
@@ -77,7 +79,54 @@ class ControllerNode(Node):
         self.goals = LivelyGoals(ee_poses=ee_poses,dc_values=dc_values,objective_weights=objective_weights,bias=bias)
 
         self.ims.applyChanges()
+
+        self.collision_markers = []
+        collision_objects = self.rik_container.collision_graph.c.collision_objects
+        for idx,collision_object in enumerate(collision_objects):
+            if collision_object.type != 'robot_link':
+                marker = Marker()
+                marker.header.frame_id = 'world'
+                marker.id = idx
+                marker.pose.position.x = float(collision_object.translation[0])
+                marker.pose.position.y = float(collision_object.translation[1])
+                marker.pose.position.z = float(collision_object.translation[2])
+                marker.pose.orientation.w = float(collision_object.quaternion[0])
+                marker.pose.orientation.x = float(collision_object.quaternion[1])
+                marker.pose.orientation.y = float(collision_object.quaternion[2])
+                marker.pose.orientation.z = float(collision_object.quaternion[3])
+                marker.color.a = 0.4
+                marker.color.r = random.uniform(0,1)
+                marker.color.g = random.uniform(0,1)
+                marker.color.b = random.uniform(0,1)
+                if type(collision_object) == Collision_Box:
+                    marker.type = marker.CUBE
+                    marker.scale.x = float(collision_object.x)
+                    marker.scale.y = float(collision_object.y)
+                    marker.scale.z = float(collision_object.z)
+                elif type(collision_object) == Collision_Cylinder:
+                    marker.type = marker.CYLINDER
+                    marker.scale.x = float(collision_object.r*2)
+                    marker.scale.y = float(collision_object.r*2)
+                    marker.scale.z = float(collision_object.lz)
+                elif type(collision_object) == Collision_Sphere:
+                    marker.type = marker.SPHERE
+                    marker.scale.x = float(collision_object.r*2)
+                    marker.scale.y = float(collision_object.r*2)
+                    marker.scale.z = float(collision_object.r*2)
+                elif type(collision_object) == Collision_Capsule:
+                    marker.type = marker.CYLINDER
+                    marker.scale.x = float(collision_object.r*2)
+                    marker.scale.y = float(collision_object.r*2)
+                    marker.scale.z = float(collision_object.lz)
+                elif type(collision_object) == Collision_Ellipsoid:
+                    marker.type = marker.SPHERE
+                    marker.scale.x = float(collision_object.x*2)
+                    marker.scale.y = float(collision_object.y*2)
+                    marker.scale.z = float(collision_object.z*2)
+            self.collision_markers.append(marker)
+
         self.create_timer(0.05,self.publisher)
+
         js_msg = JointState(name=self.info['joint_ordering'],position=self.info['starting_config'])
         js_msg.header.stamp = self.get_clock().now().to_msg()
         self.temp_js_pub.publish(js_msg)
@@ -88,8 +137,12 @@ class ControllerNode(Node):
         self.goals.ee_poses[self.marker_lookup.index(msg.marker_name)] = msg.pose
 
     def publisher(self):
-        self.goals.header.stamp = self.get_clock().now().to_msg()
+        now = self.get_clock().now().to_msg()
+        self.goals.header.stamp = now
         self.goal_pub.publish(self.goals)
+        # for marker in self.collision_markers:
+        #     marker.header.stamp = now
+        #     self.collision_pub.publish(marker)
 
     def get_lik_param(self, param):
         request = GetParameters.Request()

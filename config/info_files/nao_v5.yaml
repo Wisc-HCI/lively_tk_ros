@@ -138,8 +138,8 @@ objectives:
 - {gradient: forward_ad, index: 5, type: rotation, weight: 30}
 - {frequency: 10, gradient: forward_ad, index: 2, scale: 0.15, type: positional_noise,weight:  0} # Negative Affect
 - {frequency: 10, gradient: forward_ad, index: 3, scale: 0.15, type: positional_noise,weight:  0} # Negative Affect
-- {frequency:  5, gradient: forward_ad, index: 2, scale: 0.15, type: positional_noise,weight: 20} # Neutral Affect
-- {frequency:  5, gradient: forward_ad, index: 3, scale: 0.15, type: positional_noise,weight: 20} # Neutral Affect
+- {frequency:  5, gradient: forward_ad, index: 2, scale: 0.15, type: positional_noise,weight: 5} # Neutral Affect
+- {frequency:  5, gradient: forward_ad, index: 3, scale: 0.15, type: positional_noise,weight: 5} # Neutral Affect
 - {frequency:  3, gradient: forward_ad, index: 2, scale: 0.15, type: positional_noise,weight:  0} # Positive Affect
 - {frequency:  3, gradient: forward_ad, index: 3, scale: 0.15, type: positional_noise,weight:  0} # Positive Affect
 - {frequency: 10, gradient: forward_ad, index: 2, scale: 1, type: rotational_noise,weight: 0} # Negative Affect
@@ -203,7 +203,7 @@ objectives:
 - {gradient: forward_ad, type: min_jt_accel, weight: 2}
 - {gradient: forward_ad, type: min_jt_jerk, weight: 0.1}
 - {gradient: forward_ad, type: joint_limit, weight: 2}
-- {gradient: finite_diff, type: collision_nn, weight: 5}
+- {gradient: finite_diff, type: collision_nn, weight: 10}
 problem_states:
 - [0, 0, -0.81, 0.38, -0.5, -0.5, -0.01, -1.46, -0.19, -0.04, 1.35, 1.3, 0, 0.2, 0,
   0.15, -0.15, -0.2, 0, -0.2, 0, 0.15, -0.15, 0.2, 0.5, 0.5]

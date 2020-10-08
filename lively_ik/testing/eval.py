@@ -9,9 +9,9 @@ import json
 import pandas
 from wisc_actions.elements import Position, Orientation, Pose, ModeTrajectory, PoseTrajectory
 
-BIAS_LOOKUP = {'panda':{'positive':[0.5,0.1,1.0],
+BIAS_LOOKUP = {'panda':{'positive':[0.1,0.75,1.5],
                         'neutral':[0.5,0.5,0.5],
-                        'negative':[1.0,0.1,0.1]},
+                        'negative':[0.1,1.5,0.1]},
                'ur5_robotiq_85':{'positive':[0.5,0.1,1.0],
                                  'neutral':[0.5,0.5,0.5],
                                  'negative':[1.0,0.1,0.1]},
@@ -39,6 +39,7 @@ class Test(object):
         self.initial_weights = [obj['weight'] for obj in self.objectives]
         self.objective_types = [obj['type'] for obj in self.objectives]
         self.seeds = [random.random()*1000 for j in self.config['joint_ordering']]
+        self.joint_limits = config['joint_limits']
 
     @property
     def initial_positions(self):
@@ -63,9 +64,9 @@ class Test(object):
             'pose':[],
             'weight':[],
             'dc':[],
-            'bias':[ModeTrajectory([{'time':0,'mode':self.bias[0]}],kind=1),
-                    ModeTrajectory([{'time':0,'mode':self.bias[1]}],kind=1),
-                    ModeTrajectory([{'time':0,'mode':self.bias[2]}],kind=1)]
+            'bias':[ModeTrajectory([{'time':0,'mode':self.bias[0]}],method='interp1d',kind='slinear'),
+                    ModeTrajectory([{'time':0,'mode':self.bias[1]}],method='interp1d',kind='slinear'),
+                    ModeTrajectory([{'time':0,'mode':self.bias[2]}],method='interp1d',kind='slinear')]
         }
         raw_pose_trajectories = []
         raw_weight_trajectories = []
@@ -86,11 +87,11 @@ class Test(object):
             elif update['type'] == 'dc':
                 raw_dc_trajectories[update['idx']].append({'time':update['time'],'mode':update['value']})
         for pose_trajectory in raw_pose_trajectories:
-            compiled['pose'].append(PoseTrajectory(pose_trajectory,kind=1))
+            compiled['pose'].append(PoseTrajectory(pose_trajectory,method='interp1d',kind='slinear'))
         for weight_trajectory in raw_weight_trajectories:
-            compiled['weight'].append(ModeTrajectory(weight_trajectory,kind=1))
+            compiled['weight'].append(ModeTrajectory(weight_trajectory,method='interp1d',kind='slinear'))
         for dc_trajectory in raw_dc_trajectories:
-            compiled['dc'].append(ModeTrajectory(dc_trajectory,kind=1))
+            compiled['dc'].append(ModeTrajectory(dc_trajectory,method='interp1d',kind='slinear'))
         return compiled
 
     def joint_idx(self,joint_name):
@@ -221,7 +222,7 @@ class NaoStaticValence(Test):
             if 'noise' in objective['type'] and objective['frequency'] == self.frequency:
                 if objective['type'] == 'positional_noise':
                     # Make the weight 20
-                    self.initial_weights[idx] = 20
+                    self.initial_weights[idx] = 5
                 elif objective['type'] == 'rotational_noise':
                     # Make the weight 5
                     self.initial_weights[idx] = 5
@@ -265,7 +266,7 @@ class NaoWaveAction(Test):
             if 'noise' in objective['type'] and objective['frequency'] == self.frequency:
                 if objective['type'] == 'positional_noise':
                     # Make the weight 20
-                    self.initial_weights[idx] = 20
+                    self.initial_weights[idx] = 5
                 elif objective['type'] == 'rotational_noise':
                     # Make the weight 5
                     self.initial_weights[idx] = 5
@@ -365,12 +366,12 @@ class PandaStaticValence(Test):
         if valence == 'positive':
             self.initial_joints[self.joint_idx('panda_joint2')] = -0.1
         elif valence == 'negative':
-            self.initial_joints[self.joint_idx('panda_joint2')] = 0.55
+            self.initial_joints[self.joint_idx('panda_joint2')] = 0.35
         for idx,objective in enumerate(self.config['objectives']):
             if 'noise' in objective['type'] and objective['frequency'] == self.frequency:
                 if objective['type'] == 'positional_noise':
                     # Make the weight 20
-                    self.initial_weights[idx] = 20
+                    self.initial_weights[idx] = 25
                 elif objective['type'] == 'rotational_noise':
                     # Make the weight 5
                     self.initial_weights[idx] = 5
@@ -398,10 +399,181 @@ class PandaStaticValence(Test):
             commands.append(update)
         return commands
 
-class UR5PickupAction(Test):
+class PandaPickupAction(Test):
     def __init__(self):
-        config = get_configs()['ur5_robotiq_85']
-        super(UR5PickupAction,self).__init__('ur5_pickup_task',config,'neutral')
+        config = get_configs()['panda']
+        super(PandaPickupAction,self).__init__('panda_pickup_task',config,'neutral')
+        for idx,objective in enumerate(self.config['objectives']):
+            if 'noise' in objective['type'] and objective['frequency'] == self.frequency:
+                if objective['type'] == 'positional_noise':
+                    # Make the weight 20
+                    self.initial_weights[idx] = 25
+                elif objective['type'] == 'rotational_noise':
+                    # Make the weight 5
+                    self.initial_weights[idx] = 5
+                elif objective['type'] == 'dc_noise' and self.objective_joint(idx) in ['panda_finger_joint1','panda_finger_joint2']:
+                    # Make the weight 20
+                    self.initial_weights[idx] = 10
+            elif 'noise' in objective['type']:
+                # Make the weight 0
+                self.initial_weights[idx] = 0
+
+    @property
+    def update_description(self):
+
+        task = [
+                # Before beginning action
+                {'joints':{'panda_joint1':0,
+                           'panda_joint2':0,
+                           'panda_joint3':0,
+                           'panda_joint4':-1.52715,
+                           'panda_joint5':0,
+                           'panda_joint6':1.8675,
+                           'panda_joint7':0.8,
+                           'panda_finger_joint1':0.02,
+                           'panda_finger_joint2':0.02},
+                 'noise':True,
+                 'time':3.0},
+                {'joints':{},
+                  'noise':True,
+                  'time':4.0},
+                # Move to duck approach, open gripper
+                {'joints':{'panda_joint1':0.33,
+                           'panda_joint2':0.25,
+                           'panda_joint3':0.0,
+                           'panda_joint4':-2.35,
+                           'panda_joint5':0.0,
+                           'panda_joint6':2.68,
+                           'panda_joint7':1.13,
+                           'panda_finger_joint1':0.025,
+                           'panda_finger_joint2':0.025},
+                 'noise':False,
+                 'time':6.0},
+                # Move to grasp duck
+                {'joints':{'panda_joint1':0.33,
+                           'panda_joint2':0.45,
+                           'panda_joint3':0.0,
+                           'panda_joint4':-2.26,
+                           'panda_joint5':0.0,
+                           'panda_joint6':2.8,
+                           'panda_joint7':1.13,
+                           'panda_finger_joint1':0.020,
+                           'panda_finger_joint2':0.020},
+                 'noise':False,
+                 'time':6.5},
+                # Grasp duck
+                {'joints':{'panda_joint1':0.35,
+                           'panda_joint2':0.43,
+                           'panda_joint3':0.0,
+                           'panda_joint4':-2.26,
+                           'panda_joint5':0.0,
+                           'panda_joint6':2.8,
+                           'panda_joint7':1.13,
+                           'panda_finger_joint1':0.016,
+                           'panda_finger_joint2':0.016},
+                 'noise':False,
+                 'time':7.5},
+                # Retract
+                {'joints':{'panda_joint1':0.33,
+                           'panda_joint2':0.25,
+                           'panda_joint3':0.0,
+                           'panda_joint4':-2.35,
+                           'panda_joint5':0.0,
+                           'panda_joint6':2.68,
+                           'panda_joint7':1.13},
+                 'noise':False,
+                 'time':8.0},
+                # Move to box approach
+                {'joints':{'panda_joint1':-0.46,
+                           'panda_joint2':-0.21,
+                           'panda_joint3':0.0,
+                           'panda_joint4':-2.25,
+                           'panda_joint5':0.0,
+                           'panda_joint6':2.14,
+                           'panda_joint7':0.3,
+                           'panda_finger_joint1':0.016,
+                           'panda_finger_joint2':0.016},
+                 'noise':False,
+                 'time':9.0},
+                # Release
+                {'joints':{'panda_finger_joint1':0.02,
+                           'panda_finger_joint2':0.02},
+                 'noise':False,
+                 'time':9.25},
+                # Hold
+                {'joints':{'panda_joint1':-0.46,
+                           'panda_joint2':-0.21,
+                           'panda_joint3':0.0,
+                           'panda_joint4':-2.25,
+                           'panda_joint5':0.0,
+                           'panda_joint6':2.14,
+                           'panda_joint7':0.3,
+                           'panda_finger_joint1':0.02,
+                           'panda_finger_joint2':0.02},
+                 'noise':False,
+                 'time':11},
+                # Resume Liveliness
+                {'joints':{'panda_joint1':0,
+                           'panda_joint2':0,
+                           'panda_joint3':0,
+                           'panda_joint4':-1.52715,
+                           'panda_joint5':0,
+                           'panda_joint6':1.8675,
+                           'panda_joint7':0.8,
+                           'panda_finger_joint1':0.02,
+                           'panda_finger_joint2':0.02},
+                 'noise':False,
+                 'time':12.0},
+                # Terminate
+                {'joints':{'panda_joint1':0,
+                           'panda_joint2':0,
+                           'panda_joint3':0,
+                           'panda_joint4':-1.52715,
+                           'panda_joint5':0,
+                           'panda_joint6':1.8675,
+                           'panda_joint7':0.8},
+                 'noise':True,
+                 'time':15},
+        ]
+
+        joints = [v for v in self.initial_joints]
+        commands = []
+
+        for step in task:
+
+            # DC Values
+            for joint_name, dc in step['joints'].items():
+                idx = self.config['joint_ordering'].index(joint_name)
+                joints[idx] = dc
+                commands.append({'type':'dc','value':dc,'idx':idx,'time':step['time']})
+            poses = self.poses_from_joints(joints)
+            for idx,ee in enumerate(self.config['ee_fixed_joints']):
+                commands.append({'type':'pose','value':poses[idx],'idx':idx,'time':step['time']})
+
+            # Objective weights
+            positive_noise_weights = {'positional_noise':20,'rotational_noise':5,'dc_noise':10}
+
+            for idx,objective in enumerate(self.config['objectives']):
+                ## Set noise objectives
+                if step['noise']:
+                    ### Set the noise objective to positive if the right frequency
+                    if 'noise' in objective['type'] and objective['frequency'] == self.frequency:
+                        update = {'type':'weight','value':positive_noise_weights[objective['type']],'idx':idx,'time':step['time']}
+                        commands.append(update)
+                    elif 'noise' in objective['type'] and objective['frequency'] != self.frequency:
+                        update = {'type':'weight','value':0,'idx':idx,'time':step['time']}
+                        commands.append(update)
+                elif 'noise' in objective['type']:
+                    update = {'type':'weight','value':0,'idx':idx,'time':step['time']}
+                    commands.append(update)
+
+
+        return commands
+
+class PandaProfiler(Test):
+    def __init__(self):
+        config = get_configs()['panda']
+        super(PandaProfiler,self).__init__('panda_profiler',config,'neutral')
         for idx,objective in enumerate(self.config['objectives']):
             if 'noise' in objective['type'] and objective['frequency'] == self.frequency:
                 if objective['type'] == 'positional_noise':
@@ -410,29 +582,82 @@ class UR5PickupAction(Test):
                 elif objective['type'] == 'rotational_noise':
                     # Make the weight 5
                     self.initial_weights[idx] = 5
-                elif objective['type'] == 'dc_noise' and self.objective_joint(idx) in ['gripper_finger1_joint','gripper_finger2_joint']:
+                elif objective['type'] == 'dc_noise' and self.objective_joint(idx) in ['panda_finger_joint1','panda_finger_joint2']:
                     # Make the weight 20
-                    self.initial_weights[idx] = 20
+                    self.initial_weights[idx] = 10
             elif 'noise' in objective['type']:
                 # Make the weight 0
                 self.initial_weights[idx] = 0
 
     @property
     def update_description(self):
+
+        task = [
+                # Before beginning action
+                {'joints':{joint:random.uniform(self.joint_limits[j][0],self.joint_limits[j][1]) for j,joint in enumerate(self.config['joint_ordering'])},
+                 'noise':True,
+                 'time':i*10} for i in range(50)
+        ]
+
+        joints = [v for v in self.initial_joints]
         commands = []
-        for idx,pose in enumerate(self.poses_from_joints(self.initial_joints)):
-            update = {'type':'pose','value':pose,'idx':idx,'time':30}
-            commands.append(update)
-        for idx,weight in enumerate(self.initial_weights):
-            update = {'type':'weight','value':weight,'idx':idx,'time':30}
-            commands.append(update)
-        for idx,bias in enumerate(self.bias):
-            update = {'type':'bias','value':bias,'idx':idx,'time':30}
-            commands.append(update)
-        for idx,dc in enumerate(self.initial_joints):
-            update = {'type':'dc','value':dc,'idx':idx,'time':30}
-            commands.append(update)
+
+        for step in task:
+            # DC Values
+            for joint_name, dc in step['joints'].items():
+                idx = self.config['joint_ordering'].index(joint_name)
+                joints[idx] = dc
+                commands.append({'type':'dc','value':dc,'idx':idx,'time':step['time']})
+            poses = self.poses_from_joints(joints)
+            for idx,ee in enumerate(self.config['ee_fixed_joints']):
+                commands.append({'type':'pose','value':poses[idx],'idx':idx,'time':step['time']})
+
         return commands
+
+class NaoProfiler(Test):
+    def __init__(self):
+        config = get_configs()['nao_v5']
+        super(NaoProfiler,self).__init__('nao_v5_profiler',config,'neutral')
+        for idx,objective in enumerate(self.config['objectives']):
+            if 'noise' in objective['type'] and objective['frequency'] == self.frequency:
+                if objective['type'] == 'positional_noise':
+                    # Make the weight 20
+                    self.initial_weights[idx] = 20
+                elif objective['type'] == 'rotational_noise':
+                    # Make the weight 5
+                    self.initial_weights[idx] = 5
+                elif objective['type'] == 'dc_noise' and self.objective_joint(idx) in ['LHand','RHand']:
+                    # Make the weight 20
+                    self.initial_weights[idx] = 10
+            elif 'noise' in objective['type']:
+                # Make the weight 0
+                self.initial_weights[idx] = 0
+
+    @property
+    def update_description(self):
+
+        task = [
+                # Before beginning action
+                {'joints':{joint:random.uniform(self.joint_limits[j][0],self.joint_limits[j][1]) for j,joint in enumerate(self.config['joint_ordering'])},
+                 'noise':True,
+                 'time':i*10} for i in range(50)
+        ]
+
+        joints = [v for v in self.initial_joints]
+        commands = []
+
+        for step in task:
+            # DC Values
+            for joint_name, dc in step['joints'].items():
+                idx = self.config['joint_ordering'].index(joint_name)
+                joints[idx] = dc
+                commands.append({'type':'dc','value':dc,'idx':idx,'time':step['time']})
+            poses = self.poses_from_joints(joints)
+            for idx,ee in enumerate(self.config['ee_fixed_joints']):
+                commands.append({'type':'pose','value':poses[idx],'idx':idx,'time':step['time']})
+
+        return commands
+
 
 def clamp(x, lo, hi):
     if lo <= x <= hi:
