@@ -7,7 +7,7 @@ from rcl_interfaces.srv import GetParameters
 from sensor_msgs.msg import JointState
 from std_msgs.msg import Float64
 from wisc_msgs.msg import LivelyGoals
-from wisc_actions.elements.structures import Position, Pose
+from wisc_actions.elements import Position, Pose
 from argparse import ArgumentParser
 from lively_ik.groove.relaxed_ik_container import RelaxedIKContainer
 from lively_ik.utils.collision_utils import *
