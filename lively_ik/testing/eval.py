@@ -7,7 +7,8 @@ from lively_ik.groove.relaxed_ik_container import RelaxedIKContainer
 import time
 import json
 import pandas
-from wisc_actions.elements import Position, Orientation, Pose, ModeTrajectory, PoseTrajectory
+from wisc_actions.elements import Position, Orientation, Pose
+from scipy import interpolate
 
 BIAS_LOOKUP = {'panda':{'positive':[0.1,0.75,1.5],
                         'neutral':[0.5,0.5,0.5],
@@ -58,40 +59,23 @@ class Test(object):
 
     @property
     def compiled(self):
-        last_update = 0
         update_description = self.update_description
         compiled = {
-            'pose':[],
             'weight':[],
             'dc':[],
-            'bias':[ModeTrajectory([{'time':0,'mode':self.bias[0]}],method='interp1d',kind='slinear'),
-                    ModeTrajectory([{'time':0,'mode':self.bias[1]}],method='interp1d',kind='slinear'),
-                    ModeTrajectory([{'time':0,'mode':self.bias[2]}],method='interp1d',kind='slinear')]
+            'bias':[[{'time':0,'mode':self.bias[0]},{'time':1,'mode':self.bias[0]}],
+                    [{'time':0,'mode':self.bias[1]},{'time':1,'mode':self.bias[1]}],
+                    [{'time':0,'mode':self.bias[2]},{'time':1,'mode':self.bias[2]}]]
         }
-        raw_pose_trajectories = []
-        raw_weight_trajectories = []
-        raw_dc_trajectories = []
-        for pose in self.poses_from_joints(self.initial_joints):
-            raw_pose_trajectories.append([{'time':0,'pose':pose}])
         for weight in self.initial_weights:
-            raw_weight_trajectories.append([{'time':0,'mode':weight}])
+            compiled['weight'].append([{'time':0,'mode':weight}])
         for dc in self.initial_joints:
-            raw_dc_trajectories.append([{'time':0,'mode':dc}])
+            compiled['dc'].append([{'time':0,'mode':dc}])
         for update in update_description:
-            if update['time'] > last_update:
-                last_update = update['time']
-            if update['type'] == 'pose':
-                raw_pose_trajectories[update['idx']].append({'time':update['time'],'pose':update['value']})
-            elif update['type'] == 'weight':
-                raw_weight_trajectories[update['idx']].append({'time':update['time'],'mode':update['value']})
+            if update['type'] == 'weight':
+                compiled['weight'][update['idx']].append({'time':update['time'],'mode':update['value']})
             elif update['type'] == 'dc':
-                raw_dc_trajectories[update['idx']].append({'time':update['time'],'mode':update['value']})
-        for pose_trajectory in raw_pose_trajectories:
-            compiled['pose'].append(PoseTrajectory(pose_trajectory,method='interp1d',kind='slinear'))
-        for weight_trajectory in raw_weight_trajectories:
-            compiled['weight'].append(ModeTrajectory(weight_trajectory,method='interp1d',kind='slinear'))
-        for dc_trajectory in raw_dc_trajectories:
-            compiled['dc'].append(ModeTrajectory(dc_trajectory,method='interp1d',kind='slinear'))
+                compiled['dc'][update['idx']].append({'time':update['time'],'mode':update['value']})
         return compiled
 
     def joint_idx(self,joint_name):
@@ -107,6 +91,22 @@ class Test(object):
             return [self.config['joint_ordering'][objective['index_1']-1],self.config['joint_ordering'][objective['index_2']-1]]
         else:
             return None
+
+    @property
+    def interp(self):
+        trajectories = {'weight':[],
+                        'dc':[],
+                        'bias':[]}
+        compiled = self.compiled
+        for field in ['weight','dc','bias']:
+            for trajectory in compiled[field]:
+                times = [float(wp['time']) for wp in trajectory]
+                values = [float(wp['mode']) for wp in trajectory]
+                if len(times) == 1:
+                    times.append(times[0]+1)
+                    values.append(values[0])
+                trajectories[field].append(interpolate.interp1d(times,values,kind='slinear',fill_value='extrapolate'))
+        return trajectories
 
     def positions_from_joints(self,joints):
         return [Position(pos[0],pos[1],pos[2]) for pos in self.container.robot.get_ee_positions(joints)]
@@ -127,21 +127,21 @@ class Test(object):
         return self[0]
 
     def __getitem__(self,time):
-        compiled = self.compiled
+        interp = self.interp
         update = {
             'pose':[],
             'dc':[],
             'bias':[],
             'weight':[]
         }
-        for pose_trajectory in compiled['pose']:
-            update['pose'].append(pose_trajectory[time].quaternion_dict)
-        for mode_trajectory in compiled['dc']:
-            update['dc'].append(mode_trajectory[time])
-        for mode_trajectory in compiled['weight']:
-            update['weight'].append(mode_trajectory[time])
-        for mode_trajectory in compiled['bias']:
-            update['bias'].append(mode_trajectory[time])
+        joints = [0]*len(self.initial_joints)
+        for field in ['dc','weight','bias']:
+            for i,fn in enumerate(interp[field]):
+                value = float(fn(time))
+                if field == 'dc':
+                    joints[i] = value
+                update[field].append(value)
+        update['pose'] = [pose.quaternion_dict for pose in self.poses_from_joints(joints)]
         return update
 
     def generate(self):
@@ -571,8 +571,9 @@ class PandaPickupAction(Test):
         return commands
 
 class PandaProfiler(Test):
-    def __init__(self):
+    def __init__(self,num_poses=25):
         config = get_configs()['panda']
+        self.num_poses = num_poses
         super(PandaProfiler,self).__init__('panda_profiler',config,'neutral')
         for idx,objective in enumerate(self.config['objectives']):
             if 'noise' in objective['type'] and objective['frequency'] == self.frequency:
@@ -592,12 +593,18 @@ class PandaProfiler(Test):
     @property
     def update_description(self):
 
-        task = [
-                # Before beginning action
-                {'joints':{joint:random.uniform(self.joint_limits[j][0],self.joint_limits[j][1]) for j,joint in enumerate(self.config['joint_ordering'])},
+        task = [{'joints':{joint:self.initial_joints[j] for j,joint in enumerate(self.config['joint_ordering'])},
                  'noise':True,
-                 'time':i*10} for i in range(50)
-        ]
+                 'time':0}]
+
+        for i in range(1,self.num_poses+1):
+            joint_set = {joint:random.uniform(self.joint_limits[j][0],self.joint_limits[j][1]) for j,joint in enumerate(self.config['joint_ordering'])}
+            for offset in [-20,0]:
+                step = {'joints':joint_set,
+                        'noise':True,
+                        'time':i*80+offset
+                }
+                task.append(step)
 
         joints = [v for v in self.initial_joints]
         commands = []
@@ -606,16 +613,13 @@ class PandaProfiler(Test):
             # DC Values
             for joint_name, dc in step['joints'].items():
                 idx = self.config['joint_ordering'].index(joint_name)
-                joints[idx] = dc
                 commands.append({'type':'dc','value':dc,'idx':idx,'time':step['time']})
-            poses = self.poses_from_joints(joints)
-            for idx,ee in enumerate(self.config['ee_fixed_joints']):
-                commands.append({'type':'pose','value':poses[idx],'idx':idx,'time':step['time']})
 
         return commands
 
 class NaoProfiler(Test):
-    def __init__(self):
+    def __init__(self,num_poses=25):
+        self.num_poses = num_poses
         config = get_configs()['nao_v5']
         super(NaoProfiler,self).__init__('nao_v5_profiler',config,'neutral')
         for idx,objective in enumerate(self.config['objectives']):
@@ -636,12 +640,18 @@ class NaoProfiler(Test):
     @property
     def update_description(self):
 
-        task = [
-                # Before beginning action
-                {'joints':{joint:random.uniform(self.joint_limits[j][0],self.joint_limits[j][1]) for j,joint in enumerate(self.config['joint_ordering'])},
-                 'noise':True,
-                 'time':i*10} for i in range(50)
-        ]
+        task = [{'joints':{joint:self.initial_joints[j] for j,joint in enumerate(self.config['joint_ordering'])},
+                'noise':True,
+                'time':0}]
+
+        for i in range(1,self.num_poses+1):
+            joint_set = {joint:random.uniform(self.joint_limits[j][0],self.joint_limits[j][1]) for j,joint in enumerate(self.config['joint_ordering'])}
+            for offset in [-20,0]:
+                step = {'joints':joint_set,
+                        'noise':True,
+                        'time':i*80+offset
+                }
+                task.append(step)
 
         joints = [v for v in self.initial_joints]
         commands = []

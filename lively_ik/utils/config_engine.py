@@ -6,7 +6,7 @@ import joblib
 import bson
 from .neural_net_trainer import CollisionNNTrainer
 import os
-from lively_ik import BASE
+from lively_ik import BASE, SRC
 
 
 class ConfigEngine:
@@ -14,6 +14,7 @@ class ConfigEngine:
         self.info = info
         self.collision_graph = collision_graph
         self.nn_file_name = BASE+'/config/collision_nn/'+self.info['robot_name']+'_python'
+        self.src_nn_file_name = SRC+'/config/collision_nn/'+self.info['robot_name']+'_python'
         self.vars = vars
 
         if not os.path.exists(self.nn_file_name) or override:
@@ -34,7 +35,8 @@ class ConfigEngine:
         # robot_name = trainer.robot.__name__
         robot_name = 'robot'
 
-        joblib.dump(collision_nn, self.nn_file_name)
+        joblib.dump(collision_nn, self.src_nn_file_name)
+        os.symlink(self.src_nn_file_name,self.nn_file_name)
 
         return robot_name, collision_nn, self.info['starting_config'], self.info['joint_names'], self.info['ee_fixed_joints'], \
                self.info['joint_ordering'], self.info['robot_name'] + '_python'

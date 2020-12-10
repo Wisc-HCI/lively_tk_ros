@@ -63,12 +63,12 @@ objectives:
 - {gradient: forward_ad, type: min_jt_vel, weight: 1}
 - {gradient: forward_ad, type: min_jt_accel, weight: 1}
 - {gradient: forward_ad, type: min_jt_jerk, weight: 0.1}
-- {gradient: forward_ad, type: joint_limit, weight: 0.1}
-- {gradient: finite_diff, type: collision_nn, weight: 0.2}
+- {gradient: forward_ad, type: joint_limit, weight: 2.0}
+- {gradient: finite_diff, type: collision_nn, weight: 5.0}
 problem_states:
 - [-0.33, 1.03, 0, -3.04, 0, 1.8675, 0, 0.02, 0.02]
 - [-0.67, 1.03, 0, -3.04, 0, 1.8675, 0, 0.02, 0.02]
-robot_link_radius: 0.05
+robot_link_radius: 0.045
 robot_name: panda
 rot_offsets:
 - - [0.0, 0.0, 0.0]

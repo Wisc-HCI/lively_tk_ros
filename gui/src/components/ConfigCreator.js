@@ -2,6 +2,7 @@ import React from 'react';
 import { message, Card, Steps, Divider, Button, Upload, Modal } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import YAML from 'yaml'
+import {Popout} from 'react-popout-component';
 import Basic from './config/Basic';
 import Joints from './config/Joints';
 import Initial from './config/Initial';
@@ -10,6 +11,7 @@ import Objects from './config/Objects';
 import Objectives from './config/Objectives';
 import Misc from './config/Misc';
 import Preprocessing from './config/Preprocessing';
+import Viewer from './Viewer';
 const { Step } = Steps;
 const { Dragger } = Upload;
 
@@ -22,6 +24,7 @@ const toCamel = (s) => {
 };
 
 const clearedState = {uploaderVisible:false,
+                      popoutVisible:false,
                       app:{
                         step:0,
                         canStep:false,
@@ -106,6 +109,14 @@ class ConfigCreator extends React.Component {
 
   openUploader = ()  => {
     this.setState({uploaderVisible:true})
+  }
+
+  openPopout = () => {
+    this.setState({popoutVisible:true})
+  }
+
+  handlePopoutClose = () => {
+    this.setState({popoutVisible:false})
   }
 
   handleUpload = async (info) => {
@@ -330,6 +341,7 @@ class ConfigCreator extends React.Component {
     return (
     <>
       <Card title="Config Creator" size='small' style={{margin:10}} extra={<><Button style={{marginRight:5}} onClick={this.openUploader}>Upload</Button>
+                                                                             {this.state.popoutVisible ? <></> : <Button style={{marginRight:5}} onClick={this.openPopout}>Open Viewer</Button>}
                                                                              <Button onClick={this.reset}>Clear</Button>
                                                                            </>}>
         <Steps current={this.state.app.step} size="small">
@@ -366,6 +378,13 @@ class ConfigCreator extends React.Component {
             </p>
           </Dragger>
         </Modal>
+        {this.state.popoutVisible ? (
+          <Popout title='Lively 3D Viewer' onClose={this.handlePopoutClose} html='<html><head><title>Lively 3D Viewer</title><meta name="3D Lively Viewer" content="3D Lively Viewer"></meta><style>body {margin:0}</style></head><body></body><html>'>
+            <><Viewer baseLink={this.state.config.baseLink}/></>
+          </Popout>
+        ) : (<></>)
+        }
+
       </>
     )
   }
