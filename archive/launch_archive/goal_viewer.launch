@@ -1,7 +1,0 @@
-<?xml version="1.0"?>
-<launch>
-   <arg name="info_file_name"/>
-   <rosparam command='load' file='$(find lively_ik)/src/RelaxedIK/Config/info_files/$(arg info_file_name)'/>
-   <node pkg="lively_ik" type="goal_viewer.py" name="goal_viewer" output="screen"/>
-
-</launch>

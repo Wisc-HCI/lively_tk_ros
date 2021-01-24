@@ -141,5 +141,5 @@ src/RelaxedIK/MP4/*
 point_cloud_pub.py
 install.out
 
-gui/node_modules/*
-eval/*
+lively_ik_gui/node_modules/*
+**/archive/*

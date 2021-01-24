@@ -1,4 +1,0 @@
-<?xml version="1.0"?>
-<launch>
-   <node pkg="lively_ik" type="sample.py" name="sample" output="screen"/>
-</launch>

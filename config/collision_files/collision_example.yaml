@@ -1,9 +1,0 @@
-robot_link_radius: 0.02
-sample_states: []
-training_states: []
-problem_states: []
-boxes:
-spheres:
-ellipsoids:
-capsules:
-cylinders:
