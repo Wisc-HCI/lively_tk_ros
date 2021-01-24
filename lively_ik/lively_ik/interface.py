@@ -42,8 +42,6 @@ class InterfaceNode(Node):
         self.get_logger().info('Interface: Received update request')
         data = json.loads(msg.data)
         if data['directive'] == 'update':
-            print(data['config'])
-            exit()
             self.config_manager.load(data['config'])
         elif data['directive'] == 'train':
             self.get_logger().info('Should train!')
@@ -56,9 +54,7 @@ class InterfaceNode(Node):
     def standard_loop(self):
         if self.config_manager.valid_solver:
             try:
-                self.get_logger().info(str(self.config_manager.simplified))
                 self.base_transform, self.displayed_state = self.solve_with_default_goals()
-                self.get_logger().info('Updated transform and displayed state with solution from default goals')
             except:
                 if self.config_manager.valid_urdf:
                     self.base_transform, self.displayed_state = ([0,0,0], self.config_manager.starting_config)
@@ -68,7 +64,6 @@ class InterfaceNode(Node):
 
         # Send the transform for the base
         t = TransformStamped()
-        self.get_logger().info('Sending Transform {0}'.format(self.base_transform))
         t.header.stamp = self.get_clock().now().to_msg()
         t.header.frame_id = "world"
         t.child_frame_id = self.config_manager.fixed_frame
