@@ -1,198 +1,148 @@
 import React from 'react';
 import { Steps, Divider, Button } from 'antd';
-import Basic from './config/Basic';
-import Joints from './config/Joints';
-import Initial from './config/Initial';
+import Basics from './config/Basics';
 import Collision from './config/Collision';
-import Objects from './config/Objects';
-import Objectives from './config/Objectives';
-import Misc from './config/Misc';
-import Preprocessing from './config/Preprocessing';
+import Behavior from './config/Behavior';
 const { Step } = Steps;
 
 class ConfigCreator extends React.Component {
 
-  reset = () => {
-    //this.props.socket.emit('app_update',{action:'config_update',...clearedState})
-  }
+  state = {step:0};
 
-  stepForward = () => {
-    this.props.onSwitchStep(this.props.step+1)
-  }
-
-  stepBackward = () => {
-    this.props.onSwitchStep(this.props.step-1)
+  updateUrdf = (event) => {
+    this.props.onUpdate({directive:'update',config:{urdf:event.target.value}})
   }
 
   updateFixedFrame = (fixedFrame) => {
-    //this.props.socket.emit('app_update',{action:'config_update',config:{fixedFrame:fixedFrame}})
-  }
-
-  updateUrdf = (event) => {
-    let urdf = event.target.value;
-    if (urdf === '') {
-      urdf = null;
-    }
-    //this.props.socket.emit('app_update',{action:'config_update',config:{urdf:urdf}})
-  }
-
-  updateJointOrdering = (jointOrdering) => {
-    //this.props.socket.emit('app_update',{action:'config_update',config:{jointOrdering:jointOrdering}})
+    this.props.onUpdate({directive:'update',config:{fixed_frame:fixedFrame}})
   }
 
   updateJointNames = (jointNames) => {
-    //this.props.socket.emit('app_update',{action:'config_update',config:{jointNames:jointNames}})
+    this.props.onUpdate({directive:'update',config:{joint_names:jointNames}})
   }
 
   updateEeFixedJoints = (eeFixedJoints) => {
-    //this.props.socket.emit('app_update',{action:'config_update',config:{eeFixedJoints:eeFixedJoints}})
+    this.props.onUpdate({directive:'update',config:{ee_fixed_joints:eeFixedJoints}})
+  }
+
+  updateJointOrdering = (jointOrdering) => {
+    this.props.onUpdate({directive:'update',config:{joint_ordering:jointOrdering}})
+  }
+
+  updateStates = (states) => {
+    this.props.onUpdate({directive:'update',config:{states:states}})
   }
 
   updateStartingConfig = (startingConfig) => {
-    //this.props.socket.emit('app_update',{action:'config_update',app:{displayedState:startingConfig},config:{startingConfig:startingConfig}})
-  }
-
-  updateDisplayedState = (displayedState) => {
-    //this.props.socket.emit('app_update',{action:'config_update',app:{displayedState:displayedState},config:{}})
-  }
-
-  updateSampleStates = (sampleStates) => {
-    //this.props.socket.emit('app_update',{action:'config_update',config:{sampleStates:sampleStates}})
-  }
-
-  updateTrainingStates = (trainingStates) => {
-    //this.props.socket.emit('app_update',{action:'config_update',config:{trainingStates:trainingStates}})
-  }
-
-  updateProblemStates = (problemStates) => {
-    //this.props.socket.emit('app_update',{action:'config_update',config:{problemStates:problemStates}})
-  }
-
-  updateObjectives = (objectives) => {
-    //this.props.socket.emit('app_update',{action:'config_update',config:{objectives:objectives}})
-  }
-
-  updateBoxes = (boxes) => {
-    //this.props.socket.emit('app_update',{action:'config_update',config:{boxes:boxes}})
-  }
-
-  updateSpheres = (spheres) => {
-    //this.props.socket.emit('app_update',{action:'config_update',config:{spheres:spheres}})
-  }
-
-  updateEllipsoids = (ellipsoids) => {
-    //this.props.socket.emit('app_update',{action:'config_update',config:{ellipsoids:ellipsoids}})
-  }
-
-  updateCapsules = (capsules) => {
-    //this.props.socket.emit('app_update',{action:'config_update',config:{capsules:capsules}})
-  }
-
-  updateCylinders = (cylinders) => {
-    //this.props.socket.emit('app_update',{action:'config_update',config:{cylinders:cylinders}})
-  }
-
-  updateMode = (mode) => {
-    //this.props.socket.emit('app_update',{action:'config_update',config:{mode:mode}})
+    this.props.onUpdate({directive:'update',config:{starting_config:startingConfig}})
   }
 
   updateRobotLinkRadius = (radius) => {
-    //this.props.socket.emit('app_update',{action:'config_update',config:{robotLinkRadius:radius}})
+    this.props.onUpdate({directive:'update',config:{robot_link_radius:radius}})
   }
 
-  updateFixedFrameNoiseScale = (scale) => {
-    //this.props.socket.emit('app_update',{action:'config_update',config:{fixedFrameNoiseScale:scale}})
-  }
-
-  updateFixedFrameNoiseFrequency = (frequency) => {
-    //this.props.socket.emit('app_update',{action:'config_update',config:{fixedFrameNoiseFrequency:frequency}})
+  updateStaticEnvironment = (staticEnvironment) => {
+    this.props.onUpdate({directive:'update',config:{static_environment:staticEnvironment}})
   }
 
   beginPreprocess = () => {
     //this.props.socket.emit('app_process',{action:'preprocess'})
   }
 
+  updateObjectives = (objectives) => {
+    this.props.onUpdate({directive:'update',config:{objectives:objectives}})
+  }
+
+  updateGoals = (goals) => {
+    this.props.onUpdate({directive:'update',config:{goals:goals}})
+  }
+
+  updateControlMode = (mode) => {
+    this.props.onUpdate({directive:'update',config:{mode_control:mode}})
+  }
+
+  updateEnvironmentMode = (mode) => {
+    this.props.onUpdate({directive:'update',config:{mode_environment:mode}})
+  }
+
+  updateBaseLinkMotionBounds = (bounds) => {
+    this.props.onUpdate({directive:'update',config:{base_link_motion_bounds:bounds}})
+  }
+
+  updateDisplayedState = (displayedState) => {
+    this.props.onUpdate({directive:'update',meta:{displayed_state:displayedState}})
+  }
+
+  updateToManual = () => {
+    this.props.onUpdate({directive:'update',meta:{control:'manual'}})
+  }
+
+  updateToSolve = () => {
+    this.props.onUpdate({directive:'update',meta:{control:'solve'}})
+  }
+
+  canStep = (desired) => {
+    switch (desired) {
+      case 0:
+        return (this.props.meta.valid_urdf && this.props.meta.valid_robot)
+      case 1:
+        return this.props.meta.valid_nn;
+      case 2:
+        return (this.props.meta.valid_config && this.props.meta.valid_solver)
+    }
+  }
+
+  stepForward = () => {
+    if (this.state.step+1 == 2) {
+      this.updateToSolve()
+    } else {
+      this.updateToManual()
+    }
+    this.setState((state)=>({step:state.step+1}))
+  }
+
+  stepBackward = () => {
+    if (this.state.step-1 == 2) {
+      this.updateToSolve()
+    } else {
+      this.updateToManual()
+    }
+    this.setState((state)=>({step:state.step-1}))
+  }
+
   getPage = () => {
-    switch (this.props.step) {
+    switch (this.state.step) {
       case 0:
         return (
-          <Basic urdf={this.props.config.urdf}
-                 robotName=''
-                 fixedFrame={this.props.config.fixed_frame}
-                 allLinks={[]}
-                 updateRobotName={(e)=>this.updateRobotName(e)}
-                 updateFixedFrame={(e)=>this.updateFixedFrame(e)}
-                 updateUrdf={(e)=>this.updateUrdf(e)}/>
+          <Basics meta={this.props.meta}
+                  config={this.props.config}
+                  updateUrdf={(e)=>this.updateUrdf(e)}
+                  updateFixedFrame={(e)=>this.updateFixedFrame(e)}
+                  updateJointNames={(e)=>this.updateJointNames(e)}
+                  updateJointOrdering={(e)=>this.updateJointOrdering(e)}
+                  updateEeFixedJoints={(e)=>this.updateEeFixedJoints(e)}
+                  updateControlMode={(e)=>this.updateControlMode(e)}
+                  updateEnvironmentMode={(e)=>this.updateEnvironmentMode(e)}
+                  />
         );
       case 1:
         return (
-          <Joints
-                  jointOrdering={this.props.config.joint_ordering}
-                  jointNames={this.props.config.joint_names}
-                  eeFixedJoints={[]}
-                  allFixedJoints={[]}
-                  allDynamicJoints={[]}
-                  updateJointOrdering={(list)=>this.updateJointOrdering(list)}
-                  updateJointNames={(names)=>this.updateJointNames(names)}
-                  updateEeFixedJoints={(names)=>this.updateEeFixedJoints(names)}/>
+          <Collision meta={this.props.meta}
+                     config={this.props.config}
+                     updateStates={(e)=>this.updateStates(e)}
+                     updateStaticEnvironment={(e)=>this.updateStaticEnvironment(e)}
+                     updateRobotLinkRadius={(e)=>this.updateRobotLinkRadius(e)}
+                     updateDisplayedState={(e)=>this.updateDisplayedState(e)}
+                  />
         );
       case 2:
         return (
-          <Initial jointOrdering={this.props.config.joint_ordering}
-                   jointLimits={this.props.config.joint_limits}
-                   startingConfig={this.props.config.starting_config}
-                   updateStartingConfig={(state)=>this.updateStartingConfig(state)}/>
+          <Behavior meta={this.props.meta}
+                    config={this.props.config}
+                    updateObjectives={(e)=>this.updateObjectives(e)}
+                    updateObjectives={(e)=>this.updateGoals(e)}
+                  />
         );
-      case 3:
-        return (
-          <Collision jointOrdering={this.props.config.joint_ordering}
-                     jointLimits={this.props.config.joint_limits}
-                     displayedState={this.state.config.starting_config}
-                     sampleStates={[]}
-                     trainingStates={[]}
-                     problemStates={[]}
-                     updateDisplayedState={(state)=>this.updateDisplayedState(state)}
-                     updateSampleStates={(states)=>this.updateSampleStates(states)}
-                     updateTrainingStates={(states)=>this.updateTrainingStates(states)}
-                     updateProblemStates={(states)=>this.updateProblemStates(states)}/>
-        );
-      case 4:
-        return (
-          <Objects jointOrdering={this.props.config.joint_ordering}
-                   boxes={[]}
-                   spheres={[]}
-                   ellipsoids={[]}
-                   capsules={[]}
-                   cylinders={[]}
-                   updateBoxes={(objects)=>this.updateBoxes(objects)}
-                   updateSpheres={(objects)=>this.updateSpheres(objects)}
-                   updateEllipsoids={(objects)=>this.updateEllipsoids(objects)}
-                   updateCapsules={(objects)=>this.updateCapsules(objects)}
-                   updateCylinders={(objects)=>this.updateCylinders(objects)}/>
-        );
-      case 5:
-        return (
-          <Objectives objectives={[]}
-                      eeFixedJoints={[]}
-                      jointOrdering={this.props.config.joint_ordering}
-                      updateObjectives={(objectives)=>this.updateObjectives(objectives)}/>
-        );
-      case 6:
-        return (
-          <Misc mode={this.props.config.mode}
-                robotLinkRadius={this.props.config.robot_link_radius}
-                fixedFrameNoiseScale={0}
-                fixedFrameNoiseFrequency={0}
-                updateMode={(mode)=>this.updateMode(mode)}
-                updateRobotLinkRadius={(radius)=>this.updateRobotLinkRadius(radius)}
-                updateFixedFrameNoiseScale={(scale)=>this.updateFixedFrameNoiseScale(scale)}
-                updateFixedFrameNoiseFrequency={(freq)=>this.updateFixedFrameNoiseFrequency(freq)}/>
-        )
-      case 7:
-        return (
-          <Preprocessing preprocessingState={this.state.app.preprocessingState}
-                         beginPreprocess={()=>this.beginPreprocess()}/>
-        )
       default:
         return;
     }
@@ -201,7 +151,7 @@ class ConfigCreator extends React.Component {
   render() {
     return (
       <div style={{margin:10}}>
-        <Steps current={this.props.step} size="large">
+        <Steps current={this.state.step} size="large">
           <Step title="Basics" description="Specify basic robot configuration"/>
           <Step title="Collision" description="Specify how the robot may collide"/>
           <Step title="Behavior" description="Specify how the robot behaves"/>
@@ -211,8 +161,8 @@ class ConfigCreator extends React.Component {
         </div>
         <Divider/>
         <div style={{display:'flex',justifyContent:'space-between'}}>
-          <Button type='primary' disabled={this.props.step === 0} onClick={this.stepBackward}>Previous</Button>
-          <Button type='primary' disabled={this.props.step === this.props.maxStep} onClick={this.stepForward}>Next</Button>
+          <Button type='primary' disabled={!this.canStep(this.state.step-1)} onClick={this.stepBackward}>Previous</Button>
+          <Button type='primary' disabled={!this.canStep(this.state.step+1)} onClick={this.stepForward}>Next</Button>
         </div>
       </div>
     )

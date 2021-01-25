@@ -37,30 +37,34 @@ class InterfaceNode(Node):
 
         self.base_transform = [0,0,0]
         self.displayed_state = []
+        self.manual_display = False
 
     def handle_gui_update(self,msg):
         self.get_logger().info('Interface: Received update request')
         data = json.loads(msg.data)
         if data['directive'] == 'update':
-            self.config_manager.load(data['config'])
+            if 'config' in data.keys():
+                self.config_manager.load(data['config'])
+            if 'meta' in data.keys():
+                if 'displayed_state' in data['meta'].keys():
+                    self.config_manager.displayed_state = data['meta']['displayed_state']
+                if 'control' in data['meta'].keys():
+                    self.config_manager.control = data['meta']['control']
         elif data['directive'] == 'train':
             self.get_logger().info('Should train!')
         self.pub_to_gui({'directive':'update','config':self.config_manager.data,'meta':self.config_manager.meta})
-        if 'urdf' in data['config'] and self.config_manager.valid_urdf:
+        if 'config' in data and 'urdf' in data['config'] and self.config_manager.valid_urdf:
             self.get_logger().info('Updating robot description!')
             self.update_robot_description(self.config_manager.urdf)
             self.get_logger().info('Updated robot description!')
 
     def standard_loop(self):
-        if self.config_manager.valid_solver:
-            try:
-                self.base_transform, self.displayed_state = self.solve_with_default_goals()
-            except:
-                if self.config_manager.valid_urdf:
-                    self.base_transform, self.displayed_state = ([0,0,0], self.config_manager.starting_config)
+        if self.config_manager.valid_solver and self.config_manager.control == 'solve':
+            # self.get_logger().info('solving')
+            self.base_transform, self.displayed_state = self.solve_with_default_goals()
         elif self.config_manager.valid_urdf:
-            # self.get_logger().info('Valid urdf, using starting config for transform')
-            self.base_transform, self.displayed_state = ([0,0,0], self.config_manager.starting_config)
+            # self.get_logger().info('{0} {1}'.format(self.config_manager.valid_solver,self.config_manager.control))
+            self.base_transform, self.displayed_state = ([0,0,0], self.config_manager.displayed_state)
 
         # Send the transform for the base
         t = TransformStamped()
@@ -79,8 +83,6 @@ class InterfaceNode(Node):
 
     def solve_with_default_goals(self):
         return self.config_manager.solver.solve(self.config_manager.config.default_goals,datetime.utcnow().timestamp())
-
-
 
     def pub_to_gui(self,data):
         data_msg = String(data=json.dumps(data))

@@ -1,6 +1,5 @@
 import React from 'react';
-import { Form, Slider, Button, Popover, Badge } from 'antd';
-import { Collapse } from 'antd';
+import { Form, Slider, Button, Popover, Badge, Collapse, Checkbox, InputNumber, List, Space, Tag } from 'antd';
 const { Panel } = Collapse;
 
 class Collision extends React.Component {
@@ -27,92 +26,49 @@ class Collision extends React.Component {
     )
   }
 
-  getSampleStatesDescription = () => {
-    return (<>
-             A set of collision-free <i>sample states</i> so that the robot can learn what is close to a collision state and what is not. <br/>
-             Good candidates for <i>sample states</i> are robot configurations that are somewhat close to collisions states, but do not exhibit a collision.
-            </>
-           )
-  }
-
-  getTrainingStatesDescription = () => {
-    return (<>
-             Any collision-free or colliding states that you think will be useful in the neural network training process. <br/>
-             Good candidates for <i>training states</i> are those that are near the interface between collision regions,  <br/>
-             such that the robot can learn through example the difference between near-collision and collision states.
-            </>
-           )
-  }
-
-  getProblemStatesDescription = () => {
-    return (<>
-             Any colliding states that you think will be particularly useful in the neural network training process. <br/>
-             Can include non-collision states if desired. Good candidates for <i>problem states</i> are those you want the robot to pay particular attention to.
-             </>
-            )
-  }
-
   addToSampleStates = () => {
     let joints = [...this.props.displayedState];
-    let sampleStates = [...this.props.sampleStates];
+    let sampleStates = [...this.props.config.states];
     sampleStates.push(joints);
-    this.props.updateSampleStates(sampleStates)
-  }
-
-  addToTrainingStates = () => {
-    let joints = [...this.props.displayedState];
-    let trainingStates = [...this.props.trainingStates];
-    trainingStates.push(joints);
-    this.props.updateTrainingStates(trainingStates)
-  }
-
-  addToProblemStates = () => {
-    let joints = [...this.props.displayedState];
-    let problemStates = [...this.props.problemStates];
-    problemStates.push(joints);
-    this.props.updateProblemStates(problemStates)
-  }
-
-  getNumberStyle = (count) => {
-    if (count === 0) {
-      return {backgroundColor: '#f5222d'}
-    } else if (0 < count < 5) {
-      return {backgroundColor: '#faad14'}
-    } else if (count > 5) {
-      return {backgroundColor: '#52c41a'}
-    }
+    this.props.updateStates(sampleStates)
   }
 
   render() {
     return (
-      <>
-        <h5 style={{backgroundColor:'#e8e8e8', borderRadius:3, padding:10}}>
-          Specify joint states for collision avoidance training.
-          These include <Popover content={this.getSampleStatesDescription()}><span style={{color:'#1890ff'}}>Sample States</span></Popover>,
-          <Popover content={this.getTrainingStatesDescription()}><span style={{color:'#1890ff'}}>Training States</span></Popover>,
-          and <Popover content={this.getProblemStatesDescription()}><span style={{color:'#1890ff'}}>Problem States</span></Popover></h5>
-        <span style={{display:'flex',justifyContent:'space-around',marginBottom:40}}>
-          <Button onClick={(e)=>{this.addToSampleStates()}} style={{flex:1,marginRight:5}}>Add to Sample States</Button>
-          <Button onClick={(e)=>{this.addToTrainingStates()}} style={{flex:1,marginRight:5}}>Add to Training States</Button>
-          <Button onClick={(e)=>{this.addToProblemStates()}} style={{flex:1}}>Add to Problem States</Button>
-        </span>
-        <Form>
-         {this.props.displayedState.map((joint,idx)=>{
-           return this.getJointSlider(idx);
-         })}
-        </Form>
-        <Collapse accordion>
-          <Panel header="Sample States" key="1" extra={<Badge showZero count={this.props.sampleStates.length} style={this.getNumberStyle(this.props.sampleStates.length)}/>}>
-            <p>SHOW SAMPLE STATES HERE</p>
-          </Panel>
-          <Panel header="Training States" key="2" extra={<Badge showZero count={this.props.trainingStates.length} style={this.getNumberStyle(this.props.trainingStates.length)}/>}>
-            <p>SHOW TRAINING STATES HERE</p>
-          </Panel>
-          <Panel header="Problem States" key="3" extra={<Badge showZero count={this.props.problemStates.length} style={this.getNumberStyle(this.props.problemStates.length)}/>}>
-            <p>SHOW PROBLEM STATES HERE</p>
-          </Panel>
-        </Collapse>
-      </>
+      <Collapse defaultActiveKey={['1']} accordion={true}>
+        <Panel header="Link Collision" key="1">
+          <h3>Robot Link Radius</h3>
+          <Space style={{display:'flex',paddingBottom:10}}>
+            <InputNumber min={0} max={10} defaultValue={0.05} step={0.01} onChange={(value)=>this.props.updateRobotLinkRadius(value)} />
+            <Checkbox>Show Link Collision</Checkbox>
+          </Space>
+        </Panel>
+        <Panel header="Environment" key="2">
+          <h3>Spheres</h3>
+          <List header={null} footer={null} bordered dataSource={this.props.config.static_environment.spheres} style={{marginBottom:10}}
+                renderItem={(item)=>(
+                  <List.Item>{item.name}</List.Item>
+                )}
+          />
+          <h3>Cuboids</h3>
+          <List header={null} footer={null} bordered dataSource={this.props.config.static_environment.cuboids}
+                renderItem={(item)=>(
+                  <List.Item>{item.name}</List.Item>
+                )}
+          />
+        </Panel>
+        <Panel header="Training States" key="3">
+          <List header={null} footer={null} bordered dataSource={this.props.config.states}
+                renderItem={(item)=>(
+                  <List.Item onClick={()=>this.props.updateDisplayedState(item)}>
+                    <Space>
+                      {item.map((value)=><Tag>{value.toFixed(2)}</Tag>)}
+                    </Space>
+                  </List.Item>
+                )}
+          />
+        </Panel>
+      </Collapse>
     )
   }
 

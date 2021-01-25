@@ -6,8 +6,8 @@ const { Dragger } = Upload;
 
 const emptyConfig = {
   axis_types:[],
+  ee_fixed_joints:[],
   base_link_motion_bounds:[[0,0],[0,0],[0,0]],
-  collision_scores:[],
   static_environment:{
     cuboids:[],
     spheres:[],

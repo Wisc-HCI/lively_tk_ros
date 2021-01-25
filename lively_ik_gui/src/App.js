@@ -24,8 +24,33 @@ class App extends React.Component {
                   sidebarCollapsed: true,
                   showUploader:false,
                   config:{
-                    fixed_frame:'base_link',
-                    urdf:'<?xml version="1.0" ?><robot name="default" xmlns:xacro="http://www.ros.org/wiki/xacro"><link name="base_link"/><joint name="default_joint" type="fixed"><parent link="base_link" /><child link="default_link" /><origin xyz="0 0 0" rpy="0 0 0" /></joint><link name="default_link"/></robot>'
+                    axis_types:[],
+                    ee_fixed_joints:[],
+                    base_link_motion_bounds:[[0,0],[0,0],[0,0]],
+                    static_environment:{
+                      cuboids:[],
+                      spheres:[],
+                      pcs:[]
+                    },
+                    fixed_frame:'',
+                    goals:[],
+                    joint_limits:[],
+                    joint_names:[],
+                    joint_ordering:[],
+                    joint_types:[],
+                    mode_control:'absolute',
+                    mode_environment:'ECAA',
+                    nn_jointpoint:[],
+                    nn_main:[],
+                    objectives:[],
+                    states:[],
+                    robot_link_radius:0.05,
+                    rot_offsets:[],
+                    starting_config:[],
+                    urdf:'<?xml version="1.0" ?><robot name="default" xmlns:xacro="http://www.ros.org/wiki/xacro"><link name="base_link"/><joint name="default_joint" type="fixed"><parent link="base_link" /><child link="default_link" /><origin xyz="0 0 0" rpy="0 0 0" /></joint><link name="default_link"/></robot>',
+                    velocity_limits:[],
+                    disp_offsets:[],
+                    displacements:[]
                   },
                   meta:{
                     valid_urdf: false,
@@ -33,6 +58,7 @@ class App extends React.Component {
                     valid_nn: false,
                     valid_config: false,
                     valid_solver: false,
+                    displayed_state:[],
                     links: [],
                     dynamic_joints: [],
                     fixed_joints: []
@@ -46,7 +72,7 @@ class App extends React.Component {
     this.ros.on('error', ()=>{
       // There was an error connecting to the ROS socket.
       message.error("Could not connect!");
-      this.setState({connected:false,activeApp:null})
+      this.setState({connected:false})
     })
     this.ros.on('connection', ()=>{
       // We successfully connected to the ROS socket.
@@ -76,7 +102,7 @@ class App extends React.Component {
     this.ros.on('close', ()=>{
       // We successfully closed our connection to the ROS socket.
       console.log("Connection Closed")
-      this.setState({connected:false,activeApp:null})
+      this.setState({connected:false})
     })
 
     // Setup the subscriptions/etc.
@@ -114,18 +140,12 @@ class App extends React.Component {
   }
 
   getContent = () => {
-    if (this.state.connected && this.state.activeApp !== null) {
+    if (this.state.connected) {
       return (
         <SplitPane split='vertical' defaultSize="50%" style={{width: '100%', display:'flex', height:'calc(100vh - 48pt)'}}>
           <Scene ros={this.ros} baseLink={this.state.config.fixed_frame} urdf={this.state.config.urdf}/>
-          <Main config={this.state.config}/>
+          <Main meta={this.state.meta} config={this.state.config} onUpdate={(data)=>this.updateToServer(data)}/>
         </SplitPane>
-      )
-    } else if (this.state.connected) {
-      return (
-        <Card style={{margin:10}}>
-          <Empty description="Select an app on the left to begin." />
-        </Card>
       )
     } else {
       return (

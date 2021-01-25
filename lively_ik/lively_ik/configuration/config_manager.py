@@ -51,7 +51,9 @@ class ConfigManager(object):
             'displacements': [],
             'links':[],
             'fixed_joints':[],
-            'dynamic_joints':[]
+            'dynamic_joints':[],
+            'displayed_state':[],
+            'control':'manual'
         }
         self._update_order = ['urdf','fixed_frame','joint_names','ee_fixed_joints',
                               'joint_ordering','states','starting_config','robot_link_radius',
@@ -60,12 +62,12 @@ class ConfigManager(object):
                               'mode_environment','config','solver']
 
         self._derivations = {
-            'solver':set(),
-            'config':[self.derive_solver],
-            'robot':[self.derive_axis_types,self.derive_joint_types,self.derive_joint_limits,
+            'solver':[self.derive_control],
+            'config':[self.derive_control,self.derive_solver],
+            'robot':[self.derive_control,self.derive_axis_types,self.derive_joint_types,self.derive_joint_limits,
                      self.derive_rot_offsets,self.derive_velocity_limits,self.derive_disp_offsets,
                      self.derive_displacements,self.derive_nn],
-            'parsed_urdf':[self.derive_links,self.derive_dynamic_joints,self.derive_fixed_joints,
+            'parsed_urdf':[self.derive_control,self.derive_links,self.derive_dynamic_joints,self.derive_fixed_joints,
                            self.derive_extra_joints],
             'urdf':[self.derive_parsed_urdf],
             'fixed_frame':[self.derive_robot],
@@ -86,14 +88,16 @@ class ConfigManager(object):
             'states':[self.derive_nn],
             'robot_link_radius':{self.derive_nn},
             'rot_offsets':[self.derive_config],
-            'starting_config':[self.derive_config],
+            'starting_config':[self.derive_displayed_state,self.derive_config],
             'velocity_limits':[self.derive_config],
             'disp_offsets':[self.derive_config],
             'displacements':[self.derive_config],
             'links':[self.derive_fixed_frame],
             'dynamic_joints':[],
             'fixed_joints':[],
-            'extra_joints':[self.derive_robot]
+            'extra_joints':[self.derive_robot],
+            'displayed_state':[],
+            'control':[]
         }
 
 
@@ -171,7 +175,9 @@ class ConfigManager(object):
                 'valid_solver': self.valid_solver,
                 'links': self.links,
                 'dynamic_joints': self.dynamic_joints,
-                'fixed_joints': self.fixed_joints}
+                'fixed_joints': self.fixed_joints,
+                'displayed_state': self.displayed_state,
+                'control': self.control}
 
     # Property setters, getters, and derivers
 
@@ -675,6 +681,39 @@ class ConfigManager(object):
             self.extra_joints = extra_joints
         except:
             self.extra_joints = self._defaults['extra_joints']
+
+    @property
+    def displayed_state(self):
+        return self._displayed_state
+
+    @displayed_state.setter
+    def displayed_state(self,value):
+        self.handle_update('displayed_state',value)
+
+    def derive_displayed_state(self):
+        try:
+            self.displayed_state = self.starting_config
+        except:
+            self.displayed_state = self._defaults['displayed_state']
+
+    @property
+    def control(self):
+        return self._control
+
+    @control.setter
+    def control(self,value):
+        self.handle_update('control',value)
+
+    def derive_control(self):
+        try:
+            if self.valid_solver:
+                print("VALID SOLVER FOUND")
+                self.control = 'solve'
+            else:
+                print("NO VALID SOLVER")
+                self.control = self._defaults['control']
+        except:
+            self.control = self._defaults['control']
 
     @staticmethod
     def frames_to_jt_pt_vec(all_frames):
