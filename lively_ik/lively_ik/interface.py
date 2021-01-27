@@ -7,7 +7,6 @@ from rcl_interfaces.srv import SetParameters
 from rcl_interfaces.msg import Parameter, ParameterValue
 from sensor_msgs.msg import JointState
 from tf2_msgs.msg import TFMessage
-from wisc_msgs.msg import GoalUpdate, GoalUpdates
 from geometry_msgs.msg import TransformStamped
 from std_msgs.msg import String
 
@@ -31,7 +30,6 @@ class InterfaceNode(Node):
         self.gui_pub = self.create_publisher(String, '/lively_ik/server_updates', 10)
 
         self.tf_broadcaster = tf2_ros.TransformBroadcaster(self)
-        # self.goal_update_sub = self.create_subscription(GoalUpdates,'/lively_apps/goal_update',self.handle_goal_update,10)
         self.get_logger().info('Initialized!')
         self.create_timer(.1,self.standard_loop)
 
