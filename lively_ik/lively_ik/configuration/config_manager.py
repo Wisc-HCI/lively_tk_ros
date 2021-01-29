@@ -10,113 +10,273 @@ from sklearn.neural_network import MLPClassifier, MLPRegressor
 class ConfigManager(object):
     def __init__(self):
 
-        self._dependencies = {
-            'urdf':{'base_link_motion_bounds','mode_control','mode_environment',
-                    'robot_link_radius','static_environment'},
-            'robot':{'objectives','goals'},
-            'parsed_urdf':{'ee_fixed_joints','joint_names','joint_ordering','states'}
-        }
-        self._defaults = {
-            'solver':None,
-            'config':None,
-            'robot':None,
-            'parsed_urdf':None,
-            'axis_types':[],
-            'base_link_motion_bounds':[[0,0],[0,0],[0,0]],
-            'ee_fixed_joints':[],
+        self._fields = {
+            'solver':{
+                'default':None,
+                'derivation':self.derive_solver,
+                'derivations':['control'],
+                'dependencies':[],
+                'guards':[lambda:self.valid_config]
+            },
+            'config':{
+                'default':None,
+                'derivation':self.derive_config,
+                'derivations':['control','solver'],
+                'dependencies':[],
+                'guards':[lambda:self.valid_nn]
+            },
+            'robot':{
+                'default':None,
+                'derivation':self.derive_robot,
+                'derivations':['control','axis_types',
+                               'joint_types','joint_limits',
+                               'rot_offsets','velocity_limits',
+                               'disp_offsets','displacements'],
+                'dependencies':['objectives','goals'],
+                'guards':[lambda:self.valid_urdf,lambda:self.valid_arms]
+            },
+            'parsed_urdf':{
+                'default':None,
+                'derivation':self.derive_parsed_urdf,
+                'derivations':['control','links',
+                               'dynamic_joints','fixed_joints',
+                               'extra_joints'],
+                'dependencies':['ee_fixed_joints','joint_names','joint_ordering','states'],
+                'guards':[]
+            },
+            'urdf':{
+                'default':'<?xml version="1.0" ?><robot name="default" xmlns:xacro="http://www.ros.org/wiki/xacro"><link name="base_link"/><joint name="default_joint" type="fixed"><parent link="base_link" /><child link="default_link" /><origin xyz="0 0 0" rpy="0 0 0" /></joint><link name="default_link"/></robot>',
+                'derivation':lambda:self.derive_from_default('robot_link_radius'),
+                'derivations':['parsed_urdf'],
+                'dependencies':['base_link_motion_bounds','mode_control','mode_environment',
+                                'robot_link_radius','static_environment'],
+                'guards':[]
+            },
+            'axis_types':{
+                'default':[],
+                'derivation':self.derive_axis_types,
+                'derivations':['config'],
+                'dependencies':[],
+                'guards':[lambda:self.valid_robot]
+            },
+            'base_link_motion_bounds':{
+                'default':[[0,0],[0,0],[0,0]],
+                'derivation':lambda:self.derive_from_default('base_link_motion_bounds'),
+                'derivations':['config'],
+                'dependencies':[],
+                'guards':[lambda:self.valid_urdf]
+            },
+            'fixed_frame':{
+                'default':'base_link',
+                'derivation':self.derive_fixed_frame,
+                'derivations':['robot'],
+                'dependencies':[],
+                'guards':[lambda:self.valid_urdf,lambda:len(self.links)>0]
+            },
+            'ee_fixed_joints':{
+                'default':[],
+                'derivation':lambda:self.derive_from_default('ee_fixed_joints'),
+                'derivations':['robot'],
+                'dependencies':[],
+                'guards':[lambda:self.valid_urdf]
+            },
             'static_environment':{
-                    'cuboids':[],
-                    'spheres':[],
-                    'pcs':[]
-                },
-            'fixed_frame':'base_link',
-            'extra_joints': {},
-            'goals':[],
-            'joint_limits':[],
-            'joint_names':[],
-            'joint_ordering':[],
-            'joint_types':[],
-            'mode_control':'absolute',
-            'mode_environment':'ECAA',
-            'nn_jointpoint':{'intercepts':[],'coefs':[],'split_point':None},
-            'nn_main':{'intercepts':[],'coefs':[],'split_point':None},
-            'objectives': [],
-            'states': [],
-            'robot_link_radius': 0.05,
-            'rot_offsets': [],
-            'starting_config': [],
-            'urdf': '<?xml version="1.0" ?><robot name="default" xmlns:xacro="http://www.ros.org/wiki/xacro"><link name="base_link"/><joint name="default_joint" type="fixed"><parent link="base_link" /><child link="default_link" /><origin xyz="0 0 0" rpy="0 0 0" /></joint><link name="default_link"/></robot>',
-            'velocity_limits': [],
-            'disp_offsets': [],
-            'displacements': [],
-            'links':[],
-            'fixed_joints':[],
-            'dynamic_joints':[],
-            'displayed_state':[],
-            'control':'manual'
+                'default':{
+                        'cuboids':[],
+                        'spheres':[],
+                        'pcs':[]
+                    },
+                'derivation':lambda:self.derive_from_default('static_environment'),
+                'derivations':[],
+                'dependencies':[],
+                'guards':[lambda:self.valid_urdf]
+            },
+            'extra_joints':{
+                'default':{},
+                'derivation':self.derive_extra_joints,
+                'derivations':['robot'],
+                'dependencies':[],
+                'guards':[lambda:self.valid_urdf]
+            },
+            'goals':{
+                'default':[],
+                'derivation':lambda:self.derive_from_default('goals'),
+                'derivations':['config'],
+                'dependencies':[],
+                'guards':[lambda:self.valid_robot]
+            },
+            'joint_limits':{
+                'default':[],
+                'derivation':self.derive_joint_limits,
+                'derivations':['starting_config'],
+                'dependencies':[],
+                'guards':[lambda:self.valid_robot]
+            },
+            'joint_ordering':{
+                'default':[],
+                'derivation':lambda:self.derive_from_default('joint_ordering'),
+                'derivations':['extra_joints'],
+                'dependencies':[],
+                'guards':[lambda:self.valid_urdf]
+            },
+            'joint_names':{
+                'default':[],
+                'derivation':lambda:self.derive_from_default('joint_names'),
+                'derivations':['extra_joints'],
+                'dependencies':[],
+                'guards':[lambda:self.valid_urdf]
+            },
+            'joint_types':{
+                'default':[],
+                'derivation':self.derive_joint_types,
+                'derivations':['config'],
+                'dependencies':[],
+                'guards':[lambda:self.valid_robot]
+            },
+            'mode_control':{
+                'default':'absolute',
+                'derivation':lambda:self.derive_from_default('mode_control'),
+                'derivations':['config'],
+                'dependencies':[],
+                'guards':[]
+            },
+            'mode_environment':{
+                'default':'ECAA',
+                'derivation':lambda:self.derive_from_default('mode_environment'),
+                'derivations':['config'],
+                'dependencies':[],
+                'guards':[]
+            },
+            'nn_jointpoint':{
+                'default':{'intercepts':[],'coefs':[],'split_point':None},
+                'derivation':lambda:self.derive_from_default('nn_jointpoint'),
+                'derivations':['config'],
+                'dependencies':[],
+                'guards':[lambda:self.valid_robot]
+            },
+            'nn_main':{
+                'default':{'intercepts':[],'coefs':[],'split_point':None},
+                'derivation':lambda:self.derive_from_default('nn_main'),
+                'derivations':['config'],
+                'dependencies':[],
+                'guards':[lambda:self.valid_robot]
+            },
+            'objectives':{
+                'default':[],
+                'derivation':lambda:self.derive_from_default('objectives'),
+                'derivations':['config'],
+                'dependencies':[],
+                'guards':[lambda:self.valid_robot]
+            },
+            'states':{
+                'default':[],
+                'derivation':lambda:self.derive_from_default('states'),
+                'derivations':[],
+                'dependencies':[],
+                'guards':[lambda:self.valid_robot]
+            },
+            'robot_link_radius':{
+                'default':0.05,
+                'derivation':lambda:self.derive_from_default('robot_link_radius'),
+                'derivations':[],
+                'dependencies':[],
+                'guards':[]
+            },
+            'rot_offsets':{
+                'default':[],
+                'derivation':self.derive_rot_offsets,
+                'derivations':['config'],
+                'dependencies':[],
+                'guards':[lambda:self.valid_robot]
+            },
+            'starting_config':{
+                'default':[],
+                'derivation':self.derive_starting_config,
+                'derivations':['displayed_state','config'],
+                'dependencies':[],
+                'guards':[lambda:self.valid_robot]
+            },
+            'velocity_limits':{
+                'default':[],
+                'derivation':self.derive_velocity_limits,
+                'derivations':['config'],
+                'dependencies':[],
+                'guards':[lambda:self.valid_robot]
+            },
+            'disp_offsets':{
+                'default':[],
+                'derivation':self.derive_disp_offsets,
+                'derivations':['config'],
+                'dependencies':[],
+                'guards':[lambda:self.valid_robot]
+            },
+            'displacements':{
+                'default':[],
+                'derivation':self.derive_displacements,
+                'derivations':['config'],
+                'dependencies':[],
+                'guards':[lambda:self.valid_robot]
+            },
+            'links':{
+                'default':[],
+                'derivation':self.derive_links,
+                'derivations':['fixed_frame'],
+                'dependencies':[],
+                'guards':[]
+            },
+            'fixed_joints':{
+                'default':[],
+                'derivation':self.derive_fixed_joints,
+                'derivations':[],
+                'dependencies':[],
+                'guards':[]
+            },
+            'dynamic_joints':{
+                'default':[],
+                'derivation':self.derive_dynamic_joints,
+                'derivations':[],
+                'dependencies':[],
+                'guards':[]
+            },
+            'displayed_state':{
+                'default':[],
+                'derivation':self.derive_displayed_state,
+                'derivations':[],
+                'dependencies':[],
+                'guards':[]
+            },
+            'control':{
+                'default':'manual',
+                'derivation':self.derive_control,
+                'derivations':[],
+                'dependencies':[],
+                'guards':[]
+            }
         }
+
+
         self._update_order = ['urdf','fixed_frame','joint_names','ee_fixed_joints',
                               'joint_ordering','states','starting_config','robot_link_radius',
                               'static_environment','nn_jointpoint','nn_main','objectives',
                               'goals','base_link_motion_bounds','mode_control',
                               'mode_environment','config','solver']
 
-        self._derivations = {
-            'solver':[self.derive_control],
-            'config':[self.derive_control,self.derive_solver],
-            'robot':[self.derive_control,self.derive_axis_types,self.derive_joint_types,self.derive_joint_limits,
-                     self.derive_rot_offsets,self.derive_velocity_limits,self.derive_disp_offsets,
-                     self.derive_displacements,self.derive_nn],
-            'parsed_urdf':[self.derive_control,self.derive_links,self.derive_dynamic_joints,self.derive_fixed_joints,
-                           self.derive_extra_joints],
-            'urdf':[self.derive_parsed_urdf],
-            'fixed_frame':[self.derive_robot],
-            'axis_types':[self.derive_config],
-            'base_link_motion_bounds':[self.derive_config],
-            'ee_fixed_joints':[self.derive_robot],
-            'static_environment':[self.derive_nn],
-            'goals':[self.derive_config],
-            'joint_limits':[self.derive_starting_config],
-            'joint_ordering':[self.derive_extra_joints],
-            'joint_names':[self.derive_extra_joints],
-            'joint_types':[self.derive_config],
-            'mode_control':[self.derive_config],
-            'mode_environment':[self.derive_config],
-            'nn_jointpoint':[self.derive_config],
-            'nn_main':[self.derive_config],
-            'objectives':[self.derive_config],
-            'states':[self.derive_nn],
-            'robot_link_radius':{self.derive_nn},
-            'rot_offsets':[self.derive_config],
-            'starting_config':[self.derive_displayed_state,self.derive_config],
-            'velocity_limits':[self.derive_config],
-            'disp_offsets':[self.derive_config],
-            'displacements':[self.derive_config],
-            'links':[self.derive_fixed_frame],
-            'dynamic_joints':[],
-            'fixed_joints':[],
-            'extra_joints':[self.derive_robot],
-            'displayed_state':[],
-            'control':[]
-        }
-
-
-        for field,value in self._defaults.items():
-            setattr(self,'_'+field,value)
+        for field,value in self._fields.items():
+            setattr(self,'_'+field,value['default'])
 
     def load(self,data):
-        success = True
         for property in self._update_order:
-            if property in data and success:
-                try:
-                    setattr(self,property,data[property])
-                except:
-                    success = False
+            if property in data:
+                print("SETTING {0}".format(property))
+                setattr(self,property,data[property])
+
+    def derive_from_default(self,field):
+        setattr(self,field,self._fields[field]['default'])
 
     @property
     def simplified(self):
         shown = {key:value for key,value in self.data.items() if key != 'urdf'}
-        if self.urdf == self._defaults['urdf']:
+        if self.urdf == self._fields['urdf']['default']:
             shown['urdf'] = '<default urdf>'
         else:
             shown['urdf'] = '<custom urdf>'
@@ -124,21 +284,34 @@ class ConfigManager(object):
 
     # Macro for handling updates
     def handle_update(self,property,value):
+        print('handle update of {0} to {1}'.format(property, value))
         if getattr(self,'_'+property) != value:
+            # Prevent the property from being set if
+            # any of the guards fail
+            for i,guard in enumerate(self._fields[property]['guards']):
+                if not guard():
+                    print('Prevented setting {0} by guard {1}'.format(property,i))
+                    setattr(self,'_'+property,self._fields[property]['default'])
+                    self.clear_dependencies(property)
+                    return
             setattr(self,'_'+property,value)
             self.clear_dependencies(property)
             self.derive(property)
 
     def clear_dependencies(self,property):
-        if property in self._dependencies:
-            for dependency in self._dependencies[property]:
-                setattr(self,dependency,self._defaults[dependency])
+        for dependency in self._fields[property]['dependencies']:
+            setattr(self,dependency,self._fields[dependency]['default'])
 
     def derive(self,property):
-        if property not in self._derivations:
-            print("DERIVATION NOT FOUND")
-        for derivation in self._derivations[property]:
-            derivation()
+        for derivation in self._fields[property]['derivations']:
+            # Prevent the derivation from being set if
+            # any of the guards fail
+            for i,guard in enumerate(self._fields[derivation]['guards']):
+                if not guard():
+                    print('Prevented deriving {0} by guard {1}'.format(derivation,i))
+                    return
+            print('Deriving {0} after updating {1}'.format(derivation,property))
+            self._fields[derivation]['derivation']()
 
     @property
     def data(self):
@@ -186,20 +359,31 @@ class ConfigManager(object):
         return self.parsed_urdf != None
 
     @property
+    def valid_arms(self):
+        if len(self.joint_names) == len(self.ee_fixed_joints) and len(self.joint_names) > 0 and len(self.joint_names) > 0:
+            for chain in self.joint_names:
+                for joint in chain:
+                    if joint not in self.joint_ordering:
+                        return False
+            return True
+        else:
+            return False
+
+    @property
     def valid_robot(self):
-        return self.robot != None
+        return self.robot != None and self.valid_urdf
 
     @property
     def valid_nn(self):
-        return self.nn_main != self._defaults['nn_main'] and self.nn_jointpoint != self._defaults['nn_jointpoint']
+        return self.valid_robot and self.nn_main != self._fields['nn_main']['default'] and self.nn_jointpoint != self._fields['nn_jointpoint']['default']
 
     @property
     def valid_config(self):
-        return self.config != None
+        return self.valid_nn and self.config != None
 
     @property
     def valid_solver(self):
-        return self.solver != None
+        return self.valid_config and self.solver != None
 
     @property
     def config(self):
@@ -210,11 +394,7 @@ class ConfigManager(object):
         self.handle_update('config',value)
 
     def derive_config(self):
-        try:
-            assert self.meta['valid_nn']
-            self.config = parse_config_data(self.data)
-        except:
-            self.config = None
+        self.config = parse_config_data(self.data)
 
     @property
     def solver(self):
@@ -225,11 +405,7 @@ class ConfigManager(object):
         self.handle_update('solver',value)
 
     def derive_solver(self):
-        try:
-            assert self.meta['valid_config']
-            self.solver = LivelyIK(self.config)
-        except:
-            self.solver = None
+        self.solver = LivelyIK(self.config)
 
     @property
     def robot(self):
@@ -241,15 +417,14 @@ class ConfigManager(object):
         self.handle_update('robot',value)
 
     def derive_robot(self):
-        try:
-            arms = []
-            for i in range(len(self.joint_names)):
-                urdf_robot, arm, arm_c, tree = urdf_load_from_string(self.urdf, '', '', self.joint_names[i], self.ee_fixed_joints[i])
-                arms.append(arm)
+        print(self.joint_names,self.joint_ordering,self.ee_fixed_joints,self.extra_joints)
+        print(self.valid_arms)
+        arms = []
+        for i in range(len(self.joint_names)):
+            urdf_robot, arm, arm_c, tree = urdf_load_from_string(self.urdf, '', '', self.joint_names[i], self.ee_fixed_joints[i])
+            arms.append(arm)
 
-            self.robot = PythonRobot(arms, self.joint_names, self.joint_ordering, extra_joints=self.extra_joints)
-        except:
-            self.robot = None
+        self.robot = PythonRobot(arms, self.joint_names, self.joint_ordering, extra_joints=self.extra_joints)
 
     @property
     def parsed_urdf(self):
@@ -282,18 +457,15 @@ class ConfigManager(object):
         self.handle_update('axis_types',value)
 
     def derive_axis_types(self):
-        try:
-            num_chains = self.robot.numChains
-            axis_types = []
-            for i in range(num_chains):
-                arm_axes = []
-                chain_len = len(self.robot.arms[i].axes)
-                for j in range(chain_len):
-                    arm_axes.append(self.robot.arms[i].axes[j])
-                axis_types.append(arm_axes)
-            self.axis_types = axis_types
-        except:
-            self.axis_types = self._defaults['axis_types']
+        num_chains = self.robot.numChains
+        axis_types = []
+        for i in range(num_chains):
+            arm_axes = []
+            chain_len = len(self.robot.arms[i].axes)
+            for j in range(chain_len):
+                arm_axes.append(self.robot.arms[i].axes[j])
+            axis_types.append(arm_axes)
+        self.axis_types = axis_types
 
     @property
     def base_link_motion_bounds(self):
@@ -328,10 +500,7 @@ class ConfigManager(object):
         self.handle_update('fixed_frame',value)
 
     def derive_fixed_frame(self):
-        try:
-            self.fixed_frame = self.links[0]
-        except:
-            self.fixed_frame = self._defaults['fixed_frame']
+        self.fixed_frame = self.links[0]
 
     @property
     def goals(self):
@@ -350,11 +519,7 @@ class ConfigManager(object):
         self.handle_update('joint_limits',value)
 
     def derive_joint_limits(self):
-        try:
-            print(self.robot.bounds)
-            self.joint_limits = [[pair[0],pair[1]] for pair in self.robot.bounds]
-        except:
-            self.joint_limits = self._defaults['joint_limits']
+        self.joint_limits = [[pair[0],pair[1]] for pair in self.robot.bounds]
 
     @property
     def joint_names(self):
@@ -381,18 +546,15 @@ class ConfigManager(object):
         self.handle_update('joint_types',value)
 
     def derive_joint_types(self):
-        try:
-            num_chains = self.robot.numChains
-            joint_types = []
-            for i in range(num_chains):
-                arm_types = []
-                chain_len = len(self.robot.arms[i].joint_types)
-                for j in range(chain_len):
-                    arm_types.append(self.robot.arms[i].joint_types[j])
-                joint_types.append(arm_types)
-            self.joint_types = joint_types
-        except:
-            self.joint_types = self._defaults['joint_types']
+        num_chains = self.robot.numChains
+        joint_types = []
+        for i in range(num_chains):
+            arm_types = []
+            chain_len = len(self.robot.arms[i].joint_types)
+            for j in range(chain_len):
+                arm_types.append(self.robot.arms[i].joint_types[j])
+            joint_types.append(arm_types)
+        self.joint_types = joint_types
 
     @property
     def mode_control(self):
@@ -427,59 +589,55 @@ class ConfigManager(object):
         self.handle_update('nn_main',value)
 
     def derive_nn(self):
-        try:
-            collision_graph = CollisionGraph(self.data, self.robot, sample_states=self._states)
+        collision_graph = CollisionGraph(self.data, self.robot, sample_states=self._states)
 
-            scores = []
-            main_samples = []
-            jointpoint_samples = []
+        scores = []
+        main_samples = []
+        jointpoint_samples = []
 
-            for i in range(200000):
-                try:
-                    state = self._states[i]
-                except:
-                    state = []
-                    for b in self.robot.bounds:
-                        rand = nprandom.uniform(low=b[0], high=b[1], size=(1))[0]
-                        state.append(rand)
-                main_samples.append(state)
-                frames = robot.getFrames(state)
-                jointpoint_samples.append(self.frames_to_jt_pt_vec(frames))
-                scores.append(collision_graph.get_collision_score(frames))
+        for i in range(200000):
+            try:
+                state = self._states[i]
+            except:
+                state = []
+                for b in self.robot.bounds:
+                    rand = nprandom.uniform(low=b[0], high=b[1], size=(1))[0]
+                    state.append(rand)
+            main_samples.append(state)
+            frames = self.robot.getFrames(state)
+            jointpoint_samples.append(self.frames_to_jt_pt_vec(frames))
+            scores.append(collision_graph.get_collision_score(frames))
 
-            layer_width = 15
-            num_layers = 5
+        layer_width = 15
+        num_layers = 5
 
-            # Train Main NN
-            hls = []
-            for i in range(num_layers):
-                hls.append(layer_width)
-            hls = tuple(hls)
-            clf_main = MLPRegressor(solver='adam', alpha=1,
-                                    hidden_layer_sizes=hls, max_iter=300000, verbose=True,
-                                    learning_rate='adaptive')
+        # Train Main NN
+        hls = []
+        for i in range(num_layers):
+            hls.append(layer_width)
+        hls = tuple(hls)
+        clf_main = MLPRegressor(solver='adam', alpha=1,
+                                hidden_layer_sizes=hls, max_iter=300000, verbose=True,
+                                learning_rate='adaptive')
 
-            clf_main.fit(main_samples, scores)
-            split_point = self.find_optimal_split_point(clf_main,self.robot,collision_graph,2000,jointpoint=False)
+        clf_main.fit(main_samples, scores)
+        split_point = self.find_optimal_split_point(clf_main,self.robot,collision_graph,2000,jointpoint=False)
 
-            self.nn_main = {'intercepts':clf_main.intercepts_,'coefs':clf_main.coefs_,'split_point':split_point}
+        self.nn_main = {'intercepts':clf_main.intercepts_,'coefs':clf_main.coefs_,'split_point':split_point}
 
-            # Train JointPoint NN
-            hls = []
-            for i in range(num_layers):
-                hls.append(layer_width)
-            hls = tuple(hls)
-            clf_jp = MLPRegressor(solver='adam', alpha=1,
-                                    hidden_layer_sizes=hls, max_iter=300000, verbose=True,
-                                    learning_rate='adaptive')
+        # Train JointPoint NN
+        hls = []
+        for i in range(num_layers):
+            hls.append(layer_width)
+        hls = tuple(hls)
+        clf_jp = MLPRegressor(solver='adam', alpha=1,
+                                hidden_layer_sizes=hls, max_iter=300000, verbose=True,
+                                learning_rate='adaptive')
 
-            clf_jp.fit(jointpoint_samples, scores)
-            split_point = self.find_optimal_split_point(clf_jp,self.robot,collision_graph,2000,jointpoint=True)
+        clf_jp.fit(jointpoint_samples, scores)
+        split_point = self.find_optimal_split_point(clf_jp,self.robot,collision_graph,2000,jointpoint=True)
 
-            self.nn_jointpoint = {'intercepts':clf_jp.intercepts_,'coefs':clf_jp.coefs_,'split_point':split_point}
-        except:
-            self.nn_main = self._defaults['nn_main']
-            self.nn_jointpoint = self._defaults['nn_jointpoint']
+        self.nn_jointpoint = {'intercepts':clf_jp.intercepts_,'coefs':clf_jp.coefs_,'split_point':split_point}
 
     @property
     def objectives(self):
@@ -514,19 +672,16 @@ class ConfigManager(object):
         self.handle_update('rot_offsets',value)
 
     def derive_rot_offsets(self):
-        try:
-            num_chains = self.robot.numChains
-            rot_offsets = []
-            for i in range(num_chains):
-                arm_offsets = []
-                chain_len = len(self.robot.arms[i].original_rotOffsets)
-                for j in range(chain_len):
-                    d = self.robot.arms[i].original_rotOffsets[j]
-                    arm_offsets.append([d[0], d[1], d[2]])
-                rot_offsets.append(arm_offsets)
-            self.rot_offsets = rot_offsets
-        except:
-            self.rot_offsets = self._defaults['rot_offsets']
+        num_chains = self.robot.numChains
+        rot_offsets = []
+        for i in range(num_chains):
+            arm_offsets = []
+            chain_len = len(self.robot.arms[i].original_rotOffsets)
+            for j in range(chain_len):
+                d = self.robot.arms[i].original_rotOffsets[j]
+                arm_offsets.append([d[0], d[1], d[2]])
+            rot_offsets.append(arm_offsets)
+        self.rot_offsets = rot_offsets
 
     @property
     def starting_config(self):
@@ -537,10 +692,7 @@ class ConfigManager(object):
         self.handle_update('starting_config',value)
 
     def derive_starting_config(self):
-        try:
-            self.starting_config = [(limit[0]+limit[1])/2.0 for limit in self.joint_limits]
-        except:
-            self.starting_config = self._defaults['starting_config']
+        self.starting_config = [(limit[0]+limit[1])/2.0 for limit in self.joint_limits]
 
     @property
     def velocity_limits(self):
@@ -551,10 +703,7 @@ class ConfigManager(object):
         self.handle_update('velocity_limits',value)
 
     def derive_velocity_limits(self):
-        try:
-            self.velocity_limits = self.robot.velocity_limits
-        except:
-            self.velocity_limits = self._defaults['velocity_limits']
+        self.velocity_limits = self.robot.velocity_limits
 
     @property
     def disp_offsets(self):
@@ -565,15 +714,12 @@ class ConfigManager(object):
         self.handle_update('disp_offsets',value)
 
     def derive_disp_offsets(self):
-        try:
-            num_chains = self.robot.numChains
-            disp_offsets = []
-            for i in range(num_chains):
-                d = self.robot.arms[i].dispOffset
-                disp_offsets.append([d[0], d[1], d[2]])
-            self.disp_offsets = disp_offsets
-        except:
-            self.disp_offsets = self._defaults['disp_offsets']
+        num_chains = self.robot.numChains
+        disp_offsets = []
+        for i in range(num_chains):
+            d = self.robot.arms[i].dispOffset
+            disp_offsets.append([d[0], d[1], d[2]])
+        self.disp_offsets = disp_offsets
 
     @property
     def displacements(self):
@@ -584,19 +730,16 @@ class ConfigManager(object):
         self.handle_update('displacements',value)
 
     def derive_displacements(self):
-        try:
-            num_chains = self.robot.numChains
-            displacements = []
-            for i in range(num_chains):
-                arm_displacements = []
-                chain_len = len(self.robot.arms[i].displacements)
-                for j in range(chain_len):
-                    d = self.robot.arms[i].displacements[j]
-                    arm_displacements.append([d[0], d[1], d[2]])
-                displacements.append(arm_displacements)
-            self.displacements = displacements
-        except:
-            self.displacements = self._defaults['displacements']
+        num_chains = self.robot.numChains
+        displacements = []
+        for i in range(num_chains):
+            arm_displacements = []
+            chain_len = len(self.robot.arms[i].displacements)
+            for j in range(chain_len):
+                d = self.robot.arms[i].displacements[j]
+                arm_displacements.append([d[0], d[1], d[2]])
+            displacements.append(arm_displacements)
+        self.displacements = displacements
 
     @property
     def links(self):
@@ -607,14 +750,11 @@ class ConfigManager(object):
         self.handle_update('links',value)
 
     def derive_links(self):
-        try:
-            links = []
-            for child in self.parsed_urdf:
-                if child.tag == 'link':
-                    links.append(child.attrib['name'])
-            self.links = links
-        except:
-            self.links = self._defaults['links']
+        links = []
+        for child in self.parsed_urdf:
+            if child.tag == 'link':
+                links.append(child.attrib['name'])
+        self.links = links
 
     @property
     def dynamic_joints(self):
@@ -625,14 +765,11 @@ class ConfigManager(object):
         self.handle_update('dynamic_joints',value)
 
     def derive_dynamic_joints(self):
-        try:
-            joints = []
-            for child in self.parsed_urdf:
-                if child.tag == 'joint' and child.attrib['type'] != 'fixed':
-                    joints.append(child.attrib['name'])
-            self.dynamic_joints = joints
-        except:
-            self.dynamic_joints = self._defaults['dynamic_joints']
+        joints = []
+        for child in self.parsed_urdf:
+            if child.tag == 'joint' and child.attrib['type'] != 'fixed':
+                joints.append(child.attrib['name'])
+        self.dynamic_joints = joints
 
     @property
     def fixed_joints(self):
@@ -643,14 +780,11 @@ class ConfigManager(object):
         self.handle_update('fixed_joints',value)
 
     def derive_fixed_joints(self):
-        try:
-            joints = []
-            for child in self.parsed_urdf:
-                if child.tag == 'joint' and child.attrib['type'] == 'fixed':
-                    joints.append(child.attrib['name'])
-            self.fixed_joints = joints
-        except:
-            self.fixed_joints = self._defaults['fixed_joints']
+        joints = []
+        for child in self.parsed_urdf:
+            if child.tag == 'joint' and child.attrib['type'] == 'fixed':
+                joints.append(child.attrib['name'])
+        self.fixed_joints = joints
 
     @property
     def extra_joints(self):
@@ -661,26 +795,23 @@ class ConfigManager(object):
         self.handle_update('extra_joints',value)
 
     def derive_extra_joints(self):
-        try:
-            extra_joint_names = []
-            for joint in self.joint_ordering:
-                found = False
-                for chain in self.joint_names:
-                    if joint in chain:
-                        found = True
-                if not found:
-                    extra_joint_names.append(joint)
-            extra_joints = {name:{'bounds':[0,0],'velocity':0} for name in extra_joint_names}
-            for child in self.parsed_urdf:
-                if child.tag == 'joint' and child.attrib['type'] != 'fixed' and child.attrib['name'] in extra_joint_names:
-                    for attrib in child:
-                        if attrib.tag == 'limit':
-                            extra_joints[child.attrib['name']]['bounds'][0] = float(attrib.attrib['lower'])
-                            extra_joints[child.attrib['name']]['bounds'][1] = float(attrib.attrib['upper'])
-                            extra_joints[child.attrib['name']]['velocity'] = float(attrib.attrib['velocity'])
-            self.extra_joints = extra_joints
-        except:
-            self.extra_joints = self._defaults['extra_joints']
+        extra_joint_names = []
+        for joint in self.joint_ordering:
+            found = False
+            for chain in self.joint_names:
+                if joint in chain:
+                    found = True
+            if not found:
+                extra_joint_names.append(joint)
+        extra_joints = {name:{'bounds':[0,0],'velocity':0} for name in extra_joint_names}
+        for child in self.parsed_urdf:
+            if child.tag == 'joint' and child.attrib['type'] != 'fixed' and child.attrib['name'] in extra_joint_names:
+                for attrib in child:
+                    if attrib.tag == 'limit':
+                        extra_joints[child.attrib['name']]['bounds'][0] = float(attrib.attrib['lower'])
+                        extra_joints[child.attrib['name']]['bounds'][1] = float(attrib.attrib['upper'])
+                        extra_joints[child.attrib['name']]['velocity'] = float(attrib.attrib['velocity'])
+        self.extra_joints = extra_joints
 
     @property
     def displayed_state(self):
@@ -691,10 +822,7 @@ class ConfigManager(object):
         self.handle_update('displayed_state',value)
 
     def derive_displayed_state(self):
-        try:
-            self.displayed_state = self.starting_config
-        except:
-            self.displayed_state = self._defaults['displayed_state']
+        self.displayed_state = self.starting_config
 
     @property
     def control(self):
@@ -705,15 +833,10 @@ class ConfigManager(object):
         self.handle_update('control',value)
 
     def derive_control(self):
-        try:
-            if self.valid_solver:
-                print("VALID SOLVER FOUND")
-                self.control = 'solve'
-            else:
-                print("NO VALID SOLVER")
-                self.control = self._defaults['control']
-        except:
-            self.control = self._defaults['control']
+        if self.valid_solver:
+            self.control = 'solve'
+        else:
+            self.control = self._fields['control']['default']
 
     @staticmethod
     def frames_to_jt_pt_vec(all_frames):
