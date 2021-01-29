@@ -44,7 +44,7 @@ setup(
     version='0.0.0',
     packages=[package_name],
     data_files=data_files,
-    install_requires=['setuptools','sklearn','numpy','python-fcl','urdf-parser-py'],
+    install_requires=['setuptools','scikit-learn','numpy','python-fcl','urdf-parser-py'],
     zip_safe=True,
     maintainer='schoen',
     maintainer_email='schoen.andrewj@gmail.com',

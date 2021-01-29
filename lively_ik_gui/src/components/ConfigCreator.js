@@ -93,7 +93,7 @@ class ConfigCreator extends React.Component {
   }
 
   stepForward = () => {
-    if (this.state.step+1 == 2) {
+    if (this.state.step+1 === 2) {
       this.updateToSolve()
     } else {
       this.updateToManual()
@@ -102,7 +102,7 @@ class ConfigCreator extends React.Component {
   }
 
   stepBackward = () => {
-    if (this.state.step-1 == 2) {
+    if (this.state.step-1 === 2) {
       this.updateToSolve()
     } else {
       this.updateToManual()
@@ -140,7 +140,7 @@ class ConfigCreator extends React.Component {
           <Behavior meta={this.props.meta}
                     config={this.props.config}
                     updateObjectives={(e)=>this.updateObjectives(e)}
-                    updateObjectives={(e)=>this.updateGoals(e)}
+                    updateGoals={(e)=>this.updateGoals(e)}
                   />
         );
       default:

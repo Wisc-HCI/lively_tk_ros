@@ -231,24 +231,24 @@ class Behavior extends React.Component {
     return (
       <Collapse defaultActiveKey={['1']} accordion={true}>
         <Panel header="Default" key="1">
-          <List header={null} footer={null} bordered dataSource={this.getDefaultObjectives(this.props.config.objectives)} style={{marginBottom:10}}
-                style={{overflow:'scroll',maxHeight:300,margin:0}}
+          <List header={null} footer={null} bordered dataSource={this.getDefaultObjectives(this.props.config.objectives)}
+                style={{overflow:'scroll',maxHeight:300,marginBottom:10}}
                 renderItem={(item)=>(
                   <List.Item>{this.getObjectivePreview(item)}</List.Item>
                 )}
           />
         </Panel>
         <Panel header="Directions" key="2">
-          <List header={null} footer={null} bordered dataSource={this.getDirectionObjectives(this.props.config.objectives)} style={{marginBottom:10}}
-                style={{overflow:'scroll',maxHeight:300,margin:0}}
+          <List header={null} footer={null} bordered dataSource={this.getDirectionObjectives(this.props.config.objectives)}
+                style={{overflow:'scroll',maxHeight:300,marginBottom:10}}
                 renderItem={(item)=>(
                   <List.Item>{this.getObjectivePreview(item)}</List.Item>
                 )}
           />
         </Panel>
         <Panel header="Liveliness" key="3">
-          <List header={null} footer={null} bordered dataSource={this.getLivelinessObjectives(this.props.config.objectives)} style={{marginBottom:10}}
-                style={{overflow:'scroll',maxHeight:300,margin:0}}
+          <List header={null} footer={null} bordered dataSource={this.getLivelinessObjectives(this.props.config.objectives)}
+                style={{overflow:'scroll',maxHeight:300,marginBottom:10}}
                 renderItem={(item)=>(
                   <List.Item>{this.getObjectivePreview(item)}</List.Item>
                 )}

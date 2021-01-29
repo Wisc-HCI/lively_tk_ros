@@ -8,13 +8,19 @@ from rcl_interfaces.msg import Parameter, ParameterValue
 from sensor_msgs.msg import JointState
 from tf2_msgs.msg import TFMessage
 from geometry_msgs.msg import TransformStamped
+from tf2_web_republisher_msgs.msg import TFArray
 from std_msgs.msg import String
 
-import tf2_ros
+from tf2_ros import Buffer, TransformListener, TransformBroadcaster
 
 from lively_ik.configuration.config_manager import ConfigManager
 
 from datetime import datetime
+
+class Time(object):
+    def __init__(self,sec,nanosec):
+        self.sec = sec
+        self.nanosec = nanosec
 
 class InterfaceNode(Node):
     def __init__(self):
@@ -28,8 +34,15 @@ class InterfaceNode(Node):
 
         self.gui_sub = self.create_subscription(String, '/lively_ik/gui_updates', self.handle_gui_update, 10)
         self.gui_pub = self.create_publisher(String, '/lively_ik/server_updates', 10)
+        self.tf_web_pub = self.create_publisher(TFArray, '/lively_ik/tf_updates', 10)
+        self.tf_web_sub = self.create_subscription(String, '/lively_ik/tf_request', self.handle_tf_request, 10)
 
-        self.tf_broadcaster = tf2_ros.TransformBroadcaster(self)
+        self.tf_broadcaster = TransformBroadcaster(self)
+        self.tf_buffer = Buffer()
+        self.tf_listener = TransformListener(self.tf_buffer,node=self)
+
+        self.watched_transforms = []
+
         self.get_logger().info('Initialized!')
         self.create_timer(.1,self.standard_loop)
 
@@ -37,8 +50,18 @@ class InterfaceNode(Node):
         self.displayed_state = []
         self.manual_display = False
 
+    def handle_tf_request(self,msg):
+        self.get_logger().debug('Interface: Received tf request')
+        data = json.loads(msg.data)
+        self.get_logger().debug('{0}'.format(data))
+        transform_pair = {'target':self.clean_tf_frame(data['target_frame']),
+                          'source':self.clean_tf_frame(data['source_frame'])}
+        if transform_pair not in self.watched_transforms:
+            self.watched_transforms.append(transform_pair)
+
+
     def handle_gui_update(self,msg):
-        self.get_logger().info('Interface: Received update request')
+        self.get_logger().debug('Interface: Received update request')
         data = json.loads(msg.data)
         if data['directive'] == 'update':
             if 'config' in data.keys():
@@ -79,6 +102,19 @@ class InterfaceNode(Node):
         js.header.stamp = self.get_clock().now().to_msg()
         self.js_pub.publish(js)
 
+        transforms = []
+        for pair in self.watched_transforms:
+            try:
+                transform = self.tf_buffer.lookup_transform(pair['target'],pair['source'],Time(0,0))
+                transform.header.stamp = self.get_clock().now().to_msg()
+                transform.header.frame_id = pair['target']
+                transform.child_frame_id = pair['source']
+                transforms.append(transform)
+            except Exception as e:
+                pass
+        self.tf_web_pub.publish(TFArray(transforms=transforms))
+
+
     def solve_with_default_goals(self):
         return self.config_manager.solver.solve(self.config_manager.config.default_goals,datetime.utcnow().timestamp())
 
@@ -91,6 +127,10 @@ class InterfaceNode(Node):
         request.parameters = [Parameter(name='robot_description',value=ParameterValue(type=4,string_value=urdf))]
         future = self.robot_description_client.call_async(request)
         #rclpy.spin_until_future_complete(self, future)
+
+    @staticmethod
+    def clean_tf_frame(frame_id:str) -> str:
+        return frame_id.replace('/','')
 
 def main():
     rclpy.init(args=None)

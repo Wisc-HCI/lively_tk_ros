@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import * as ROS3D from 'ros3d';
 import * as ROSLIB from 'roslib';
 import * as THREE from 'three-full';
+import SimpleTFClient from '../util/SimpleTFClient';
 
 // import sizeMe from 'react-sizeme';
 import { withResizeDetector } from 'react-resize-detector';
@@ -46,14 +47,9 @@ class Scene extends Component {
            num_cells: 20,
            lineWidth: 2
     }));
+    this.viewer.addObject(new THREE.AmbientLight(0x404040))
     // Setup a client to listen to TFs.
-    this.tfClient = new ROSLIB.TFClient({
-      ros: this.props.ros,
-      angularThres: 0.01,
-      transThres: 0.01,
-      rate: 10.0,
-      fixedFrame: 'world'
-    });
+    this.tfClient = new SimpleTFClient(this.props.ros);
     // Setup the marker client.
     this.markerClient = new ROS3D.MarkerClient({
       ros: this.props.ros,
