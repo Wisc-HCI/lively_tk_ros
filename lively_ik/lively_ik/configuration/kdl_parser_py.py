@@ -52,7 +52,10 @@ def _toKdlInertia(i):
 
 def _toKdlJoint(jnt):
 
-    fixed = lambda j,F: kdl.Joint(j.name, getattr(kdl.Joint, 'Fixed'))
+    try:
+        fixed = lambda j,F: kdl.Joint(j.name, getattr(kdl.Joint, 'Fixed'))
+    except:
+        fixed = lambda j,F: kdl.Joint(j.name, getattr(kdl.Joint, 'None'))
     rotational = lambda j,F: kdl.Joint(j.name, F.p, F.M * kdl.Vector(*j.axis), kdl.Joint.RotAxis)
     translational = lambda j,F: kdl.Joint(j.name, F.p, F.M * kdl.Vector(*j.axis), kdl.Joint.TransAxis)
 
