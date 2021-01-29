@@ -7,11 +7,11 @@
 ### ROS Packages
 You need the following repositories in your workspace's src folder:
 
-- [tf2_web_republisher_py](https://github.com/Wisc-HCI/tf2_web_republisher_py) `git clone git@github.com:/Wisc-HCI/tf2_web_republisher_py.git`
-- [rosbridge_suite (ros2 branch)](https://github.com/RobotWebTools/rosbridge_suite) `git clone -b ros2 git@github.com:/RobotWebTools/rosbridge_suite.git`
+- [tf2_web_republisher_py](https://github.com/Wisc-HCI/tf2_web_republisher_py) `git clone https://github.com/Wisc-HCI/tf2_web_republisher_py.git`
+- [rosbridge_suite (ros2 branch)](https://github.com/RobotWebTools/rosbridge_suite) `git clone -b ros2 https://github.com/RobotWebTools/rosbridge_suite.git`
 
 For robots, we are currently testing with the Franka Emika Panda, which has a description included here:
-- [moveit_resources (ros2 branch)](https://github.com/ros-planning/moveit_resources) `git clone -b ros2 git@github.com:/ros-planning/moveit_resources.git`
+- [moveit_resources (ros2 branch)](https://github.com/ros-planning/moveit_resources) `git clone -b ros2 https://github.com/ros-planning/moveit_resources.git`
 
 ### PIP Packages
 
