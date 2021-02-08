@@ -17,7 +17,7 @@ class Scene extends Component {
 
 
    componentDidUpdate(prevProps) {
-    const { width, height, fixedFrame, urdf } = this.props;
+    const { width, height, fixedFrame, urdf, connected } = this.props;
 
     if (width !== prevProps.width || height !== prevProps.height) {
       this.viewer.resize(width,height)
@@ -28,7 +28,23 @@ class Scene extends Component {
 
   }
 
+  componentWillUnmount() {
+    console.log('UNMOUNTING AND CLEARING SCENE')
+    if (this.viewer) {
+      while(this.viewer.scene.children.length > 0){
+        this.viewer.scene.remove(this.viewer.scene.children[0]);
+      }
+    }
+    this.viewer = null;
+    document.getElementById('scene').innerHTML = "";
+  }
+
   setupViewer(urdf,fixedFrame) {
+    if (this.viewer) {
+      while(this.viewer.scene.children.length > 0){
+        this.viewer.scene.remove(this.viewer.scene.children[0]);
+      }
+    }
     this.viewer = null;
     document.getElementById('scene').innerHTML = "";
     // Create the main viewer.
@@ -47,6 +63,7 @@ class Scene extends Component {
            num_cells: 20,
            lineWidth: 2
     }));
+    // Brighten up the scene
     this.viewer.addObject(new THREE.AmbientLight(0x404040))
     // Setup a client to listen to TFs.
     this.tfClient = new SimpleTFClient(this.props.ros);
@@ -60,7 +77,7 @@ class Scene extends Component {
     this.robotModel = new ROSLIB.UrdfModel({
       string:this.props.urdf.replace(/package:\/\//g, process.env.PUBLIC_URL + 'assets/')
     });
-    console.log(this.robotModel);
+    // console.log(this.robotModel);
     this.robot = new ROS3D.Urdf({
       urdfModel: this.robotModel,
       path: '/',
@@ -68,7 +85,7 @@ class Scene extends Component {
       tfPrefix: '',
       loader: THREE.ColladaLoader
     })
-    console.log(this.robot);
+    // console.log(this.robot);
     this.viewer.scene.add(this.robot);
   }
 

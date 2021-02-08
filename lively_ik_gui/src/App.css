@@ -114,3 +114,7 @@
 .Resizer.disabled:hover {
   border-color: transparent;
 }
+
+.ant-tabs-content {
+  height: 100%
+}

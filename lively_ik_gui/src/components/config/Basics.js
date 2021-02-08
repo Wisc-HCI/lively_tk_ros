@@ -1,7 +1,7 @@
 import React from 'react';
-import { Input, Descriptions, Select, Modal, Collapse, Button, Badge, Alert, Space } from 'antd';
-import { DeleteOutlined } from '@ant-design/icons';
-const { Panel } = Collapse;
+import { Input, Select, Modal, Tabs, Button, Badge, Alert, Space, Tag, Card, List, Tooltip } from 'antd';
+import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
+const { TabPane } = Tabs;
 const { TextArea } = Input;
 const { Option } = Select;
 
@@ -45,11 +45,38 @@ class Basics extends React.Component {
     })
   }
 
+  tagRender = (props) => {
+    const { label, value, closable, onClose } = props;
+
+    let color = '#BE33FF';
+    let tooltip = 'This joint is not used as part of a chain, but can still be controlled';
+    this.props.config.joint_names.forEach((chain)=>{
+      chain.forEach(joint=>{
+        if (joint === label) {
+          color = '#1890ff'
+          tooltip = 'This joint is part of a chain';
+        }
+      })
+    })
+
+    return (
+      <Tooltip title={tooltip} style={{ marginRight: 3 }} color={color}>
+        <Tag color={color} closable={closable} onClose={onClose}>
+          {label}
+        </Tag>
+      </Tooltip>
+      );
+  }
+
+  selectState = () => {
+    this.props.updateMeta({selected:{idx:null,type:'starting_config'},displayed_state:this.props.config.starting_config})
+  }
+
   render() {
     return (
       <>
-        <Collapse defaultActiveKey={['1']} accordion={true}>
-          <Panel header="URDF" key="1">
+        <Tabs defaultActiveKey='1' tabPosition='left' style={{ height: '100%', width:'100%' }}>
+          <TabPane tab="URDF" key="1">
             <h3>URDF</h3>
             <Space style={{display:'flex',paddingBottom:10}}>
               <Button onClick={this.openUrdfWindow} size='large'>Update</Button>
@@ -69,8 +96,8 @@ class Basics extends React.Component {
                 return <Option key={joint}>{joint}</Option>
               })}
             </Select>
-          </Panel>
-          <Panel header="Modes" key="3">
+          </TabPane>
+          <TabPane tab="Modes" key="2">
             <Space style={{display:'flex'}}>
               <div>
                 <h3>Control</h3>
@@ -97,49 +124,60 @@ class Basics extends React.Component {
                 </Select>
               </div>
             </Space>
-          </Panel>
-          <Panel header="Arms and Joints" key="2">
-            <h3>Joints</h3>
+          </TabPane>
+          <TabPane tab="Active Joints" key="3" style={{height:'100%'}}>
             <Select
-              mode="multiple"
-              placeholder="Please select"
-              defaultValue={this.props.config.joint_ordering}
-              onChange={(joints)=>this.props.updateJointOrdering(joints)}
-              style={{ width:'100%'}}
-              >
-              {this.getOptions(this.props.meta.dynamic_joints)}
-            </Select>
-            <h3>Chains</h3>
-            {this.props.config.joint_names.map((chain, idx)=>{
-              return (
-              <span style={{display:'flex',marginBottom:10}}>
-                <Select
-                  key={idx}
-                  mode="multiple"
-                  placeholder="Please select"
-                  defaultValue={chain}
-                  onChange={(e)=>this.changeChain(e,idx)}
-                  style={{ width:'100%', flex:3}}
-                  >
-                  {this.getOptions(this.props.config.joint_ordering)}
-                </Select>
-                <Select
-                  showSearch
-                  style={{ width: "100%", flex:1, marginLeft:6}}
-                  defaultValue={this.props.config.ee_fixed_joints[idx]}
-                  placeholder="EE Fixed Joint"
-                  optionFilterProp="children"
-                  onChange={(e)=>this.updateEE(e,idx)}
+                mode="multiple"
+                placeholder="Please select"
+                tagRender={this.tagRender}
+                defaultValue={this.props.config.joint_ordering}
+                onChange={(joints)=>this.props.updateJointOrdering(joints)}
+                style={{ width:'100%',marginBottom:10}}
                 >
-                  {this.getOptions(this.props.meta.fixed_joints)}
-                </Select>
-                <Button danger style={{marginLeft:6}} onClick={()=>this.removeChain(idx)} icon={<DeleteOutlined/>}></Button>
-              </span>
-            )})}
-            <Button type='primary' onClick={this.addChain}>Add Chain</Button>
-
-          </Panel>
-        </Collapse>
+                {this.getOptions(this.props.meta.dynamic_joints)}
+            </Select>
+          </TabPane>
+          <TabPane tab="Chains" key="4" style={{height:'100%'}}>
+            <List bordered header={null} style={{marginBottom:10}} footer={<Button type='primary' onClick={this.addChain}>Add Chain</Button>}
+                  dataSource={this.props.config.joint_names.map((item,idx)=>idx)}
+                  renderItem={(idx)=>{
+                    return (
+                      <List.Item extra={
+                        <><Select
+                          showSearch
+                          style={{ marginLeft:10,maxWidth: 250}}
+                          defaultValue={this.props.config.ee_fixed_joints[idx]}
+                          placeholder="EE Fixed Joint"
+                          optionFilterProp="children"
+                          onChange={(e)=>this.updateEE(e,idx)}
+                          >
+                          {this.getOptions(this.props.meta.fixed_joints)}
+                        </Select>
+                        <Button style={{ marginLeft:10}} shape="circle" icon={<DeleteOutlined/>} danger onClick={()=>this.removeChain(idx)}/></>
+                      }>
+                        <Select
+                          key={idx}
+                          mode="multiple"
+                          placeholder="Please select"
+                          defaultValue={this.props.config.joint_names[idx]}
+                          onChange={(e)=>this.changeChain(e,idx)}
+                          style={{ width:'100%', flex:1}}
+                          >
+                          {this.getOptions(this.props.config.joint_ordering)}
+                        </Select>
+                      </List.Item>)
+                  }}/>
+          </TabPane>
+          <TabPane tab="Initial" key="5" style={{height:'100%'}}>
+            <Card title="Initial States" extra={
+              <Tooltip title='Edit'>
+                <Button shape="circle" style={{marginLeft:5}} icon={<EditOutlined/>} onClick={this.selectState}/>
+              </Tooltip>
+            }>
+                {this.props.config.starting_config.map((value)=><Tag>{value.toFixed(2)}</Tag>)}
+            </Card>
+          </TabPane>
+        </Tabs>
         <Modal title="Specify URDF"
             footer={null}
             closable={this.props.meta.valid_urdf}

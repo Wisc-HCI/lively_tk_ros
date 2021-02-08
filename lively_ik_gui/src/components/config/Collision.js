@@ -1,49 +1,54 @@
 import React from 'react';
-import { Form, Slider, Button, Popover, Badge, Collapse, Checkbox, InputNumber, List, Space, Tag } from 'antd';
-const { Panel } = Collapse;
+import { Form, Slider, Tabs, Checkbox, InputNumber, List, Space, Tag, Button, Tooltip } from 'antd';
+import { EditOutlined, CopyOutlined, DeleteOutlined } from '@ant-design/icons';
+const { TabPane } = Tabs;
 
 class Collision extends React.Component {
 
-  updateDisplayedStateAtIdx = (idx,value) => {
-    console.log(value);
-    let joints = [...this.props.displayedState];
-    joints[idx] = value;
-    this.props.updateDisplayedState(joints);
+  deleteState = (idx) => {
+    let states = [...this.props.config.states];
+    states.splice(idx,1)
+    this.props.updateStates(states)
   }
 
-  getJointSlider = (idx) => {
-    let minval = +this.props.jointLimits[idx][0].toFixed(2);
-    let maxval = +this.props.jointLimits[idx][1].toFixed(2);
-    // let avgval = +([minval,maxval].reduce((a,b)=>a+b)/2.0).toFixed(2);
-    let marks = {};
-    marks[minval] = minval.toString();
-    marks[maxval] = maxval.toString();
-
-    return (
-      <Form.Item key={this.props.jointOrdering[idx]} label={this.props.jointOrdering[idx]}>
-        <Slider defaultValue={this.props.displayedState[idx]} marks={marks} min={minval} max={maxval} step={0.01} tooltipVisible onChange={(v)=>this.updateDisplayedStateAtIdx(idx,v)}/>
-      </Form.Item>
-    )
+  addState = () => {
+    let joints = [...this.props.meta.displayed_state];
+    let states = [...this.props.config.states];
+    states.push(joints);
+    this.props.updateStates(states)
   }
 
-  addToSampleStates = () => {
-    let joints = [...this.props.displayedState];
-    let sampleStates = [...this.props.config.states];
-    sampleStates.push(joints);
-    this.props.updateStates(sampleStates)
+  selectState = (idx) => {
+    this.props.updateMeta({selected:{idx:idx,type:'collision_state'},displayed_state:this.props.config.states[idx],control:'manual'})
+  }
+
+  copyState = (idx) => {
+    let states = [...this.props.config.states];
+    let copied = [...states[idx]]
+    states.splice(idx+1,0,copied);
+    this.props.updateStates(states)
+    this.props.updateMeta({selected:{idx:idx+1,type:'collision_state'},displayed_state:copied,control:'manual'})
+  }
+
+  getColor = (idx) => {
+    if (this.props.meta.selected === null) {
+      return 'white'
+    } else if (idx === this.props.meta.selected.idx) {
+      return '#E9E9E9'
+    }
   }
 
   render() {
     return (
-      <Collapse defaultActiveKey={['1']} accordion={true}>
-        <Panel header="Link Collision" key="1">
+      <Tabs defaultActiveKey='1' tabPosition='left' style={{ height: '100%', width:'100%' }}>
+        <TabPane tab='Link Collision' key="1">
           <h3>Robot Link Radius</h3>
           <Space style={{display:'flex',paddingBottom:10}}>
             <InputNumber min={0} max={10} defaultValue={0.05} step={0.01} onChange={(value)=>this.props.updateRobotLinkRadius(value)} />
             <Checkbox>Show Link Collision</Checkbox>
           </Space>
-        </Panel>
-        <Panel header="Environment" key="2">
+        </TabPane>
+        <TabPane tab='Environment' key='2'>
           <h3>Spheres</h3>
           <List header={null} footer={null} bordered dataSource={this.props.config.static_environment.spheres} style={{marginBottom:10}}
                 renderItem={(item)=>(
@@ -56,19 +61,38 @@ class Collision extends React.Component {
                   <List.Item>{item.name}</List.Item>
                 )}
           />
-        </Panel>
-        <Panel header="Training States" key="3">
-          <List header={null} footer={null} bordered dataSource={this.props.config.states}
-                renderItem={(item)=>(
-                  <List.Item onClick={()=>this.props.updateDisplayedState(item)}>
-                    <Space>
-                      {item.map((value)=><Tag>{value.toFixed(2)}</Tag>)}
-                    </Space>
+        </TabPane>
+        <TabPane tab='Training States' key='3'>
+          <List header={null} footer={<Button type="primary" onClick={this.addState}>Add State</Button>}
+                bordered dataSource={this.props.config.states.map((state,idx)=>idx)}
+                style={{width:'100%'}}
+                renderItem={(state,idx)=>(
+                  <List.Item style={{width:'100%',backgroundColor:this.getColor(idx)}} extra={
+                      <Space style={{width: 120}}>
+                        <Tooltip title='Edit'>
+                          <Button shape="circle" style={{marginLeft:5}} icon={<EditOutlined/>} onClick={()=>this.selectState(idx)}/>
+                        </Tooltip>
+                        <Tooltip title='Copy'>
+                          <Button shape="circle" style={{marginLeft:5}} icon={<CopyOutlined/>} onClick={()=>this.copyState(idx)}/>
+                        </Tooltip>
+                        <Tooltip title='Delete' color='#ff4d4f'>
+                          <Button shape="circle" style={{marginLeft:5}} icon={<DeleteOutlined/>} danger onClick={()=>this.deleteState(idx)}/>
+                        </Tooltip>
+                      </Space>
+                    }>
+                    <div style={{width:'100%'}}>
+                      {this.props.config.states[idx].map((value,i)=>(
+                        <Tag key={this.props.config.joint_ordering[i]} style={{margin: 1}}>
+                          {value.toFixed(2)}
+                        </Tag>
+                      ))}
+                    </div>
+
                   </List.Item>
                 )}
           />
-        </Panel>
-      </Collapse>
+        </TabPane>
+      </Tabs>
     )
   }
 

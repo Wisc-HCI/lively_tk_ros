@@ -48,7 +48,6 @@ class InterfaceNode(Node):
 
         self.base_transform = [0,0,0]
         self.displayed_state = []
-        self.manual_display = False
 
     def handle_tf_request(self,msg):
         self.get_logger().debug('Interface: Received tf request')
@@ -61,44 +60,44 @@ class InterfaceNode(Node):
 
 
     def handle_gui_update(self,msg):
-        self.get_logger().debug('Interface: Received update request')
+        self.get_logger().info('Interface: Received update request')
         data = json.loads(msg.data)
+        self.get_logger().info('{0}'.format(data))
         if data['directive'] == 'update':
-            if 'config' in data.keys():
-                self.config_manager.load(data['config'])
-            if 'meta' in data.keys():
-                if 'displayed_state' in data['meta'].keys():
-                    self.config_manager.displayed_state = data['meta']['displayed_state']
-                if 'control' in data['meta'].keys():
-                    self.config_manager.control = data['meta']['control']
+            self.config_manager.load(data.get('config',{}),data.get('meta',{}))
         elif data['directive'] == 'train':
             self.get_logger().info('Should train!')
-        self.pub_to_gui({'directive':'update','config':self.config_manager.data,'meta':self.config_manager.meta})
-        if 'config' in data and 'urdf' in data['config'] and self.config_manager.valid_urdf:
+        elif data['directive'] == 'clear':
+            self.config_manager = ConfigManager()
+        if data['directive'] != 'clear':
+            self.pub_to_gui({'directive':'update','config':self.config_manager.data,'meta':self.config_manager.meta})
+        if 'config' in data and 'urdf' in data['config'] and self.config_manager.meta['valid_urdf']:
             self.get_logger().info('Updating robot description!')
-            self.update_robot_description(self.config_manager.urdf)
+            self.update_robot_description(self.config_manager.data['urdf'])
             self.get_logger().info('Updated robot description!')
 
     def standard_loop(self):
-        if self.config_manager.valid_solver and self.config_manager.control == 'solve':
+        data = self.config_manager.data
+        meta = self.config_manager.meta
+        if meta['valid_solver'] and meta['control'] == 'solve':
             # self.get_logger().info('solving')
             self.base_transform, self.displayed_state = self.solve_with_default_goals()
-        elif self.config_manager.valid_urdf:
-            # self.get_logger().info('{0} {1}'.format(self.config_manager.valid_solver,self.config_manager.control))
-            self.base_transform, self.displayed_state = ([0,0,0], self.config_manager.displayed_state)
+        elif meta['valid_urdf']:
+            # self.get_logger().info('{0} {1}'.format(meta['valid_solver'],meta['control']))
+            self.base_transform, self.displayed_state = ([0,0,0], meta['displayed_state'])
 
         # Send the transform for the base
         t = TransformStamped()
         t.header.stamp = self.get_clock().now().to_msg()
         t.header.frame_id = "world"
-        t.child_frame_id = self.config_manager.fixed_frame
+        t.child_frame_id = data['fixed_frame']
         t.transform.translation.x = float(self.base_transform[0])
         t.transform.translation.y = float(self.base_transform[1])
         t.transform.translation.z = float(self.base_transform[2])
         self.tf_broadcaster.sendTransform(t)
 
         # Send the joint states
-        js = JointState(name=self.config_manager.joint_ordering,position=self.displayed_state)
+        js = JointState(name=data['joint_ordering'],position=meta['displayed_state'])
         js.header.stamp = self.get_clock().now().to_msg()
         self.js_pub.publish(js)
 
@@ -116,7 +115,7 @@ class InterfaceNode(Node):
 
 
     def solve_with_default_goals(self):
-        return self.config_manager.solver.solve(self.config_manager.config.default_goals,datetime.utcnow().timestamp())
+        return self.config_manager.current['solver'].solve(self.config_manager.current['config'].default_goals,datetime.utcnow().timestamp())
 
     def pub_to_gui(self,data):
         data_msg = String(data=json.dumps(data))

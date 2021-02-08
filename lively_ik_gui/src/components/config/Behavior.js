@@ -1,7 +1,6 @@
 import React from 'react';
-import { Input, Select, Collapse, List, Tag } from 'antd';
+import { Collapse, List } from 'antd';
 const { Panel } = Collapse;
-const { Option } = Select;
 
 class Behavior extends React.Component {
 
@@ -125,13 +124,15 @@ class Behavior extends React.Component {
                 <span> have lifelike motion</span>
                </span>
       case 'base_link_position_liveliness':
-      return <span>
+        return <span>
               <span>Make the robot root </span>
               <span style={{backgroundColor:'#E73091',color:'white',padding:4,borderRadius:5}}>
                 {this.props.config.fixed_frame}
               </span>
               <span> have lifelike motion</span>
              </span>
+      default:
+        return <></>
     }
   }
 

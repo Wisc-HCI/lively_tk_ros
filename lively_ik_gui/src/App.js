@@ -8,9 +8,10 @@ import Connection from './components/Connection';
 import Scene from './components/Scene';
 import Uploader from './components/Uploader';
 import Main from './components/Main';
-import { message, Layout, Empty, Card, Space } from 'antd';
+import { message, Layout, Space } from 'antd';
 import * as ROSLIB from 'roslib';
 import SplitPane from 'react-split-pane';
+import { config, meta } from './util/Default';
 // import {Resizable} from 're-resizable';
 const { Header, Sider, Content } = Layout;
 
@@ -23,46 +24,8 @@ class App extends React.Component {
                   connected:false,
                   sidebarCollapsed: true,
                   showUploader:false,
-                  config:{
-                    axis_types:[],
-                    ee_fixed_joints:[],
-                    base_link_motion_bounds:[[0,0],[0,0],[0,0]],
-                    static_environment:{
-                      cuboids:[],
-                      spheres:[],
-                      pcs:[]
-                    },
-                    fixed_frame:'',
-                    goals:[],
-                    joint_limits:[],
-                    joint_names:[],
-                    joint_ordering:[],
-                    joint_types:[],
-                    mode_control:'absolute',
-                    mode_environment:'ECAA',
-                    nn_jointpoint:[],
-                    nn_main:[],
-                    objectives:[],
-                    states:[],
-                    robot_link_radius:0.05,
-                    rot_offsets:[],
-                    starting_config:[],
-                    urdf:'<?xml version="1.0" ?><robot name="default" xmlns:xacro="http://www.ros.org/wiki/xacro"><link name="base_link"/><joint name="default_joint" type="fixed"><parent link="base_link" /><child link="default_link" /><origin xyz="0 0 0" rpy="0 0 0" /></joint><link name="default_link"/></robot>',
-                    velocity_limits:[],
-                    disp_offsets:[],
-                    displacements:[]
-                  },
-                  meta:{
-                    valid_urdf: false,
-                    valid_robot: false,
-                    valid_nn: false,
-                    valid_config: false,
-                    valid_solver: false,
-                    displayed_state:[],
-                    links: [],
-                    dynamic_joints: [],
-                    fixed_joints: []
-                  }
+                  config:JSON.parse(JSON.stringify(config)),
+                  meta:JSON.parse(JSON.stringify(meta))
                  };
   }
 
@@ -97,6 +60,7 @@ class App extends React.Component {
         name: '/lively_ik/gui_updates',
         messageType: 'std_msgs/String'
       })
+      this.updateToServer({directive:'clear'})
 
     })
     this.ros.on('close', ()=>{
@@ -104,9 +68,6 @@ class App extends React.Component {
       console.log("Connection Closed")
       this.setState({connected:false})
     })
-
-    // Setup the subscriptions/etc.
-    // TODO
 
 
     this.setState(login);
@@ -124,10 +85,8 @@ class App extends React.Component {
   }
 
   handleUpload = (config) => {
-    console.log(config);
     this.setState({config:config,showUploader:false})
     this.updateToServer({directive:'update',config:config})
-    // TODO: update the viewer's base link
   }
 
   handleUploadCancel = () => {
@@ -143,7 +102,7 @@ class App extends React.Component {
     if (this.state.connected) {
       return (
         <SplitPane split='vertical' defaultSize="50%" style={{width: '100%', display:'flex', height:'calc(100vh - 48pt)'}}>
-          <Scene ros={this.ros} baseLink={this.state.config.fixed_frame} urdf={this.state.config.urdf}/>
+          <Scene ros={this.ros} baseLink={this.state.config.fixed_frame} urdf={this.state.config.urdf} connected={this.state.connected}/>
           <Main meta={this.state.meta} config={this.state.config} onUpdate={(data)=>this.updateToServer(data)}/>
         </SplitPane>
       )
