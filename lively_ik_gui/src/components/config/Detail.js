@@ -1,6 +1,7 @@
 import React from 'react';
 import { Drawer } from 'antd';
 import JointSpec from './JointSpec';
+import ObjectiveSpec from './ObjectiveSpec';
 
 class Detail extends React.Component {
 
@@ -36,7 +37,14 @@ class Detail extends React.Component {
           states[this.props.meta.selected.idx] = values;
           this.props.onUpdate({directive:'update',config:{states:states},meta:{displayed_state:values}})
         case 'objective':
-
+          let objectives = [...this.props.config.objectives];
+          let goals = [...this.props.config.goals];
+          // Update the objective at the active index
+          objectives[this.props.meta.selected.idx] = values.objective
+          values.goals.forEach((goalMode,goalIdx)=>{
+            goals[goalIdx].goals[this.props.meta.selected.idx] = goalMode
+          })
+          this.props.onUpdate({directive:'update',config:{objectives:objectives,goals:goals}})
         default:
 
       }
@@ -58,7 +66,13 @@ class Detail extends React.Component {
                             limits={this.props.config.joint_limits}
                             onUpdate={this.onUpdate}/>
         case 'objective':
-          return 'Specify Behavior'
+          return <ObjectiveSpec objective={this.props.config.objectives[this.props.meta.selected.idx]}
+                                goals={this.props.config.goals.map(spec=>spec.goals[this.props.meta.selected.idx])}
+                                eeFixedJoints={this.props.config.ee_fixed_joints}
+                                fixedFrame={this.props.config.fixed_frame}
+                                jointOrdering={this.props.config.joint_ordering}
+                                modeNames={this.props.config.goals.map(spec=>spec.name)}
+                                onUpdate={this.onUpdate}/>
         default:
           return 'NULL'
       }

@@ -86,6 +86,10 @@ class ConfigCreator extends React.Component {
     this.props.onUpdate({directive:'update',meta:meta})
   }
 
+  updateFromBehavior = (config,meta) => {
+    this.props.onUpdate({directive:'update',meta:meta,config:config})
+  }
+
   canStep = (desired) => {
     switch (desired) {
       case 0:
@@ -158,8 +162,7 @@ class ConfigCreator extends React.Component {
         return (
           <Behavior meta={this.props.meta}
                     config={this.props.config}
-                    updateObjectives={(e)=>this.updateObjectives(e)}
-                    updateGoals={(e)=>this.updateGoals(e)}
+                    onUpdate={(config,meta)=>this.updateFromBehavior(config,meta)}
                     style={{height:'100%'}}
                   />
         );

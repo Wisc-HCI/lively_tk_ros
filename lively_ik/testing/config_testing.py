@@ -49,9 +49,9 @@ goals:
     weight: 5
   - scalar: 0.03
     weight: 20
-  - weight: 30
-  - weight: 10
-  - weight: 20
+  - weight: 50
+  - weight: 50
+  - weight: 50
   - weight: 100
   - weight: 1
   - weight: 1
@@ -108,18 +108,18 @@ nn_jointpoint:
         - [ 0.14211476672033146 ]
     split_point: 4.97
 objectives:
-- {index: 0, variant: ee_position_match, weight: 30}
-- {index: 0, variant: ee_orientation_match, weight: 25}
-- {index: 7, variant: joint_match, weight: 20}
-- {frequency:  5, index: 0, scale: 0.15, variant: ee_position_liveliness,weight: 30}
-- {frequency:  5, index: 0, scale: 1.0, variant: ee_orientation_liveliness,weight: 10}
-- {frequency:  5, index: 7, scale: 0.01, variant: joint_liveliness, weight: 20}
-- {index: 7, secondary_index: 8, variant: joint_mirroring, weight: 100}
-- {variant: min_velocity, weight: 1}
-- {variant: min_acceleration, weight: 1}
-- {variant: min_jerk, weight: 0.1}
-- {variant: joint_limits, weight: 2.0}
-- {variant: nn_collision, weight: 5.0}
+- {tag: 'EE Position Control', index: 0, variant: ee_position_match}
+- {tag: 'EE Rotation Control', index: 0, variant: ee_orientation_match}
+- {tag: 'Gripper Control', index: 7, variant: joint_match}
+- {tag: 'Control EE Arm Position Liveliness', frequency:  5, index: 0, scale: 0.15, variant: ee_position_liveliness}
+- {tag: 'Control EE Arm Rotation Liveliness', frequency:  5, index: 0, scale: 1.0, variant: ee_orientation_liveliness}
+- {tag: 'Gripper Liveliness', frequency:  5, index: 7, scale: 0.01, variant: joint_liveliness}
+- {tag: 'Match Fingers', index: 7, secondary_index: 8, variant: joint_mirroring}
+- {tag: 'Minimize Velocity', variant: min_velocity}
+- {tag: 'Minimize Acceleration', variant: min_acceleration}
+- {tag: 'Minimize Jerk', variant: min_jerk}
+- {tag: 'Joint Limits', variant: joint_limits}
+- {tag: 'Self-Collision', variant: nn_collision}
 robot_link_radius: 0.045
 robot_name: panda
 rot_offsets:
@@ -213,10 +213,10 @@ cm = ConfigManager()
 # pprint(cm.simplified())
 # pprint(cm.meta)
 
-cm.load(data)
-pprint(cm.simplified())
-pprint(cm.meta)
-exit()
+# cm.load(data)
+# pprint(cm.simplified())
+# pprint(cm.meta)
+# exit()
 config = parse_config_data(data)
 solver = LivelyIK(config)
 print(solver.solve(config.default_goals,9.0))
@@ -224,11 +224,11 @@ print(solver.solve(config.default_goals,9.0))
 
 
 
-dfdata = {joint:[] for joint in cm.joint_ordering}
+dfdata = {joint:[] for joint in data['joint_ordering']}
 
 num_solves = 1000
 
-solver_goals = parse_config_data(cm.goals[0]['goals'])
+solver_goals = config.default_goals
 
 print('running with liveliness')
 # for i in range(num_solves):
@@ -236,13 +236,13 @@ while True:
     try:
         time = datetime.utcnow().timestamp()
         # print(time)
-        trans,sol = cm.solver.solve(solver_goals,time)
+        trans,sol = solver.solve(solver_goals,time)
         print(sol)
         for j,v in enumerate(sol):
-            dfdata[cm.joint_ordering[j]].append(sol[j])
+            dfdata[data['joint_ordering'][j]].append(sol[j])
     except (KeyboardInterrupt, SystemExit):
         break
 
 df = pd.DataFrame(dfdata,index=list(range(len(dfdata['panda_joint1']))))
 df.plot.line()
-show()
+plt.show()

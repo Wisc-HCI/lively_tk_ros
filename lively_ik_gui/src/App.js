@@ -11,7 +11,7 @@ import Main from './components/Main';
 import { message, Layout, Space } from 'antd';
 import * as ROSLIB from 'roslib';
 import SplitPane from 'react-split-pane';
-import { config, meta } from './util/Default';
+import { defaultConfig, defaultMeta } from './util/Default';
 // import {Resizable} from 're-resizable';
 const { Header, Sider, Content } = Layout;
 
@@ -24,8 +24,8 @@ class App extends React.Component {
                   connected:false,
                   sidebarCollapsed: true,
                   showUploader:false,
-                  config:JSON.parse(JSON.stringify(config)),
-                  meta:JSON.parse(JSON.stringify(meta))
+                  config:JSON.parse(JSON.stringify(defaultConfig)),
+                  meta:JSON.parse(JSON.stringify(defaultMeta))
                  };
   }
 

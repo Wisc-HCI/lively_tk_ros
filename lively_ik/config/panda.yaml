@@ -88,18 +88,18 @@ nn_jointpoint:
         - [ 0.14211476672033146 ]
     split_point: 4.97
 objectives:
-- {index: 0, variant: ee_position_match, weight: 30}
-- {index: 0, variant: ee_orientation_match, weight: 25}
-- {index: 7, variant: joint_match, weight: 20}
-- {frequency:  5, index: 0, scale: 0.15, variant: ee_position_liveliness,weight: 30}
-- {frequency:  5, index: 0, scale: 1.0, variant: ee_orientation_liveliness,weight: 10}
-- {frequency:  5, index: 7, scale: 0.01, variant: joint_liveliness, weight: 20}
-- {index: 7, secondary_index: 8, variant: joint_mirroring, weight: 100}
-- {variant: min_velocity, weight: 1}
-- {variant: min_acceleration, weight: 1}
-- {variant: min_jerk, weight: 0.1}
-- {variant: joint_limits, weight: 2.0}
-- {variant: nn_collision, weight: 5.0}
+- {tag: 'EE Position Control', index: 0, variant: ee_position_match}
+- {tag: 'EE Rotation Control', index: 0, variant: ee_orientation_match}
+- {tag: 'Gripper Control', index: 7, variant: joint_match}
+- {tag: 'Control EE Arm Position Liveliness', frequency:  5, index: 0, scale: 0.15, variant: ee_position_liveliness}
+- {tag: 'Control EE Arm Rotation Liveliness', frequency:  5, index: 0, scale: 1.0, variant: ee_orientation_liveliness}
+- {tag: 'Gripper Liveliness', frequency:  5, index: 7, scale: 0.01, variant: joint_liveliness}
+- {tag: 'Match Fingers', index: 7, secondary_index: 8, variant: joint_mirroring}
+- {tag: 'Minimize Velocity', variant: min_velocity}
+- {tag: 'Minimize Acceleration', variant: min_acceleration}
+- {tag: 'Minimize Jerk', variant: min_jerk}
+- {tag: 'Joint Limits', variant: joint_limits}
+- {tag: 'Self-Collision', variant: nn_collision}
 robot_link_radius: 0.045
 robot_name: panda
 rot_offsets:

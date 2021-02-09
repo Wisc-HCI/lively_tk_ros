@@ -1,8 +1,24 @@
 import React from 'react';
-import { Collapse, List } from 'antd';
-const { Panel } = Collapse;
+import { Tabs, List, Space, Tooltip, Button } from 'antd';
+import { EditOutlined, CopyOutlined, DeleteOutlined } from '@ant-design/icons';
+import { defaultObjectives, defaultGoals } from '../../util/Default';
+import { getObjectivePreview } from '../../util/Englishify';
+const { TabPane } = Tabs;
+
+const DEFAULT_OBJECTIVES = ['joint_limits','nn_collision','env_collision','min_velocity','min_acceleration','min_jerk'];
+const DIRECTION_OBJECTIVES = ['ee_position_match','ee_orientation_match','ee_position_mirroring','ee_orientation_mirroring',
+                              'ee_position_bounding','ee_orientation_bounding','joint_mirroring','joint_match'];
+const LIVELINESS_OBJECTIVES = ['ee_position_liveliness','ee_orientation_liveliness','joint_liveliness','base_link_position_liveliness'];
 
 class Behavior extends React.Component {
+
+  getColor = (idx) => {
+    if (this.props.meta.selected === null) {
+      return 'white'
+    } else if (idx === this.props.meta.selected.idx) {
+      return '#E9E9E9'
+    }
+  }
 
   getEENameByIdx = (idx) => {
     return this.props.config.ee_fixed_joints[idx]
@@ -12,250 +28,91 @@ class Behavior extends React.Component {
     return this.props.config.joint_ordering[idx]
   }
 
-  getObjectivePreview = (objectiveData) => {
-    switch (objectiveData.objective.variant) {
-      case 'joint_limits':
-        return 'Ensure joints remain within their limits'
-      case 'nn_collision':
-        return 'Ensure robot doesn\'t collide with the static environment'
-      case 'env_collision':
-        return 'Ensure robot doesn\'t collide with the dynamic environment'
-      case 'min_velocity':
-        return 'Ensure joints don\'t move too quickly'
-      case 'min_acceleration':
-        return 'Ensure joints don\'t accelerate too quickly'
-      case 'min_jerk':
-        return 'Ensure joints don\'t jerk too quickly'
-      case 'ee_position_match':
-        return <span>
-                <span>Make the </span>
-                <span style={{backgroundColor:'#1890ff',color:'white',padding:4,borderRadius:5}}>
-                  {this.getEENameByIdx(objectiveData.objective.index)}
-                </span>
-                <span> have a given position</span>
-               </span>
-      case 'ee_orientation_match':
-        return <span>
-                <span>Make the </span>
-                <span style={{backgroundColor:'#1890ff',color:'white',padding:4,borderRadius:5}}>
-                  {this.getEENameByIdx(objectiveData.objective.index)}
-                </span>
-                <span> have a given rotation</span>
-               </span>
-      case 'joint_match':
-        return <span>
-                <span>Make the </span>
-                <span style={{backgroundColor:'#BE33FF',color:'white',padding:4,borderRadius:5}}>
-                 {this.getJointNameByIdx(objectiveData.objective.index)}
-                </span>
-                <span> have a given value</span>
-              </span>
-      case 'ee_position_mirroring':
-        return <span>
-                <span>Match the positions of </span>
-                <span style={{backgroundColor:'#1890ff',color:'white',padding:4,borderRadius:5}}>
-                  {this.getEENameByIdx(objectiveData.objective.index)}
-                </span>
-                <span> and </span>
-                <span style={{backgroundColor:'#1890ff',color:'white',padding:4,borderRadius:5}}>
-                  {this.getEENameByIdx(objectiveData.objective.secondary_index)}
-                </span>
-               </span>
-      case 'ee_orientation_mirroring':
-        return <span>
-                <span>Match the rotations of </span>
-                <span style={{backgroundColor:'#1890ff',color:'white',padding:4,borderRadius:5}}>
-                  {this.getEENameByIdx(objectiveData.objective.index)}
-                </span>
-                <span> and </span>
-                <span style={{backgroundColor:'#1890ff',color:'white',padding:4,borderRadius:5}}>
-                  {this.getEENameByIdx(objectiveData.objective.secondary_index)}
-                </span>
-               </span>
-      case 'ee_position_bounding':
-        return <span>
-                <span>Make the position of</span>
-                <span style={{backgroundColor:'#1890ff',color:'white',padding:4,borderRadius:5}}>
-                  {this.getEENameByIdx(objectiveData.objective.index)}
-                </span>
-                <span> stay within a certain range</span>
-               </span>
-      case 'ee_orientation_bounding':
-        return <span>
-                <span>Make the orientation of</span>
-                <span style={{backgroundColor:'#1890ff',color:'white',padding:4,borderRadius:5}}>
-                  {this.getEENameByIdx(objectiveData.objective.index)}
-                </span>
-                <span> stay within a certain range</span>
-               </span>
-      case 'joint_mirroring':
-        return <span>
-                <span>Match the values of </span>
-                <span style={{backgroundColor:'#BE33FF',color:'white',padding:4,borderRadius:5}}>
-                  {this.getJointNameByIdx(objectiveData.objective.index)}
-                </span>
-                <span> and </span>
-                <span style={{backgroundColor:'#BE33FF',color:'white',padding:4,borderRadius:5}}>
-                  {this.getJointNameByIdx(objectiveData.objective.secondary_index)}
-                </span>
-               </span>
-      case 'ee_position_liveliness':
-        return <span>
-                <span>Make the position of </span>
-                <span style={{backgroundColor:'#1890ff',color:'white',padding:4,borderRadius:5}}>
-                  {this.getEENameByIdx(objectiveData.objective.index)}
-                </span>
-                <span> have lifelike motion</span>
-               </span>
-      case 'ee_orientation_liveliness':
-        return <span>
-                <span>Make the rotation of </span>
-                <span style={{backgroundColor:'#1890ff',color:'white',padding:4,borderRadius:5}}>
-                  {this.getEENameByIdx(objectiveData.objective.index)}
-                </span>
-                <span> have lifelike motion</span>
-               </span>
-      case 'joint_liveliness':
-        return <span>
-                <span>Make the value of </span>
-                <span style={{backgroundColor:'#BE33FF',color:'white',padding:4,borderRadius:5}}>
-                  {this.getJointNameByIdx(objectiveData.objective.index)}
-                </span>
-                <span> have lifelike motion</span>
-               </span>
-      case 'base_link_position_liveliness':
-        return <span>
-              <span>Make the robot root </span>
-              <span style={{backgroundColor:'#E73091',color:'white',padding:4,borderRadius:5}}>
-                {this.props.config.fixed_frame}
-              </span>
-              <span> have lifelike motion</span>
-             </span>
+  addObjective = (groupName) => {
+    let objectives = [...this.props.config.objectives];
+    let goals = [...this.props.config.goals];
+    switch (groupName) {
+      case 'Default':
+        objectives.push(defaultObjectives.joint_limits)
+        goals.forEach((goalMode)=>{
+          goalMode.goals.push(defaultGoals.joint_limits)
+        })
+        break
+      case 'Directions':
+        objectives.push(defaultObjectives.ee_position_match)
+        goals.forEach((goalMode)=>{
+          goalMode.goals.push(defaultGoals.ee_position_match)
+        })
+        break
+      case 'Liveliness':
+        objectives.push(defaultObjectives.base_link_position_liveliness)
+        goals.forEach((goalMode)=>{
+          goalMode.goals.push(defaultGoals.base_link_position_liveliness)
+        })
+        break
       default:
-        return <></>
+        break
     }
+    this.props.onUpdate({objectives:objectives,goals:goals},{selected:{idx:objectives.length-1,type:'objective'}})
   }
 
-  getObjectiveEditor = (objectiveData) => {
-
-  }
-
-  getDefaultObjectives = (allObjectives) => {
-    let defaultObjectives = [];
-    allObjectives.forEach((objective,idx)=>{
-      switch (objective.variant) {
-        case 'joint_limits':
-          defaultObjectives.push({objective:objective,index:idx});
-          break;
-        case 'nn_collision':
-          defaultObjectives.push({objective:objective,index:idx});
-          break;
-        case 'env_collision':
-          defaultObjectives.push({objective:objective,index:idx});
-          break;
-        case 'min_velocity':
-          defaultObjectives.push({objective:objective,index:idx});
-          break;
-        case 'min_acceleration':
-          defaultObjectives.push({objective:objective,index:idx});
-          break;
-        case 'min_jerk':
-          defaultObjectives.push({objective:objective,index:idx});
-          break;
-        default:
-          break;
-      }
+  deleteObjective = (idx) => {
+    let objectives = [...this.props.config.objectives];
+    let goals = [...this.props.config.goals];
+    objectives.splice(idx,1);
+    goals.forEach((goalMode)=>{
+      goalMode.goals.splice(idx,1);
     })
-    console.log(defaultObjectives)
-    return defaultObjectives;
+    this.props.onUpdate({objectives:objectives,goals:goals},{selected:null})
   }
 
-  getDirectionObjectives = (allObjectives) => {
-    let directionObjectives = [];
-    allObjectives.forEach((objective,idx)=>{
-      switch (objective.variant) {
-        case 'ee_position_match':
-          directionObjectives.push({objective:objective,index:idx});
-          break;
-        case 'ee_orientation_match':
-          directionObjectives.push({objective:objective,index:idx});
-          break;
-        case 'ee_position_mirroring':
-          directionObjectives.push({objective:objective,index:idx});
-          break;
-        case 'ee_orientation_mirroring':
-          directionObjectives.push({objective:objective,index:idx});
-          break;
-        case 'ee_position_bounding':
-          directionObjectives.push({objective:objective,index:idx});
-          break;
-        case 'ee_orientation_bounding':
-          directionObjectives.push({objective:objective,index:idx});
-          break;
-        case 'joint_mirroring':
-          directionObjectives.push({objective:objective,index:idx});
-          break;
-        case 'joint_match':
-          directionObjectives.push({objective:objective,index:idx});
-          break;
-        default:
-          break;
-      }
-    })
-    return directionObjectives;
+  selectObjective = (idx) => {
+    this.props.onUpdate({},{selected:{idx:idx,type:'objective'}})
   }
 
-  getLivelinessObjectives = (allObjectives) => {
-    let livelinessObjectives = [];
-    allObjectives.forEach((objective,idx)=>{
-      switch (objective.variant) {
-        case 'ee_position_liveliness':
-          livelinessObjectives.push({objective:objective,index:idx});
-          break;
-        case 'ee_orientation_liveliness':
-          livelinessObjectives.push({objective:objective,index:idx});
-          break;
-        case 'joint_liveliness':
-          livelinessObjectives.push({objective:objective,index:idx});
-          break;
-        case 'base_link_position_liveliness':
-          livelinessObjectives.push({objective:objective,index:idx});
-          break;
-        default:
-          break;
-      }
+  copyObjective = (idx) => {
+    let objectives = [...this.props.config.objectives];
+    let goals = [...this.props.config.goals];
+    let copiedObjective = objectives[idx];
+    objectives.splice(idx+1,0,copiedObjective)
+    goals.forEach((goalMode)=>{
+      let copiedGoal = goalMode.goals[idx];
+      goalMode.goals.splice(idx+1,0,copiedGoal)
     })
-    return livelinessObjectives;
+    this.props.onUpdate({objectives:objectives,goals:goals},{selected:{idx:idx+1,type:'objective'}})
   }
 
   render() {
+    const groups = [DEFAULT_OBJECTIVES,DIRECTION_OBJECTIVES,LIVELINESS_OBJECTIVES];
+    const groupNames = ['Default','Directions','Liveliness'];
     return (
-      <Collapse defaultActiveKey={['1']} accordion={true}>
-        <Panel header="Default" key="1">
-          <List header={null} footer={null} bordered dataSource={this.getDefaultObjectives(this.props.config.objectives)}
-                style={{overflow:'scroll',maxHeight:300,marginBottom:10}}
-                renderItem={(item)=>(
-                  <List.Item>{this.getObjectivePreview(item)}</List.Item>
-                )}
-          />
-        </Panel>
-        <Panel header="Directions" key="2">
-          <List header={null} footer={null} bordered dataSource={this.getDirectionObjectives(this.props.config.objectives)}
-                style={{overflow:'scroll',maxHeight:300,marginBottom:10}}
-                renderItem={(item)=>(
-                  <List.Item>{this.getObjectivePreview(item)}</List.Item>
-                )}
-          />
-        </Panel>
-        <Panel header="Liveliness" key="3">
-          <List header={null} footer={null} bordered dataSource={this.getLivelinessObjectives(this.props.config.objectives)}
-                style={{overflow:'scroll',maxHeight:300,marginBottom:10}}
-                renderItem={(item)=>(
-                  <List.Item>{this.getObjectivePreview(item)}</List.Item>
-                )}
-          />
-        </Panel>
-      </Collapse>
+      <Tabs defaultActiveKey={[0]} tabPosition='left' style={{height: '100%', width:'100%' }}>
+        {groups.map((group,groupIdx)=>(
+          <TabPane tab={groupNames[groupIdx]} key={groupIdx} style={{ height: '100%', width:'100%' }}>
+            <List header={null} footer={<Button type="primary" onClick={()=>this.addObjective(groupNames[groupIdx])}>Add {groupNames[groupIdx]} Behavior</Button>} bordered
+                  style={{ maxHeight: '100%', width:'100%', overflow:'scroll'}}
+                  dataSource={this.props.config.objectives.map((objective,idx)=>idx).filter((idx)=>group.indexOf(this.props.config.objectives[idx].variant)>=0)}
+                  renderItem={(idx)=>(
+                    <List.Item style={{backgroundColor:this.getColor(idx)}} extra={
+                        <Space style={{width: 120}}>
+                          <Tooltip title='Edit'>
+                            <Button shape="circle" style={{marginLeft:5}} icon={<EditOutlined/>} onClick={()=>this.selectObjective(idx)}/>
+                          </Tooltip>
+                          <Tooltip title='Copy'>
+                            <Button shape="circle" style={{marginLeft:5}} icon={<CopyOutlined/>} onClick={()=>this.copyObjective(idx)}/>
+                          </Tooltip>
+                          <Tooltip title='Delete' color='#ff4d4f'>
+                            <Button shape="circle" style={{marginLeft:5}} icon={<DeleteOutlined/>} danger onClick={()=>this.deleteObjective(idx)}/>
+                          </Tooltip>
+                        </Space>
+                      }>
+                      <List.Item.Meta title={this.props.config.objectives[idx].tag} description={getObjectivePreview(this.props.config.objectives[idx], this.props.config.fixed_frame, this.props.config.ee_fixed_joints, this.props.config.joint_ordering)}/>
+                    </List.Item>
+                    )}
+            />
+          </TabPane>
+        ))}
+      </Tabs>
     )
   }
 
