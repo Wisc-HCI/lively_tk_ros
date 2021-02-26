@@ -17,7 +17,7 @@ class Scene extends Component {
 
 
    componentDidUpdate(prevProps) {
-    const { width, height, fixedFrame, urdf, connected } = this.props;
+    const { width, height, fixedFrame, urdf } = this.props;
 
     if (width !== prevProps.width || height !== prevProps.height) {
       this.viewer.resize(width,height)
@@ -72,6 +72,7 @@ class Scene extends Component {
       ros: this.props.ros,
       tfClient: this.tfClient,
       topic: '/visualization_marker',
+      path: process.env.PUBLIC_URL + 'assets/',
       rootObject: this.viewer.scene
     });
     this.robotModel = new ROSLIB.UrdfModel({

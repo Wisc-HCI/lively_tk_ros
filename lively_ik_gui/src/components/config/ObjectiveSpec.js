@@ -1,16 +1,15 @@
 import React from 'react';
-import { List, Slider, Select, Input, InputNumber, Row, Col } from 'antd';
-import { defaultObjectives, defaultGoals, defaultObjectiveNames } from '../../util/Default';
+import { List, Slider, Select, Input, InputNumber, Row, Col, Cascader } from 'antd';
+import { defaultObjectives, defaultWeights, defaultObjectiveNames } from '../../util/Default';
 import { getObjectivePreview } from '../../util/Englishify';
+import LogSlider from '../../util/LogSlider';
+import { BASE_OBJECTIVES,
+         DIRECTION_OBJECTIVES,
+         LIVELINESS_OBJECTIVES,
+         PAIRED_OBJECTIVES,
+         CARTESIAN_OBJECTIVES,
+         JOINT_OBJECTIVES } from '../../util/Categories';
 const { Option } = Select;
-
-const DEFAULT_OBJECTIVES = ['joint_limits','nn_collision','env_collision','min_velocity','min_acceleration','min_jerk'];
-const DIRECTION_OBJECTIVES = ['ee_position_match','ee_orientation_match','ee_position_mirroring','ee_orientation_mirroring',
-                              'ee_position_bounding','ee_orientation_bounding','joint_mirroring','joint_match'];
-const LIVELINESS_OBJECTIVES = ['ee_position_liveliness','ee_orientation_liveliness','joint_liveliness','base_link_position_liveliness'];
-const EE_OBJECTIVES = ['ee_position_match','ee_orientation_match','ee_position_mirroring','ee_orientation_mirroring',
-                       'ee_position_bounding','ee_orientation_bounding','ee_position_liveliness','ee_orientation_liveliness'];
-const JOINT_OBJECTIVES = ['joint_mirroring','joint_match','joint_liveliness']
 
 class ObjectiveSpec extends React.Component {
 
@@ -24,8 +23,8 @@ class ObjectiveSpec extends React.Component {
 
   getVariantOptions = () => {
     let optionNames = [];
-    if (DEFAULT_OBJECTIVES.indexOf(this.props.objective.variant) >= 0) {
-      optionNames = DEFAULT_OBJECTIVES;
+    if (BASE_OBJECTIVES.indexOf(this.props.objective.variant) >= 0) {
+      optionNames = BASE_OBJECTIVES;
     } else if (DIRECTION_OBJECTIVES.indexOf(this.props.objective.variant) >= 0) {
       optionNames = DIRECTION_OBJECTIVES;
     } else {
@@ -40,7 +39,7 @@ class ObjectiveSpec extends React.Component {
     let optionNames = [];
     if (JOINT_OBJECTIVES.indexOf(this.props.objective.variant) >= 0) {
       optionNames = this.props.jointOrdering;
-    } else if (EE_OBJECTIVES.indexOf(this.props.objective.variant) >= 0) {
+    } else if (CARTESIAN_OBJECTIVES.indexOf(this.props.objective.variant) >= 0) {
       optionNames = this.props.eeFixedJoints;
     }
     return optionNames.map((name,idx)=>(
@@ -51,7 +50,7 @@ class ObjectiveSpec extends React.Component {
   getIdxValue = (idx) => {
     if (JOINT_OBJECTIVES.indexOf(this.props.objective.variant) >= 0) {
       return this.props.jointOrdering[idx];
-    } else if (EE_OBJECTIVES.indexOf(this.props.objective.variant) >= 0) {
+    } else if (CARTESIAN_OBJECTIVES.indexOf(this.props.objective.variant) >= 0) {
       return this.props.eeFixedJoints[idx];
     }
   }
@@ -59,74 +58,226 @@ class ObjectiveSpec extends React.Component {
   updateTag = (e) => {
     let objective = {...this.props.objective};
     objective.tag = e.target.value;
-    this.props.onUpdate({objective:objective,goals:this.props.goals})
+    this.props.onUpdate({objective:objective,modeWeights:this.props.modeWeights})
+  }
+
+  getGoalFromCurrent = (variant,idx1,idx2) => {
+    switch (variant) {
+      case 'position_match':
+        let position = this.props.config.joint_poses[idx1][idx2]['position']
+        return {vector:[position.x,position.y,position.z]}
+      case 'orientation_match':
+        let quaternion = this.props.config.joint_poses[idx1][idx2]['quaternion']
+        return {quaternion:[quaternion.w,quaternion.x,quaternion.y,quaternion.z]}
+      case 'joint_match':
+        return {scalar:this.props.displayedState[idx1]}
+      default:
+        return {}
+    }
   }
 
   updateVariant = (variant) => {
-    let objective = {...this.props.objective};
-    let goals = [...this.props.goals];
+    let currObj = {...this.props.objective};
+    let weights = [...this.props.modeWeights];
+    let goalValues = [...this.props.goalValues];
     let newObj = JSON.parse(JSON.stringify(defaultObjectives[variant]))
 
+    // First handle indices
+    const currentIsJointObjective = (JOINT_OBJECTIVES.indexOf(currObj.variant) >= 0);
+    const newIsJointObjective = (JOINT_OBJECTIVES.indexOf(newObj.variant) >= 0);
+    const currentIsCartesianObjective = (CARTESIAN_OBJECTIVES.indexOf(currObj.variant) >= 0);
+    const newIsCartesianObjective = (CARTESIAN_OBJECTIVES.indexOf(newObj.variant) >= 0);
+    const currentIsPairedObjective = (PAIRED_OBJECTIVES.indexOf(currObj.variant) >= 0);
+    const newIsPairedObjective = (PAIRED_OBJECTIVES.indexOf(newObj.variant) >= 0);
+
+    if ((currentIsCartesianObjective === newIsCartesianObjective) && (currentIsJointObjective === newIsJointObjective) && (currentIsPairedObjective === newIsPairedObjective)) {
+      // In cases where the profiles match up just copy them over.
+      // Otherwise, keep the defaults of the new one.
+      newObj.indices = currObj.indices;
+    }
+
+    // Copy over other fields
     Object.keys(newObj).forEach(field=>{
-      if (objective[field]) {
-        newObj[field] = objective[field]
+      if (field !== 'indices' && field !== 'variant' && currObj[field] !== undefined) {
+        newObj[field] = currObj[field]
       }
     })
-    goals.forEach((goal,idx)=>{
-      let defaultGoal = JSON.parse(JSON.stringify(defaultGoals[variant]))
-      Object.keys(defaultGoal).forEach(field=>{
-        if (goal[field]) {
-          goals[idx][field] = goal[field]
-        }
-      })
+
+    // Update the weight across all the modes
+    weights.forEach((weight,idx)=>{
+      weights[idx] = defaultWeights[variant]
     })
-    this.props.onUpdate({objective:newObj,goals:goals})
+
+    // Update goal values across all the goals
+    goalValues.forEach((value,idx)=>{
+      goalValues[idx] = this.getGoalFromCurrent(variant,newObj.indices[0],newObj.indices[1])
+    })
+
+    // console.log(newObj);
+    this.props.onUpdate({objective:newObj,modeWeights:weights,goalValues:goalValues})
   }
 
-  updatePrimaryIdx = (idx) => {
+  updateIndices = (values) => {
     let objective = {...this.props.objective};
-    objective.index = idx;
-    this.props.onUpdate({objective:objective,goals:this.props.goals})
-  }
+    let goalValues = [...this.props.goalValues];
+    objective.indices = values;
 
-  updateSecondaryIdx = (idx) => {
-    let objective = {...this.props.objective};
-    objective.secondary_index = idx;
-    this.props.onUpdate({objective:objective,goals:this.props.goals})
+    // Update goal values across all the goals
+    goalValues.forEach((value,idx)=>{
+      goalValues[idx] = this.getGoalFromCurrent(objective.variant,objective.indices[0],objective.indices[1])
+    })
+
+    this.props.onUpdate({objective:objective,goalValues:goalValues})
   }
 
   updateScale = (value) => {
     let objective = {...this.props.objective};
     objective.scale = value;
-    this.props.onUpdate({objective:objective,goals:this.props.goals})
+    this.props.onUpdate({objective:objective})
+  }
+
+  updateShape = (value,idx) => {
+    let objective = {...this.props.objective};
+    objective.shape[idx] = value;
+    this.props.onUpdate({objective:objective})
   }
 
   updateFrequency = (value) => {
     let objective = {...this.props.objective};
     objective.frequency = value;
-    this.props.onUpdate({objective:objective,goals:this.props.goals})
+    this.props.onUpdate({objective:objective})
   }
 
-  getIdxHeader = (primary) => {
-    let term = '';
-    if (this.props.objective.secondary_index && primary) {
-      term = 'Primary ';
-    } else if (this.props.objective.secondary_index && !primary) {
-      term = 'Secondary ';
-    }
-    if (JOINT_OBJECTIVES.indexOf(this.props.objective.variant) >= 0) {
-      return term+'Joint';
-    } else if (EE_OBJECTIVES.indexOf(this.props.objective.variant) >= 0) {
-      return term+'Arm End Effector';
-    }
+  getIdxOptionsFromJointNames = () => {
+    let options = [];
+    this.props.jointNames.forEach((chain,chain_idx) => {
+      let children = [];
+      chain.forEach((joint,joint_idx)=>{
+        children.push({value:joint_idx,label:joint});
+      })
+      children.push({value:chain.length,label:this.props.eeFixedJoints[chain_idx]})
+      options.push({value:chain_idx,label:`Chain ${chain_idx+1}`,children:children})
+    })
+    return options
   }
 
   getIdxPlaceholder = () => {
     if (JOINT_OBJECTIVES.indexOf(this.props.objective.variant) >= 0) {
       return 'Select the joint';
-    } else if (EE_OBJECTIVES.indexOf(this.props.objective.variant) >= 0) {
+    } else if (CARTESIAN_OBJECTIVES.indexOf(this.props.objective.variant) >= 0) {
       return 'Select the arm\'s end effector';
     }
+  }
+
+  updateWeightAtIdx = (idx,value) => {
+    let modeWeights = [...this.props.modeWeights];
+    modeWeights[idx] = value
+    this.props.onUpdate({modeWeights:this.props.modeWeights})
+  }
+
+  getWeightSlider = (idx) => {
+    return (
+      <List.Item key={this.props.modeNames[idx]}>
+        <List.Item.Meta title={this.props.modeNames[idx] === 'default' ? 'Default' : this.props.modeNames[idx]}
+                        description={<LogSlider min={0} max={100} step={0.01} showInput={true} value={this.props.modeWeights[idx]}
+                                                onChange={(v)=>this.debounce(this.updateWeightAtIdx(idx,v))}/>}
+        />
+      </List.Item>
+    )
+  }
+
+  getIndexSettings = () => {
+    console.log(this.props.objective.indices);
+    let settings = [];
+    if ((CARTESIAN_OBJECTIVES).indexOf(this.props.objective.variant) >= 0) {
+      if (PAIRED_OBJECTIVES.indexOf(this.props.objective.variant) >= 0) {
+        settings.push(
+          <>
+            <h3 style={{marginTop:10}}>Cartesian-Controlled Joint</h3>
+            <Cascader style={{ width:'100%'}}
+                      expandTrigger="hover"
+                      value={[this.props.objective.indices[0],this.props.objective.indices[1]]}
+                      options={this.getIdxOptionsFromJointNames()}
+                      onChange={(v)=>{
+                        let current = [...this.props.objective.indices];
+                        current[0] = v[0]
+                        current[1] = v[1]
+                        this.updateIndices(current)
+                      }}
+            />
+            <h3 style={{marginTop:10}}>Reference Joint</h3>
+            <Cascader style={{ width:'100%'}}
+                      expandTrigger="hover"
+                      value={[this.props.objective.indices[2],this.props.objective.indices[3]]}
+                      options={this.getIdxOptionsFromJointNames()}
+                      onChange={(v)=>{
+                        let current = [...this.props.objective.indices];
+                        current[2] = v[0]
+                        current[3] = v[1]
+                        this.updateIndices(current)
+                      }}
+            />
+          </>
+        )
+      } else {
+        settings.push(
+          <>
+            <h3 style={{marginTop:10}}>Cartesian-Controlled Joint</h3>
+            <Cascader style={{ width:'100%'}}
+                      expandTrigger="hover"
+                      value={this.props.objective.indices}
+                      options={this.getIdxOptionsFromJointNames()}
+                      onChange={v=>this.updateIndices(v)}
+            />
+          </>
+        )
+      }
+    } else if ((JOINT_OBJECTIVES).indexOf(this.props.objective.variant) >= 0) {
+      if (PAIRED_OBJECTIVES.indexOf(this.props.objective.variant) >= 0) {
+        settings.push(
+          <>
+            <h3 style={{marginTop:10}}>Controlled Joint</h3>
+            <Select
+              placeholder='Select Joint'
+              value={this.props.jointOrdering[this.props.objective.indices[0]]}
+              onChange={(v)=>{
+                let current = [...this.props.objective.indices];
+                current[0] = v
+                this.updateIndices(current)
+              }}
+              style={{ width:'100%'}}>
+                {this.getIdxOptions()}
+            </Select>
+            <h3 style={{marginTop:10}}>Reference Joint</h3>
+            <Select
+              placeholder='Select Joint'
+              value={this.props.jointOrdering[this.props.objective.indices[1]]}
+              onChange={(v)=>{
+                let current = [...this.props.objective.indices];
+                current[1] = v
+                this.updateIndices(current)
+              }}
+              style={{ width:'100%'}}>
+                {this.getIdxOptions()}
+            </Select>
+          </>
+        )
+      } else {
+        settings.push(
+          <>
+            <h3 style={{marginTop:10}}>Controlled Joint</h3>
+            <Select
+              placeholder='Select Joint'
+              value={this.props.jointOrdering[this.props.objective.indices[0]]}
+              onChange={(v)=>{this.updateIndices([v])}}
+              style={{ width:'100%'}}>
+                {this.getIdxOptions()}
+            </Select>
+          </>
+        )
+      }
+    }
+    return settings;
   }
 
   render() {
@@ -134,40 +285,22 @@ class ObjectiveSpec extends React.Component {
     return (
       <>
         <h3>Name</h3>
-        <Input placeholder='Name this behavior' value={this.props.objective.tag} onChange={(v)=>this.debounce(this.updateTag(v))}/>
-        <div style={{marginTop:10, padding: 10, borderRadius:5, backgroundColor: '#ececec'}}>{getObjectivePreview(this.props.objective, this.props.fixedFrame, this.props.eeFixedJoints, this.props.jointOrdering)}</div>
+        <Input placeholder='Name this Attribute' value={this.props.objective.tag} onChange={(v)=>this.debounce(this.updateTag(v))}/>
+        <div style={{marginTop:10, padding: 10, borderRadius:5, backgroundColor: '#ececec'}}>
+          {getObjectivePreview(this.props.objective,
+                               this.props.fixedFrame,
+                               this.props.eeFixedJoints,
+                               this.props.jointOrdering,
+                               this.props.jointNames)}</div>
         <h3 style={{marginTop:10}}>Type</h3>
         <Select
-          placeholder="Select the Behavior Type"
+          placeholder="Select the Attribute Type"
           value={defaultObjectiveNames[this.props.objective.variant]}
           onChange={(v)=>this.updateVariant(v)}
           style={{ width:'100%'}}>
             {this.getVariantOptions()}
         </Select>
-        {(this.props.objective.index !== undefined) ? (
-          <>
-          <h3 style={{marginTop:10}}>{this.getIdxHeader(true)}</h3>
-          <Select
-            placeholder={this.getIdxPlaceholder()}
-            value={this.getIdxValue(this.props.objective.index)}
-            onChange={(v)=>this.updatePrimaryIdx(v)}
-            style={{ width:'100%'}}>
-              {this.getIdxOptions()}
-          </Select>
-          </>
-        ) : (<></>)}
-        {(this.props.objective.secondary_index !== undefined) ? (
-          <>
-          <h3 style={{marginTop:10}}>{this.getIdxHeader(false)}</h3>
-          <Select
-            placeholder={this.getIdxPlaceholder()}
-            value={this.getIdxValue(this.props.objective.secondary_index)}
-            onChange={(v)=>this.updateSecondaryIdx(v)}
-            style={{ width:'100%'}}>
-              {this.getIdxOptions()}
-          </Select>
-          </>
-        ) : (<></>)}
+        {this.getIndexSettings()}
         {(this.props.objective.scale !== undefined) ? (
           <>
           <h3 style={{marginTop:10}}>Motion Scale</h3>
@@ -194,7 +327,35 @@ class ObjectiveSpec extends React.Component {
           </Row>
           </>
         ) : (<></>)}
-        {(this.props.objective.scale !== undefined) ? (
+        {(this.props.objective.shape !== undefined) ? (
+          <>
+            <h3 style={{marginTop:10}}>Motion Shape</h3>
+            {[0,1,2].map(idx=>(
+              <Row>
+                <Col span={12}>
+                  <Slider
+                    min={0}
+                    max={2}
+                    step={0.01}
+                    onChange={(v)=>this.updateShape(v,idx)}
+                    value={typeof this.props.objective.shape[idx] === 'number' ? this.props.objective.shape[idx] : 0}
+                  />
+                </Col>
+                <Col span={4}>
+                  <InputNumber
+                    min={0}
+                    max={20}
+                    step={0.01}
+                    style={{ margin: '0 16px' }}
+                    value={this.props.objective.shape[idx]}
+                    onChange={(v)=>this.updateShape(v,idx)}
+                  />
+                </Col>
+              </Row>
+            ))}
+          </>
+        ) : (<></>)}
+        {(this.props.objective.frequency !== undefined) ? (
           <>
           <h3 style={{marginTop:10}}>Motion Speed</h3>
           <Row>
@@ -220,6 +381,10 @@ class ObjectiveSpec extends React.Component {
           </Row>
           </>
         ) : (<></>)}
+        <h3 style={{marginTop:10}}>Strength by Mode</h3>
+        <List header={null} footer={null} bordered dataSource={this.props.modeNames.map((mode,idx)=>idx)}
+              renderItem={(idx)=>this.getWeightSlider(idx)}
+        />
       </>
     )
   }

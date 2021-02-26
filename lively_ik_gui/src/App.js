@@ -8,7 +8,7 @@ import Connection from './components/Connection';
 import Scene from './components/Scene';
 import Uploader from './components/Uploader';
 import Main from './components/Main';
-import { message, Layout, Space } from 'antd';
+import { message, Layout, Space, Spin, Button } from 'antd';
 import * as ROSLIB from 'roslib';
 import SplitPane from 'react-split-pane';
 import { defaultConfig, defaultMeta } from './util/Default';
@@ -42,7 +42,6 @@ class App extends React.Component {
       console.log("Connection!")
       message.info("Connected!");
       localStorage.setItem('login',JSON.stringify({host:login.host,prefix:login.prefix}));
-      this.setState({connected:true,showUploader:true});
 
       // Create Subscriber and Publisher
       this.serverUpdate = new ROSLIB.Topic({
@@ -55,12 +54,25 @@ class App extends React.Component {
         this.updateFromServer(message.data);
       });
 
+      // For debugging marker msgs
+      this.markerUpdate = new ROSLIB.Topic({
+        ros: this.ros,
+        name: '/visualization_marker',
+        messageType: 'visualization_msgs/Marker'
+      });
+
+      this.markerUpdate.subscribe(message => {
+        console.log('MARKER UPDATE:');
+        console.log(message);
+      });
+
+
       this.guiUpdate = new ROSLIB.Topic({
         ros: this.ros,
         name: '/lively_ik/gui_updates',
         messageType: 'std_msgs/String'
       })
-      this.updateToServer({directive:'clear'})
+      this.updateToServer({directive:'connect'})
 
     })
     this.ros.on('close', ()=>{
@@ -75,8 +87,24 @@ class App extends React.Component {
 
   updateFromServer(data) {
     let update = JSON.parse(data);
+    console.log(update);
     if (update.directive === 'update') {
-      this.setState({config:update.config,meta:update.meta});
+      this.setState((currentState)=>{
+        let {config, meta} = update;
+        let newState = {...currentState};
+        if (config !== undefined) {
+          Object.keys(config).forEach(field=>{
+            newState.config[field] = config[field]
+          })
+        }
+        if (meta !== undefined) {
+          Object.keys(meta).forEach(field=>{
+            newState.meta[field] = meta[field]
+          })
+        }
+        newState.connected = true;
+        return newState
+      });
     }
   }
 
@@ -90,6 +118,12 @@ class App extends React.Component {
   }
 
   handleUploadCancel = () => {
+    this.updateToServer({directive:'clear'})
+    this.setState({showUploader:false})
+  }
+
+  handleUploadContinue = () => {
+    this.updateToServer({directive:'resume'})
     this.setState({showUploader:false})
   }
 
@@ -101,7 +135,7 @@ class App extends React.Component {
   getContent = () => {
     if (this.state.connected) {
       return (
-        <SplitPane split='vertical' defaultSize="50%" style={{width: '100%', display:'flex', height:'calc(100vh - 48pt)'}}>
+        <SplitPane split='vertical' defaultSize="50%" style={{width: '100%', display:'flex', height:'calc(100vh - 48pt)', backgroundColor:'white'}}>
           <Scene ros={this.ros} baseLink={this.state.config.fixed_frame} urdf={this.state.config.urdf} connected={this.state.connected}/>
           <Main meta={this.state.meta} config={this.state.config} onUpdate={(data)=>this.updateToServer(data)}/>
         </SplitPane>
@@ -112,15 +146,21 @@ class App extends React.Component {
       )
     }
   }
-
+  
   render() {
     return (
       <>
       <Layout>
-        <Header style={{ position: 'fixed', zIndex: 1, width: '100%', backgroundColor:'black' }}>
-          <Space align="center">
+        <Header style={{ position: 'fixed', zIndex: 1, width: '100%', backgroundColor:'black', display:'flex', justifyContent:'space-between' }}>
+          <Space align="baseline">
             <SettingFilled style={{fontSize:'25pt',textAlign:'center', color:'white',marginRight:5}}/>
             <span style={{fontSize:'25pt',color:'white'}}>LivelyIK</span>
+            <div style={{display:'flex'}}/>
+          </Space>
+          <Space align="center">
+            {this.state.meta.updating ? <Spin/> : <span>Up To Date</span>}
+            {this.state.connected ? <Button ghost onClick={()=>this.setState({showUploader:true})} style={{marginLeft:10}}>Upload</Button> : <></>}
+            {this.state.meta.valid_config ? <Button ghost href={`data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(this.state.config))}`} download="config.json" style={{marginLeft:10}}>Export</Button> : <></>}
           </Space>
         </Header>
         <Content style={{ height: 'calc(100vh - 48pt)', backgroundColor: "#46484d", marginTop:'48pt', padding:0}}>

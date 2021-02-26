@@ -46,7 +46,7 @@ class Basics extends React.Component {
   }
 
   tagRender = (props) => {
-    const { label, value, closable, onClose } = props;
+    const { label, closable, onClose } = props;
 
     let color = '#BE33FF';
     let tooltip = 'This joint is not used as part of a chain, but can still be controlled';

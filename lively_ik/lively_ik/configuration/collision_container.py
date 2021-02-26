@@ -3,9 +3,10 @@ import numpy as np
 import lively_ik.configuration.transformations as T
 
 class CollisionObjectContainer:
-    def __init__(self, environment_spec, robot_link_radius=0.05):
+    def __init__(self, environment_spec, joint_names, robot_link_radius=0.05):
         self.collision_objects = []
         self.robot_link_radius = robot_link_radius
+        self.joint_names = joint_names
 
         for sphere in environment_spec['spheres']:
             self.collision_objects.append(Collision_Sphere(sphere))
@@ -86,16 +87,17 @@ class CollisionObjectContainer:
             else:
                 coordinate_frame = c.coordinate_frame
                 # first, do local transforms
-                frame_len = len(positions)
-                if coordinate_frame == 0:
-                    rot_mat = rotations[0]
-                    final_pos = positions[0]
-                elif coordinate_frame >= frame_len:
-                    rot_mat = rotations[frame_len-1]
-                    final_pos = positions[frame_len-1]
-                else:
-                    rot_mat = rotations[coordinate_frame]
-                    final_pos = positions[coordinate_frame-1]
+                arm_idx = 0
+                joint_idx = 0
+                for i,arm in enumerate(self.joint_names):
+                    for j,joint in enumerate(arm):
+                        if joint == coordinate_frame:
+                            arm_idx = i
+                            joint_idx = j
+                            break
+
+                final_pos = all_frames[arm_idx][0][joint_idx]
+                rot_mat = all_frames[arm_idx][1][joint_idx]
 
                 final_quat = T.quaternion_from_matrix(rot_mat)
 

@@ -1,6 +1,8 @@
 import React from 'react';
 
-const getObjectivePreview = (objectiveData, fixedFrame, eeFixedJoints, jointOrdering) => {
+const getObjectivePreview = (objectiveData, fixedFrame, eeFixedJoints, jointOrdering, jointNames) => {
+  let jointName1 = '';
+  let jointName2 = '';
   switch (objectiveData.variant) {
     case 'joint_limits':
       return 'Ensure joints remain within their limits'
@@ -14,19 +16,29 @@ const getObjectivePreview = (objectiveData, fixedFrame, eeFixedJoints, jointOrde
       return 'Ensure joints don\'t accelerate too quickly'
     case 'min_jerk':
       return 'Ensure joints don\'t jerk too quickly'
-    case 'ee_position_match':
+    case 'position_match':
+      if (objectiveData.indices[1] >= jointNames.length) {
+        jointName1 = eeFixedJoints[objectiveData.indices[0]]
+      } else {
+        jointName1 = jointNames[objectiveData.indices[0]][objectiveData.indices[1]]
+      }
       return <span>
               <span>Make the </span>
               <span style={{backgroundColor:'#1890ff',color:'white',padding:4,borderRadius:5}}>
-                {eeFixedJoints[objectiveData.index]}
+                {jointName1}
               </span>
               <span> have a given position</span>
              </span>
-    case 'ee_orientation_match':
+    case 'orientation_match':
+      if (objectiveData.indices[1] >= jointNames.length) {
+        jointName1 = eeFixedJoints[objectiveData.indices[0]]
+      } else {
+        jointName1 = jointNames[objectiveData.indices[0]][objectiveData.indices[1]]
+      }
       return <span>
               <span>Make the </span>
               <span style={{backgroundColor:'#1890ff',color:'white',padding:4,borderRadius:5}}>
-                {eeFixedJoints[objectiveData.index]}
+                {jointName1}
               </span>
               <span> have a given rotation</span>
              </span>
@@ -34,45 +46,75 @@ const getObjectivePreview = (objectiveData, fixedFrame, eeFixedJoints, jointOrde
       return <span>
               <span>Make the </span>
               <span style={{backgroundColor:'#BE33FF',color:'white',padding:4,borderRadius:5}}>
-               {jointOrdering[objectiveData.index]}
+               {jointOrdering[objectiveData.indices[0]]}
               </span>
               <span> have a given value</span>
             </span>
-    case 'ee_position_mirroring':
+    case 'position_mirroring':
+      if (objectiveData.indices[1] >= jointNames.length) {
+        jointName1 = eeFixedJoints[objectiveData.indices[0]]
+      } else {
+        jointName1 = jointNames[objectiveData.indices[0]][objectiveData.indices[1]]
+      }
+      if (objectiveData.indices[3] >= jointNames.length) {
+        jointName2 = eeFixedJoints[objectiveData.indices[2]]
+      } else {
+        jointName2 = jointNames[objectiveData.indices[2]][objectiveData.indices[3]]
+      }
       return <span>
               <span>Match the positions of </span>
               <span style={{backgroundColor:'#1890ff',color:'white',padding:4,borderRadius:5}}>
-                {eeFixedJoints[objectiveData.index]}
+                {jointName1}
               </span>
               <span> and </span>
               <span style={{backgroundColor:'#1890ff',color:'white',padding:4,borderRadius:5}}>
-                {eeFixedJoints[objectiveData.secondary_index]}
+                {jointName2}
               </span>
              </span>
-    case 'ee_orientation_mirroring':
+    case 'orientation_mirroring':
+      if (objectiveData.indices[1] >= jointNames.length) {
+        jointName1 = eeFixedJoints[objectiveData.indices[0]]
+      } else {
+        jointName1 = jointNames[objectiveData.indices[0]][objectiveData.indices[1]]
+      }
+      if (objectiveData.indices[3] >= jointNames.length) {
+        jointName2 = eeFixedJoints[objectiveData.indices[2]]
+      } else {
+        jointName2 = jointNames[objectiveData.indices[2]][objectiveData.indices[3]]
+      }
       return <span>
               <span>Match the rotations of </span>
               <span style={{backgroundColor:'#1890ff',color:'white',padding:4,borderRadius:5}}>
-                {eeFixedJoints[objectiveData.index]}
+                {jointName1}
               </span>
               <span> and </span>
               <span style={{backgroundColor:'#1890ff',color:'white',padding:4,borderRadius:5}}>
-                {eeFixedJoints[objectiveData.secondary_index]}
+                {jointName2}
               </span>
              </span>
-    case 'ee_position_bounding':
+    case 'position_bounding':
+      if (objectiveData.indices[1] >= jointNames.length) {
+        jointName1 = eeFixedJoints[objectiveData.indices[0]]
+      } else {
+        jointName1 = jointNames[objectiveData.indices[0]][objectiveData.indices[1]]
+      }
       return <span>
               <span>Make the position of</span>
               <span style={{backgroundColor:'#1890ff',color:'white',padding:4,borderRadius:5}}>
-                {eeFixedJoints[objectiveData.index]}
+                {jointName1}
               </span>
               <span> stay within a certain range</span>
              </span>
-    case 'ee_orientation_bounding':
+    case 'orientation_bounding':
+      if (objectiveData.indices[1] >= jointNames.length) {
+        jointName1 = eeFixedJoints[objectiveData.indices[0]]
+      } else {
+        jointName1 = jointNames[objectiveData.indices[0]][objectiveData.indices[1]]
+      }
       return <span>
               <span>Make the orientation of</span>
               <span style={{backgroundColor:'#1890ff',color:'white',padding:4,borderRadius:5}}>
-                {eeFixedJoints[objectiveData.index]}
+                {jointName1}
               </span>
               <span> stay within a certain range</span>
              </span>
@@ -80,26 +122,36 @@ const getObjectivePreview = (objectiveData, fixedFrame, eeFixedJoints, jointOrde
       return <span>
               <span>Match the values of </span>
               <span style={{backgroundColor:'#BE33FF',color:'white',padding:4,borderRadius:5}}>
-                {jointOrdering[objectiveData.index]}
+                {jointOrdering[objectiveData.indices[0]]}
               </span>
               <span> and </span>
               <span style={{backgroundColor:'#BE33FF',color:'white',padding:4,borderRadius:5}}>
-                {jointOrdering[objectiveData.secondary_index]}
+                {jointOrdering[objectiveData.indices[1]]}
               </span>
              </span>
-    case 'ee_position_liveliness':
+    case 'position_liveliness':
+      if (objectiveData.indices[1] >= jointNames.length) {
+        jointName1 = eeFixedJoints[objectiveData.indices[0]]
+      } else {
+        jointName1 = jointNames[objectiveData.indices[0]][objectiveData.indices[1]]
+      }
       return <span>
               <span>Make the position of </span>
               <span style={{backgroundColor:'#1890ff',color:'white',padding:4,borderRadius:5}}>
-                {eeFixedJoints[objectiveData.index]}
+                {jointName1}
               </span>
               <span> have lifelike motion</span>
              </span>
-    case 'ee_orientation_liveliness':
+    case 'orientation_liveliness':
+      if (objectiveData.indices[1] >= jointNames.length) {
+        jointName1 = eeFixedJoints[objectiveData.indices[0]]
+      } else {
+        jointName1 = jointNames[objectiveData.indices[0]][objectiveData.indices[1]]
+      }
       return <span>
               <span>Make the rotation of </span>
               <span style={{backgroundColor:'#1890ff',color:'white',padding:4,borderRadius:5}}>
-                {eeFixedJoints[objectiveData.index]}
+                {jointName1}
               </span>
               <span> have lifelike motion</span>
              </span>
@@ -107,9 +159,30 @@ const getObjectivePreview = (objectiveData, fixedFrame, eeFixedJoints, jointOrde
       return <span>
               <span>Make the value of </span>
               <span style={{backgroundColor:'#BE33FF',color:'white',padding:4,borderRadius:5}}>
-                {jointOrdering[objectiveData.index]}
+                {jointOrdering[objectiveData.indices[0]]}
               </span>
               <span> have lifelike motion</span>
+             </span>
+    case 'relative_motion_liveliness':
+      if (objectiveData.indices[1] >= jointNames.length) {
+        jointName1 = eeFixedJoints[objectiveData.indices[0]]
+      } else {
+        jointName1 = jointNames[objectiveData.indices[0]][objectiveData.indices[1]]
+      }
+      if (objectiveData.indices[3] >= jointNames.length) {
+        jointName2 = eeFixedJoints[objectiveData.indices[2]]
+      } else {
+        jointName2 = jointNames[objectiveData.indices[2]][objectiveData.indices[3]]
+      }
+      return <span>
+              <span>Move position of </span>
+              <span style={{backgroundColor:'#1890ff',color:'white',padding:4,borderRadius:5}}>
+                {jointName1}
+              </span>
+              <span> towards and away from </span>
+              <span style={{backgroundColor:'#1890ff',color:'white',padding:4,borderRadius:5}}>
+                {jointName2}
+              </span>
              </span>
     case 'base_link_position_liveliness':
       return <span>
@@ -124,4 +197,5 @@ const getObjectivePreview = (objectiveData, fixedFrame, eeFixedJoints, jointOrde
   }
 }
 
-export {getObjectivePreview}
+
+export {getObjectivePreview};

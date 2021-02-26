@@ -9,7 +9,6 @@ class Uploader extends Component {
 
   handleUpload = async (info) => {
     if (info.file) {
-      console.log(info.file);
       const reader = new FileReader();
       reader.onabort = () => {message.error('Upload Aborted')}
       reader.onerror = () => {message.error('Upload Error')}
@@ -36,13 +35,13 @@ class Uploader extends Component {
           visible={this.props.visible}
           onCancel={this.props.onCancel}
         >
-            <Dragger name='file' onChange={(info)=>this.handleUpload(info)} accept='.yaml'>
+            <Dragger name='file' onChange={(info)=>this.handleUpload(info)} accept='text/yaml, text/json'>
               <p className="ant-upload-drag-icon">
                 <UploadOutlined/>
               </p>
               <p className="ant-upload-text">Click or drag file to this area to upload</p>
               <p className="ant-upload-hint">
-                Upload a Config Yaml File
+                Upload a Config File
               </p>
             </Dragger>
             <Divider>Or</Divider>

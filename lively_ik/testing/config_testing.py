@@ -17,6 +17,8 @@ from datetime import datetime
 from pprint import PrettyPrinter
 import networkx as nx
 
+
+
 yaml_string = '''
 axis_types:
 - [z, z, z, z, z, z, z]
@@ -25,9 +27,21 @@ base_link_motion_bounds:
 - [0, 0]
 - [0, 0]
 static_environment:
-    spheres: []
-    cuboids: []
-    pcs: []
+  spheres: []
+  cuboids:
+  - name: Table
+    x_halflength: 0.3
+    y_halflength: 0.5
+    z_halflength: 0.01
+    rx: 0.0
+    ry: 0.0
+    rz: 0.0
+    tx: 0.0
+    ty: 0.0
+    tz: -0.01
+    is_dynamic: false
+    coordinate_frame: 'panda_link0'
+  pcs: []
 disp_offsets:
 - [0.0, 0.0, 0.333]
 displacements:
@@ -40,24 +54,12 @@ displacements:
   - [0.0, 0.0, 0.107]
 fixed_frame: panda_link0
 ee_fixed_joints: [panda_joint8]
+modes:
+- name: default
+  weights: [40.0, 35.0, 20.0, 30.0, 5.0, 20.0, 100.0, 1.0, 1.0, 0.1, 2.0, 5.0]
 goals:
 - name: default
-  goals:
-  - vector: [1.0,0.5,0.25]
-    weight: 5
-  - quaternion: [1,0,0,0]
-    weight: 5
-  - scalar: 0.03
-    weight: 20
-  - weight: 50
-  - weight: 50
-  - weight: 50
-  - weight: 100
-  - weight: 1
-  - weight: 1
-  - weight: 0.1
-  - weight: 2.0
-  - weight: 5.0
+  values: [{vector: [1.0,0.5,0.25]}, {quaternion: [1,0,0,0]}, {scalar: 0.03}, {}, {}, {}, {}, {}, {}, {}, {}, {}]
 joint_limits:
 - [-2.9671, 2.9671]
 - [-1.8326, 1.8326]
@@ -108,20 +110,19 @@ nn_jointpoint:
         - [ 0.14211476672033146 ]
     split_point: 4.97
 objectives:
-- {tag: 'EE Position Control', index: 0, variant: ee_position_match}
-- {tag: 'EE Rotation Control', index: 0, variant: ee_orientation_match}
-- {tag: 'Gripper Control', index: 7, variant: joint_match}
-- {tag: 'Control EE Arm Position Liveliness', frequency:  5, index: 0, scale: 0.15, variant: ee_position_liveliness}
-- {tag: 'Control EE Arm Rotation Liveliness', frequency:  5, index: 0, scale: 1.0, variant: ee_orientation_liveliness}
-- {tag: 'Gripper Liveliness', frequency:  5, index: 7, scale: 0.01, variant: joint_liveliness}
-- {tag: 'Match Fingers', index: 7, secondary_index: 8, variant: joint_mirroring}
-- {tag: 'Minimize Velocity', variant: min_velocity}
-- {tag: 'Minimize Acceleration', variant: min_acceleration}
-- {tag: 'Minimize Jerk', variant: min_jerk}
-- {tag: 'Joint Limits', variant: joint_limits}
-- {tag: 'Self-Collision', variant: nn_collision}
+- {tag: 'EE Position Control', indices: [0,7], variant: position_match}
+- {tag: 'EE Rotation Control', indices: [0,7], variant: orientation_match}
+- {tag: 'Gripper Control', indices: [7], variant: joint_match}
+- {tag: 'Arm Position Liveliness', frequency:  5, indices: [0,7], shape: [0.15,0.15,0.15], variant: position_liveliness}
+- {tag: 'Arm Rotation Liveliness', frequency:  5, indices: [0,7], shape: [0.75,0.75,0.75], variant: orientation_liveliness}
+- {tag: 'Gripper Liveliness', frequency:  5, indices: [7], scale: 0.01, variant: joint_liveliness}
+- {tag: 'Match Fingers', indices: [7,8], variant: joint_mirroring}
+- {tag: 'Minimize Velocity', indices: [], variant: min_velocity}
+- {tag: 'Minimize Acceleration', indices: [], variant: min_acceleration}
+- {tag: 'Minimize Jerk', indices: [], variant: min_jerk}
+- {tag: 'Joint Limits', indices: [], variant: joint_limits}
+- {tag: 'Self-Collision', indices: [], variant: nn_collision}
 robot_link_radius: 0.045
-robot_name: panda
 rot_offsets:
 - - [0.0, 0.0, 0.0]
   - [-1.57079632679, 0.0, 0.0]
@@ -140,10 +141,22 @@ velocity_limits: [2.3925, 2.3925, 2.3925, 2.3925, 2.871, 2.871, 2.871, 10, 10]
 '''
 
 
+
+
 pprinter = PrettyPrinter()
 pprint = lambda content: pprinter.pprint(content)
 data = yaml.safe_load(yaml_string)
+parsed = parse_config_data(data)
+print(parsed)
+
+lik = LivelyIK(parsed)
+print(lik.solve(parsed.default_inputs,9.0))
+exit()
+# print(data['objectives'])
 cm = ConfigManager()
+cm.load(data)
+pprint(cm.meta)
+cm.train_nn()
 
 # elements = []
 #
@@ -219,8 +232,9 @@ cm = ConfigManager()
 # exit()
 config = parse_config_data(data)
 solver = LivelyIK(config)
+print(cm.current['markers'])
 print(solver.solve(config.default_goals,9.0))
-
+exit()
 
 
 

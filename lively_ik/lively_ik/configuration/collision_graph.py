@@ -6,7 +6,7 @@ import math
 
 class CollisionGraph:
     def __init__(self, config, robot, link_exclusion_list = [], sample_states=[]):
-        self.c = CollisionObjectContainer(config['static_environment'],config['robot_link_radius'])
+        self.c = CollisionObjectContainer(config['static_environment'],config['joint_names'],config['robot_link_radius'])
         self.c.add_collision_objects_from_robot(robot, link_exclusion_list)
         self.robot = robot
         self.sample_states = sample_states

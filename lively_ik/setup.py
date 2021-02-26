@@ -53,7 +53,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'interface = lively_ik.interface:main'
+            'interface = lively_ik.interface:main',
+            'solver = lively_ik.solver:main'
         ],
     },
 )

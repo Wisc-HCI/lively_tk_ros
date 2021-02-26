@@ -1,5 +1,5 @@
 import React from 'react';
-import { Steps, Divider, Button } from 'antd';
+import { Steps } from 'antd';
 import Basics from './config/Basics';
 import Collision from './config/Collision';
 import Behavior from './config/Behavior';
@@ -46,8 +46,8 @@ class ConfigCreator extends React.Component {
     this.props.onUpdate({directive:'update',config:{static_environment:staticEnvironment}})
   }
 
-  beginPreprocess = () => {
-    //this.props.socket.emit('app_process',{action:'preprocess'})
+  beginTraining = () => {
+    this.props.onUpdate({directive:'process',type:'nn'})
   }
 
   updateObjectives = (objectives) => {
@@ -97,19 +97,22 @@ class ConfigCreator extends React.Component {
       case 1:
         return this.props.meta.valid_robot;
       case 2:
-        return (this.props.meta.valid_config && this.props.meta.valid_solver)
+        return (this.props.meta.valid_nn)
       default:
         return false
     }
   }
 
   setStep = (step) => {
-    if (step === 2) {
-      this.updateToSolve()
-    } else {
-      this.updateToManual()
+    if (this.canStep(step)) {
+      if (step === 2) {
+        this.updateToSolve()
+      } else {
+        this.updateToManual()
+      }
+      this.setState({step:step})
     }
-    this.setState({step:step})
+
   }
 
   stepForward = () => {
@@ -155,6 +158,7 @@ class ConfigCreator extends React.Component {
                      updateStaticEnvironment={(e)=>this.updateStaticEnvironment(e)}
                      updateRobotLinkRadius={(e)=>this.updateRobotLinkRadius(e)}
                      updateMeta={(e)=>this.updateMeta(e)}
+                     beginTraining={()=>this.beginTraining()}
                      style={{height:'100%'}}
                   />
         );
@@ -174,10 +178,11 @@ class ConfigCreator extends React.Component {
   render() {
     return (
       <div style={{margin:10,height:'100%'}}>
-        <Steps current={this.state.step} size="large" type='navigation' onChange={(step)=>this.setStep(step)}>
-          <Step title="Basics" description="Specify basic robot configuration" disabled={!this.canStep(0)}/>
-          <Step title="Collision" description="Specify how the robot may collide" disabled={!this.canStep(1)}/>
-          <Step title="Behavior" description="Specify how the robot behaves" disabled={!this.canStep(2)}/>
+        <Steps current={this.state.step} progressDot={true} onChange={(step)=>this.setStep(step)} style={{marginTop:20}}>
+          <Step title="Basics" description="Specify basic robot configuration" disabled={!this.canStep(0)} onClick={this.setStep}/>
+          <Step title="Collision" description="Specify how the robot may collide" disabled={!this.canStep(1)} onClick={this.setStep}/>
+          <Step title="Behavior" description="Specify how the robot behaves" disabled={!this.canStep(2)} onClick={this.setStep}/>
+          <Step title="Run" description="Execute Behaviors" disabled={!this.canStep(3)} onClick={this.setStep}/>
         </Steps>
         <div style={{margin:20,height:'100%'}}>
           {this.getPage()}

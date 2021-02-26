@@ -12,9 +12,6 @@ class JointSpec extends React.Component {
   }
 
   updateJointsAtIdx = (idx,value) => {
-    console.log('update at idx');
-    console.log(idx);
-    console.log(value);
     let joints = [...this.props.joints];
     joints[idx] = value;
     this.props.onUpdate(joints);

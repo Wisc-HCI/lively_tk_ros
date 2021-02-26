@@ -1,6 +1,6 @@
 import React from 'react';
-import { Form, Slider, Tabs, Checkbox, InputNumber, List, Space, Tag, Button, Tooltip } from 'antd';
-import { EditOutlined, CopyOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Tabs, Checkbox, InputNumber, List, Space, Tag, Button, Tooltip, Result, Progress, Badge } from 'antd';
+import { EditOutlined, CopyOutlined, DeleteOutlined, WarningOutlined } from '@ant-design/icons';
 const { TabPane } = Tabs;
 
 class Collision extends React.Component {
@@ -38,25 +38,65 @@ class Collision extends React.Component {
     }
   }
 
+  getNNStatus = () => {
+    if (this.props.meta.nn_main_utd && this.props.meta.nn_jointpoint_utd) {
+      return 'success'
+    } else if (this.props.meta.nn_progress > 0) {
+      return 'info'
+    } else {
+      return 'warning'
+    }
+  }
+
+  getNNIcon = () => {
+    if (this.props.meta.nn_main_utd && this.props.meta.nn_jointpoint_utd) {
+      return null
+    } else if (this.props.meta.nn_progress > 0) {
+      return <Progress type="circle" percent={this.props.meta.nn_progress} width={80} />
+    } else {
+      return null
+    }
+  }
+
+  getNNTitle = () => {
+    if (this.props.meta.nn_main_utd && this.props.meta.nn_jointpoint_utd) {
+      return 'Collision Neural Network Up-To-Date!'
+    } else if (this.props.meta.nn_progress > 0) {
+      return 'Training...'
+    } else {
+      return 'Re-Training Needed!'
+    }
+  }
+
+  getNNExtra = () => {
+    if (this.props.meta.nn_main_utd && this.props.meta.nn_jointpoint_utd) {
+      return <Button type="primary" onClick={()=>this.props.beginTraining()}>Train</Button>
+    } else if (this.props.meta.nn_progress > 0) {
+      return <Button disabled type="primary" onClick={()=>this.props.beginTraining()}>Train</Button>
+    } else {
+      return <Button type="primary" onClick={()=>this.props.beginTraining()}>Train</Button>
+    }
+  }
+
   render() {
     return (
       <Tabs defaultActiveKey='1' tabPosition='left' style={{ height: '100%', width:'100%' }}>
         <TabPane tab='Link Collision' key="1">
           <h3>Robot Link Radius</h3>
           <Space style={{display:'flex',paddingBottom:10}}>
-            <InputNumber min={0} max={10} defaultValue={0.05} step={0.01} onChange={(value)=>this.props.updateRobotLinkRadius(value)} />
+            <InputNumber min={0} max={10} value={this.props.config.robot_link_radius} step={0.01} onChange={(value)=>this.props.updateRobotLinkRadius(value)} />
             <Checkbox>Show Link Collision</Checkbox>
           </Space>
         </TabPane>
         <TabPane tab='Environment' key='2'>
           <h3>Spheres</h3>
-          <List header={null} footer={null} bordered dataSource={this.props.config.static_environment.spheres} style={{marginBottom:10}}
+          <List header={null} footer={<Button type="primary" onClick={()=>{}}>Add Sphere</Button>} bordered dataSource={this.props.config.static_environment.spheres} style={{marginBottom:10}}
                 renderItem={(item)=>(
                   <List.Item>{item.name}</List.Item>
                 )}
           />
           <h3>Cuboids</h3>
-          <List header={null} footer={null} bordered dataSource={this.props.config.static_environment.cuboids}
+          <List header={null} footer={<Button type="primary" onClick={()=>{}}>Add Cuboid</Button>} bordered dataSource={this.props.config.static_environment.cuboids}
                 renderItem={(item)=>(
                   <List.Item>{item.name}</List.Item>
                 )}
@@ -90,6 +130,14 @@ class Collision extends React.Component {
 
                   </List.Item>
                 )}
+          />
+        </TabPane>
+        <TabPane tab={(this.props.meta.nn_main_utd && this.props.meta.nn_jointpoint_utd) ? 'Training' : <Badge style={{ backgroundColor: '#faad14' }} offset={[14,0]} count='!'>Training</Badge>} key='4'>
+        <Result
+          status={this.getNNStatus()}
+          icon={this.getNNIcon()}
+          title={this.getNNTitle()}
+          extra={this.getNNExtra()}
           />
         </TabPane>
       </Tabs>
