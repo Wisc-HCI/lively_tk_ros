@@ -68,20 +68,21 @@ class Behavior extends React.Component {
     switch (groupName) {
       case 'Base':
         objectives.push(defaultObjectives.joint_limits)
-        modes.forEach((goalMode)=>{
-          goalMode.weights.push(defaultWeights.joint_limits)
+        modes.forEach((mode)=>{
+          mode.weights.push(defaultWeights.joint_limits)
         })
         goals.forEach((goalSpec)=>{
           goalSpec.values.push(defaultGoals.joint_limits)
         })
         break
       case 'Directions':
+        console.log('ADDING DIRECTIONS OBJ')
         objectives.push(defaultObjectives.position_match)
         modes.forEach((goalMode)=>{
           goalMode.weights.push(defaultWeights.position_match)
         })
         goals.forEach((goalSpec)=>{
-          let position = this.props.config.joint_poses[0][this.props.config.joint_poses[0].length-1]['position']
+          let position = this.props.meta.joint_poses[0][this.props.meta.joint_poses[0].length-1]['position']
           goalSpec.values.push({vector:[position.x,position.y,position.z]})
         })
         break
@@ -97,6 +98,7 @@ class Behavior extends React.Component {
       default:
         break
     }
+    console.log(objectives);
     this.props.onUpdate({objectives:objectives,modes:modes,goals:goals},{selected:{idx:objectives.length-1,type:'objective'}})
   }
 

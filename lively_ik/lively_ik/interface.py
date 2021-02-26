@@ -233,7 +233,7 @@ class InterfaceNode(Node):
             self.weight_pub.publish(String(data=json.dumps(meta['target_weights'])))
             self.direct_pub.publish(String(data=json.dumps(meta['target_goals'])))
         elif meta['valid_urdf']:
-            # self.get_logger().info('{0} {1}'.format(meta['valid_solver'],meta['control']))
+            # self.get_logger().info('Generating joint values with manual state')
             self.base_transform, self.displayed_state = ([0,0,0], meta['displayed_state'])
 
         # Send the transform for the base
@@ -247,7 +247,6 @@ class InterfaceNode(Node):
         self.tf_broadcaster.sendTransform(t)
 
         # Send the joint states
-        # self.get_logger().info('{0}'.format(self.displayed_state))
         js = JointState(name=data['joint_ordering'],position=self.displayed_state)
         js.header.stamp = self.get_clock().now().to_msg()
         self.js_pub.publish(js)

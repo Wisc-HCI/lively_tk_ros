@@ -35,7 +35,7 @@ class Detail extends React.Component {
     if (this.props.meta.selected.type === 'mode') {
       let modes = [...this.props.config.modes]
       this.props.meta.target_weights.forEach((weight,idx)=>{
-        modes[this.props.meta.selected.idx].goals[idx].weight = weight
+        modes[this.props.meta.selected.idx].weights[idx] = weight
       })
       config.modes = modes
     }
@@ -109,6 +109,7 @@ class Detail extends React.Component {
                                 modeWeights={this.props.config.modes.map(mode=>mode.weights[this.props.meta.selected.idx])}
                                 goalValues={this.props.config.goals.map(goal=>goal.values[this.props.meta.selected.idx])}
                                 eeFixedJoints={this.props.config.ee_fixed_joints}
+                                jointPoses={this.props.meta.joint_poses}
                                 fixedFrame={this.props.config.fixed_frame}
                                 jointOrdering={this.props.config.joint_ordering}
                                 jointNames={this.props.config.joint_names}

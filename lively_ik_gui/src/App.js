@@ -54,19 +54,6 @@ class App extends React.Component {
         this.updateFromServer(message.data);
       });
 
-      // For debugging marker msgs
-      this.markerUpdate = new ROSLIB.Topic({
-        ros: this.ros,
-        name: '/visualization_marker',
-        messageType: 'visualization_msgs/Marker'
-      });
-
-      this.markerUpdate.subscribe(message => {
-        console.log('MARKER UPDATE:');
-        console.log(message);
-      });
-
-
       this.guiUpdate = new ROSLIB.Topic({
         ros: this.ros,
         name: '/lively_ik/gui_updates',
@@ -146,7 +133,7 @@ class App extends React.Component {
       )
     }
   }
-  
+
   render() {
     return (
       <>

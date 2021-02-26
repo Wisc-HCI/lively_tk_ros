@@ -10,7 +10,6 @@ class ConfigCreator extends React.Component {
   state = {step:0};
 
   updateUrdf = (event) => {
-    console.log(event.target.value);
     this.props.onUpdate({directive:'update',config:{urdf:event.target.value}})
   }
 

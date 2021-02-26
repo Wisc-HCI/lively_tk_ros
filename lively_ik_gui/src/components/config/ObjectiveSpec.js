@@ -64,10 +64,10 @@ class ObjectiveSpec extends React.Component {
   getGoalFromCurrent = (variant,idx1,idx2) => {
     switch (variant) {
       case 'position_match':
-        let position = this.props.config.joint_poses[idx1][idx2]['position']
+        let position = this.props.jointPoses[idx1][idx2]['position']
         return {vector:[position.x,position.y,position.z]}
       case 'orientation_match':
-        let quaternion = this.props.config.joint_poses[idx1][idx2]['quaternion']
+        let quaternion = this.props.jointPoses[idx1][idx2]['quaternion']
         return {quaternion:[quaternion.w,quaternion.x,quaternion.y,quaternion.z]}
       case 'joint_match':
         return {scalar:this.props.displayedState[idx1]}
@@ -131,21 +131,42 @@ class ObjectiveSpec extends React.Component {
   }
 
   updateScale = (value) => {
-    let objective = {...this.props.objective};
-    objective.scale = value;
-    this.props.onUpdate({objective:objective})
+    if (!Number.isNaN(value)) {
+      if (typeof(value) == 'string') {
+        value = parseFloat(value)
+      }
+      let objective = {...this.props.objective};
+      objective.scale = (value);
+      this.props.onUpdate({objective:objective})
+    } else {
+      console.log(`Ignoring erroneous input ${value}`)
+    }
   }
 
   updateShape = (value,idx) => {
-    let objective = {...this.props.objective};
-    objective.shape[idx] = value;
-    this.props.onUpdate({objective:objective})
+    if (!Number.isNaN(value)) {
+      if (typeof(value) == 'string') {
+        value = parseFloat(value)
+      }
+      let objective = {...this.props.objective};
+      objective.shape[idx] = value;
+      this.props.onUpdate({objective:objective})
+    } else {
+      console.log(`Ignoring erroneous input ${value}`)
+    }
   }
 
   updateFrequency = (value) => {
-    let objective = {...this.props.objective};
-    objective.frequency = value;
-    this.props.onUpdate({objective:objective})
+    if (!Number.isNaN(value)) {
+      if (typeof(value) == 'string') {
+        value = parseFloat(value)
+      }
+      let objective = {...this.props.objective};
+      objective.frequency = value;
+      this.props.onUpdate({objective:objective})
+    } else {
+      console.log(`Ignoring erroneous input ${value}`)
+    }
   }
 
   getIdxOptionsFromJointNames = () => {
@@ -170,9 +191,17 @@ class ObjectiveSpec extends React.Component {
   }
 
   updateWeightAtIdx = (idx,value) => {
-    let modeWeights = [...this.props.modeWeights];
-    modeWeights[idx] = value
-    this.props.onUpdate({modeWeights:this.props.modeWeights})
+    if (!Number.isNaN(value)) {
+      if (typeof(value) == 'string') {
+        value = parseFloat(value)
+      }
+      let modeWeights = [...this.props.modeWeights];
+      modeWeights[idx] = value
+      console.log(value);
+      this.props.onUpdate({modeWeights:this.props.modeWeights})
+    } else {
+      console.log(`Ignoring erroneous input ${value}`)
+    }
   }
 
   getWeightSlider = (idx) => {
@@ -281,7 +310,6 @@ class ObjectiveSpec extends React.Component {
   }
 
   render() {
-    console.log(this.props.objective)
     return (
       <>
         <h3>Name</h3>

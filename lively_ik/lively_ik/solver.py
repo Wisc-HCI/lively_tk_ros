@@ -65,15 +65,28 @@ class SolverNode(Node):
                     self.solver = LivelyIK(self.config)
                 except:
                     self.solver = None
-                self.current_weights = self.config.modes[0].weights
+                self.current_weights = self.config.default_weights
                 self.target_weights = self.current_weights
-                self.current_directions = self.config.goals[0].values
+
+                # Parse the rust goal specs into a python dictionary
+                current_directions = []
+                for default_goal in self.config.default_goals:
+                    goal_data = {}
+                    for field in ['scalar','vector','quaternion']:
+                        value = getattr(default_goal,field)
+                        if value:
+                            goal_data[field] = value
+                    current_directions.append(goal_data)
+
+                self.current_directions = current_directions
                 self.target_directions = self.current_directions
-        except:
-            self.get_logger().warning('Invalid config supplied')
+                self.enabled = True
+                self.get_logger().info('Updated config succesfully. Enabling...')
+        except Exception as e:
+            self.get_logger().warning('Invalid config supplied: {0}'.format(e))
 
     def handle_enabled_update(self,msg):
-        self.get_logger().debug('Received request to update enabled setting')
+        self.get_logger().debug('Received request to update enabled setting ({0}->{1})'.format(self.enabled,msg.data))
         if msg.data != self.enabled:
             self.get_logger().info('Changing enabled to {0}'.format(msg.data))
             self.enabled = msg.data
@@ -92,7 +105,7 @@ class SolverNode(Node):
         # If the weights were changed in size, just replace and don't interpolate.
         if len(self.current_weights) != len(self.target_weights):
             self.current_weights = self.target_weights
-        else:
+        elif self.current_weights != self.target_weights:
             for idx,target_weight in enumerate(self.target_weights):
                 # Use ewma to interpolate to new values
                 self.current_weights[idx] = ewma(target_weight,self.current_weights[idx],0.05)
@@ -101,7 +114,7 @@ class SolverNode(Node):
         # If the weights were changed in size, just replace and don't interpolate.
         if len(self.current_directions) != len(self.target_directions):
             self.current_directions = self.target_directions
-        else:
+        elif self.current_directions != self.target_directions:
             for idx,target_direction in enumerate(self.target_directions):
                 # Use ewma to interpolate to new values
                 current_direction = self.current_directions[idx]
@@ -120,6 +133,7 @@ class SolverNode(Node):
             self.update_current_directions()
             self.base_transform, self.displayed_state = self.solve_with_current_goals()
             data = {'base_transform':self.base_transform,'joint_states':self.displayed_state}
+            self.get_logger().debug('{0}'.format(data))
             self.result_pub.publish(String(data=json.dumps(data)))
 
 
