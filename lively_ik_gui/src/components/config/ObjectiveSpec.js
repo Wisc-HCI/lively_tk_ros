@@ -62,6 +62,8 @@ class ObjectiveSpec extends React.Component {
   }
 
   getGoalFromCurrent = (variant,idx1,idx2) => {
+    console.log(idx1);
+    console.log(this.props.displayedState)
     switch (variant) {
       case 'position_match':
         let position = this.props.jointPoses[idx1][idx2]['position']

@@ -144,7 +144,7 @@ class SolverNode(Node):
             input_value.update({'weight':self.current_weights[idx]})
             input_value.update(self.current_directions[idx])
             inputs.append(ObjectiveInput(**input_value))
-        return self.solver.solve(inputs,datetime.utcnow().timestamp())
+        return self.solver.solve(inputs,datetime.utcnow().timestamp(),max_retries=3)
 
 
 def main():

@@ -36,12 +36,12 @@ DEFAULT_CONFIG = {
 }
 
 DEFAULT_WEIGHTS = {
-  'joint_limits':2.0,
+  'joint_limits':1.0,
   'nn_collision':5.0,
   'env_collision':5.0,
-  'min_velocity':1.0,
-  'min_acceleration':1.0,
-  'min_jerk':0.1,
+  'min_velocity':7.0,
+  'min_acceleration':2.0,
+  'min_jerk':1.0,
   'position_match':30.0,
   'orientation_match':25.0,
   'position_mirroring':50.0,

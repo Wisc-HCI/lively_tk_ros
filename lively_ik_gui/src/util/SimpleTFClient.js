@@ -45,7 +45,7 @@ class SimpleTFClient {
 
   unsubscribe = (frameID, callback) => {
     var info = this.frameInfos[frameID];
-    for (var cbs = info && info.cbs || [], idx = cbs.length; idx--;) {
+    for (var cbs = info && (info.cbs || []), idx = cbs.length; idx--;) {
       if (cbs[idx] === callback) {
         cbs.splice(idx, 1);
       }

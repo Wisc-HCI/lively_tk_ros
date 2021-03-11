@@ -14,13 +14,41 @@
     "pcs": []
   },
   "fixed_frame": "panda_link0",
-  "modes": [{
-    "name": "default",
-    "weights": [1, 1, 0.1, 2, 5]
-  }],
+  "modes": [
+    {
+      "name": "default",
+      "weights": [7.0, 2.0, 1.0, 2, 5, 30, 10, 20, 50, 50]
+    },
+    {
+      "name": "Happy",
+      "weights": [7.0, 2.0, 1.0, 2, 5, 30, 10, 20, 50, 50]}
+  ],
   "goals": [{
     "name": "default",
-    "values": [{}, {}, {}, {}, {}]
+    "values": [
+      {},
+      {},
+      {},
+      {},
+      {},
+      {"vector": [0.5812051758174359, -1.9356708116603083e-12, 0.676689944991155]},
+      {},
+      {"quaternion": [4.825879518647093e-12, 0.9855551449068584, 1.2322746444968027e-16, 0.16935482380972014]},
+      {"scalar": 0.02},
+      {}]
+  },{
+    "name": "Grasp Pose",
+    "values": [
+      {},
+      {},
+      {},
+      {},
+      {},
+      {"vector": [0.5812051758174359, -1.9356708116603083e-12, 0.676689944991155]},
+      {},
+      {"quaternion": [4.825879518647093e-12, 0.9855551449068584, 1.2322746444968027e-16, 0.16935482380972014]},
+      {"scalar": 0.04},
+      {}]
   }],
   "joint_limits": [
     [-2.9671, 2.9671],
@@ -295,6 +323,28 @@
     "tag": "Self-Collision",
     "variant": "nn_collision",
     "indices": []
+  }, {
+    "tag": "EE Position Control",
+    "variant": "position_match",
+    "indices": [0, 7]
+  }, {
+    "tag": "EE Position Liveliness",
+    "frequency": 10,
+    "shape": [0.15, 0.15, 0.15],
+    "variant": "position_liveliness",
+    "indices": [0, 7]
+  }, {
+    "tag": "Gripper Orientation",
+    "variant": "orientation_match",
+    "indices": [0, 7]
+  }, {
+    "tag": "Finger 1 Control",
+    "variant": "joint_match",
+    "indices": [7]
+  }, {
+    "tag": "Finger 2 Control",
+    "variant": "joint_mirrroring",
+    "indices": [0, 0]
   }],
   "states": [],
   "robot_link_radius": 0.045,

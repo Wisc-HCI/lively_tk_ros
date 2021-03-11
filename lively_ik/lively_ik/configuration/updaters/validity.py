@@ -5,7 +5,18 @@ def derive_valid_urdf(config):
     return config['parsed_urdf'] != None
 
 def derive_valid_config(config):
-    return config['config'] != None
+    if config['config'] == None:
+        return False
+    num_objectives = len(config['objectives'])
+    for mode in config['modes']:
+        mode_length = len(mode['weights'])
+        if mode_length != num_objectives:
+            return False
+    for goal in config['goals']:
+        goal_length = len(goal['values'])
+        if goal_length != num_objectives:
+            return False
+    return True
 
 def derive_valid_solver(config):
     return config['solver'] != None

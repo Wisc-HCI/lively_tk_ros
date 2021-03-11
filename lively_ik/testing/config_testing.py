@@ -146,12 +146,12 @@ velocity_limits: [2.3925, 2.3925, 2.3925, 2.3925, 2.871, 2.871, 2.871, 10, 10]
 pprinter = PrettyPrinter()
 pprint = lambda content: pprinter.pprint(content)
 data = yaml.safe_load(yaml_string)
-# parsed = parse_config_data(data)
-# print(parsed)
-#
-# lik = LivelyIK(parsed)
-# print(lik.solve(parsed.default_inputs,9.0))
+parsed = parse_config_data(data)
+print(parsed)
 
+lik = LivelyIK(parsed)
+print(lik.solve(parsed.default_inputs,9.0,max_retries=5))
+exit()
 # print(data['objectives'])
 cm = ConfigManager()
 cm.load(data)

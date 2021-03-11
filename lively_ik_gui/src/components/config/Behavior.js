@@ -37,8 +37,8 @@ class Behavior extends React.Component {
     return name;
   }
 
-  getColor = (idx) => {
-    if (this.props.meta.selected === null) {
+  getColor = (idx,selectionType) => {
+    if (this.props.meta.selected === null || selectionType !== this.props.meta.selected.type) {
       return 'white'
     } else if (idx === this.props.meta.selected.idx) {
       return '#E9E9E9'
@@ -147,8 +147,23 @@ class Behavior extends React.Component {
 
   addGoal = () => {
     let goals = [...this.props.config.goals];
-    let newGoalValues = this.props.config.objectives.map(objective=>defaultGoals[objective.variant]);
+    let newGoalValues = this.props.config.objectives.map(objective=>{
+      switch(objective.variant) {
+        case 'position_match':
+          let pos = this.props.meta.joint_poses[objective.indices[0]][objective.indices[1]].position;
+          return {vector:[pos.x,pos.y,pos.z]}
+        case 'orientation_match':
+          let ori = this.props.meta.joint_poses[objective.indices[0]][objective.indices[1]].quaternion;
+          return {quaternion:[ori.w,ori.x,ori.y,ori.z]}
+        case 'joint_match':
+          let jointValue = this.props.meta.displayed_state[objective.indices[0]]
+          return {scalar:jointValue}
+        default:
+          return {}
+      }
+    });
     let goal = {name:this.getUnusedGoalName(),values:newGoalValues};
+    console.log(goal);
     goals.push(goal)
     this.props.onUpdate({goals:goals},{selected:{idx:goals.length-1,type:'goal'}})
   }
@@ -204,7 +219,7 @@ class Behavior extends React.Component {
     const jointOrdering = this.props.config.joint_ordering;
     const jointNames = this.props.config.joint_names;
     return (
-      <List.Item style={{backgroundColor:this.getColor(idx)}} extra={
+      <List.Item style={{backgroundColor:this.getColor(idx,'objective')}} extra={
           <Space style={{width: 120}}>
             <Tooltip title='Edit'>
               <Button shape="circle" style={{marginLeft:5}} icon={<EditOutlined/>} onClick={()=>this.selectObjective(idx)}/>
@@ -229,7 +244,7 @@ class Behavior extends React.Component {
 
   getModeListItem = (idx) => {
     return (
-      <List.Item style={{backgroundColor:this.getColor(idx)}} extra={
+      <List.Item style={{backgroundColor:this.getColor(idx,'mode')}} extra={
         <Space style={{width: 120}}>
           <Tooltip title='Edit'>
             <Button shape="circle" style={{marginLeft:5}} icon={<EditOutlined/>} onClick={()=>this.selectMode(idx)}/>
@@ -251,22 +266,22 @@ class Behavior extends React.Component {
 
   getGoalListItem = (idx) => {
     return (
-      <List.Item style={{backgroundColor:this.getColor(idx)}} extra={
+      <List.Item style={{backgroundColor:this.getColor(idx,'goal')}} extra={
         <Space style={{width: 120}}>
           <Tooltip title='Edit'>
-            <Button shape="circle" style={{marginLeft:5}} icon={<EditOutlined/>} onClick={()=>this.selectMode(idx)}/>
+            <Button shape="circle" style={{marginLeft:5}} icon={<EditOutlined/>} onClick={()=>this.selectGoal(idx)}/>
           </Tooltip>
           <Tooltip title='Copy'>
-            <Button shape="circle" style={{marginLeft:5}} icon={<CopyOutlined/>} onClick={()=>this.copyMode(idx)}/>
+            <Button shape="circle" style={{marginLeft:5}} icon={<CopyOutlined/>} onClick={()=>this.copyGoal(idx)}/>
           </Tooltip>
-          <Tooltip title={this.props.config.modes[idx].name === 'default' ? 'Cannot be deleted' : 'Delete' }
-                   color={this.props.config.modes[idx].name === 'default' ? null : '#ff4d4f'}>
-            <Button shape="circle" style={{marginLeft:5}} icon={<DeleteOutlined/>} danger onClick={()=>this.deleteMode(idx)}
-                    disabled={this.props.config.modes[idx].name === 'default'}/>
+          <Tooltip title={this.props.config.goals[idx].name === 'default' ? 'Cannot be deleted' : 'Delete' }
+                   color={this.props.config.goals[idx].name === 'default' ? null : '#ff4d4f'}>
+            <Button shape="circle" style={{marginLeft:5}} icon={<DeleteOutlined/>} danger onClick={()=>this.deleteGoal(idx)}
+                    disabled={this.props.config.goals[idx].name === 'default'}/>
           </Tooltip>
         </Space>
       }>
-      <List.Item.Meta title={this.props.config.modes[idx].name === 'default' ? 'Default' : this.props.config.modes[idx].name}/>
+      <List.Item.Meta title={this.props.config.goals[idx].name === 'default' ? 'Default' : this.props.config.goals[idx].name}/>
     </List.Item>
     )
   }
@@ -302,14 +317,14 @@ class Behavior extends React.Component {
         <TabPane tab='Modes' style={{height: '100%', width:'100%' }} key='modes'>
           <List header={null} footer={<Button type="primary" onClick={this.addMode}>Add Mode</Button>} bordered
                 style={{ maxHeight: '100%', width:'100%', overflow:'scroll'}}
-                dataSource={this.props.config.modes.map((objective,idx)=>idx)}
+                dataSource={this.props.config.modes.map((mode,idx)=>idx)}
                 renderItem={this.getModeListItem}
           />
         </TabPane>
         <TabPane tab='Goals' style={{height: '100%', width:'100%' }} key='goals'>
           <List header={null} footer={<Button type="primary" onClick={this.addGoal}>Add Goal</Button>} bordered
                 style={{ maxHeight: '100%', width:'100%', overflow:'scroll'}}
-                dataSource={this.props.config.modes.map((objective,idx)=>idx)}
+                dataSource={this.props.config.goals.map((goal,idx)=>idx)}
                 renderItem={this.getGoalListItem}
           />
         </TabPane>

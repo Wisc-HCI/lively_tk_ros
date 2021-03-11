@@ -1,6 +1,6 @@
 import React from 'react';
 import { Tabs, Checkbox, InputNumber, List, Space, Tag, Button, Tooltip, Result, Progress, Badge } from 'antd';
-import { EditOutlined, CopyOutlined, DeleteOutlined, WarningOutlined } from '@ant-design/icons';
+import { EditOutlined, CopyOutlined, DeleteOutlined } from '@ant-design/icons';
 const { TabPane } = Tabs;
 
 class Collision extends React.Component {

@@ -10,8 +10,8 @@ class ModeSpec extends React.Component {
   constructor(props) {
     super(props);
     this.state = {modeCategory:'Base',
-                  savedName:props.modeName,
-                  showNameError:!this.validateName(props.name)};
+                  cachedMode:props.modeInfo,
+                  showNameError:!this.validateName(props.modeInfo.name)};
   }
 
   setModeCategory = (category) => {
@@ -19,9 +19,9 @@ class ModeSpec extends React.Component {
   }
 
   validateName = (name) => {
-    if (name === this.props.modeName) {
+    if (name === this.props.modeInfo.name) {
       return true
-    } else if (this.props.modeNames.indexOf(name) >= 0) {
+    } else if (this.props.modeInfo.names.indexOf(name) >= 0) {
       return false
     } else if (name !== undefined && name.toLowerCase() === 'default') {
       return false
@@ -40,31 +40,31 @@ class ModeSpec extends React.Component {
   }
 
   updateName = (event) => {
-    let value = event.target.value;
+    let name = event.target.value;
+    let cachedMode = {...this.state.cachedMode};
     let showNameError = false;
-    if (this.validateName(value)) {
-      this.props.onUpdate({name:value})
-    } else {
+    cachedMode.name = name;
+    if (!this.validateName(name)) {
       showNameError = true
     }
-    this.setState({savedName:value,showNameError:showNameError})
+    this.props.onUpdate({cachedData:cachedMode});
+    this.setState({cachedMode:cachedMode,showNameError:showNameError})
   }
 
   updateWeightAtIdx = (idx,value) => {
-    let weights = [...this.props.targetWeights];
+    let weights = [...this.state.cachedMode.weights];
+    let cachedMode = {...this.state.cachedMode};
     weights[idx] = value;
-    this.props.onUpdate({targetWeights:weights});
+    cachedMode.weights = weights;
+    this.props.onUpdate({cachedData:cachedMode,targetModeWeights:weights});
+    this.setState({cachedMode:cachedMode})
   }
 
   getWeightSlider = (idx) => {
-    if (!this.props.weights || !this.props.names) {
-      return <></>
-    }
-
     return (
-      <List.Item key={this.props.names[idx]} label={this.props.names[idx]}>
-        <List.Item.Meta title={this.props.names[idx]}
-                        description={<LogSlider min={0} max={100} step={0.01} showInput={true} value={this.props.targetWeights[idx]}
+      <List.Item key={idx} label={this.props.objectives[idx].tag}>
+        <List.Item.Meta title={this.props.objectives[idx].tag}
+                        description={<LogSlider min={0} max={100} step={0.01} showInput={true} value={this.state.cachedMode.weights[idx]}
                                                 onChange={(v)=>this.debounce(this.updateWeightAtIdx(idx,v))}/>}
         />
       </List.Item>
@@ -76,8 +76,8 @@ class ModeSpec extends React.Component {
       <>
         <h3>Name</h3>
         <Input placeholder='Name this Mode'
-               disabled={this.props.modeName === 'default'}
-               value={this.props.modeName === 'default' ? 'Default' : this.state.savedName}
+               disabled={this.state.cachedMode.name === 'default'}
+               value={this.state.cachedMode.name === 'default' ? 'Default' : this.state.cachedMode.name}
                onChange={(v)=>this.debounce(this.updateName(v))}/>
         {this.state.showNameError ? (
           <Alert
@@ -94,7 +94,7 @@ class ModeSpec extends React.Component {
               onChange={(key)=>this.setModeCategory(key)}>
           {BEHAVIOR_ATTRIBUTE_GROUPS.map((group,groupIdx)=>(
             <TabPane tab={BEHAVIOR_ATTRIBUTE_GROUP_NAMES[groupIdx]} key={BEHAVIOR_ATTRIBUTE_GROUP_NAMES[groupIdx]} style={{ height: '100%', width:'100%' }}>
-              <List header={null} footer={null} bordered dataSource={this.props.variants.map((variant,idx)=>idx).filter((idx)=>BEHAVIOR_ATTRIBUTE_GROUPS[groupIdx].indexOf(this.props.variants[idx])>=0)}
+              <List header={null} footer={null} bordered dataSource={this.props.objectives.map((obj,idx)=>idx).filter((idx)=>BEHAVIOR_ATTRIBUTE_GROUPS[groupIdx].indexOf(this.props.objectives[idx].variant)>=0)}
                     renderItem={(idx)=>this.getWeightSlider(idx)}
               />
             </TabPane>

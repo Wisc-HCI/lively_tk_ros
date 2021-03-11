@@ -1,18 +1,15 @@
 import React from 'react';
-import {SettingFilled} from '@ant-design/icons';
+import {SettingFilled, ArrowUpOutlined, ArrowDownOutlined} from '@ant-design/icons';
 import './App.css';
 import 'antd/dist/antd.css';
 import Connection from './components/Connection';
-// import ConfigCreator from './components/ConfigCreator';
-// import Commander from './components/Commander';
 import Scene from './components/Scene';
 import Uploader from './components/Uploader';
 import Main from './components/Main';
-import { message, Layout, Space, Spin, Button } from 'antd';
+import { message, Layout, Space, Spin, Button, Select } from 'antd';
 import * as ROSLIB from 'roslib';
 import SplitPane from 'react-split-pane';
 import { defaultConfig, defaultMeta } from './util/Default';
-// import {Resizable} from 're-resizable';
 const { Header, Sider, Content } = Layout;
 
 class App extends React.Component {
@@ -24,6 +21,7 @@ class App extends React.Component {
                   connected:false,
                   sidebarCollapsed: true,
                   showUploader:false,
+                  cameraPosition:{x:0,y:0,z:0},
                   config:JSON.parse(JSON.stringify(defaultConfig)),
                   meta:JSON.parse(JSON.stringify(defaultMeta))
                  };
@@ -119,11 +117,26 @@ class App extends React.Component {
     this.ros.connect(prefix+'://'+host);
   }
 
+  moveSceneCamera = (value,dim) => {
+    this.setState(state=>{
+      let current = state.cameraPosition;
+      current[dim] += value;
+      return {cameraPosition:current}
+    },console.log(this.state.cameraPosition))
+  }
+
   getContent = () => {
     if (this.state.connected) {
       return (
         <SplitPane split='vertical' defaultSize="50%" style={{width: '100%', display:'flex', height:'calc(100vh - 48pt)', backgroundColor:'white'}}>
-          <Scene ros={this.ros} baseLink={this.state.config.fixed_frame} urdf={this.state.config.urdf} connected={this.state.connected}/>
+          <>
+            {this.state.connected && this.state.meta.valid_solver ? this.getModeGoalSelector() : <></>}
+            <Scene ros={this.ros}
+                   baseLink={this.state.config.fixed_frame}
+                   urdf={this.state.config.urdf}
+                   connected={this.state.connected}
+                   cameraPosition={this.state.cameraPosition}/>
+          </>
           <Main meta={this.state.meta} config={this.state.config} onUpdate={(data)=>this.updateToServer(data)}/>
         </SplitPane>
       )
@@ -132,6 +145,42 @@ class App extends React.Component {
         <Connection host={this.state.host} prefix={this.state.prefix} connect={(prefix,host)=>this.connect(prefix,host)}/>
       )
     }
+  }
+
+  setMode = (modeName) => {
+    this.updateToServer({directive:'update',meta:{active_mode:modeName}})
+  }
+
+  setGoals = (goalsName) => {
+    this.updateToServer({directive:'update',meta:{active_goals:goalsName}})
+  }
+
+  getModeGoalSelector = () => {
+    return (
+      <Space align="baseline" style={{paddingTop:7,paddingBottom:7,backgroundColor:'#232323',display:'flex',justifyContent:'space-around'}}>
+        <>
+        <span style={{color:'white'}}>Mode</span>
+        <Select value={this.state.meta.active_mode}
+                style={{ minWidth: 200, paddingLeft:10 }}
+                onChange={()=>{}}
+                size='small'
+                disabled={!this.state.meta.valid_nn || (this.state.meta.selected !== null && this.state.meta.selected.type === 'mode')}
+                options={this.state.config.modes.map((mode,idx)=>({label:mode.name === 'default' ? 'Default' : mode.name, value:idx}))}/>
+        </>
+        <>
+        <span style={{color:'white'}}>Goals</span>
+        <Select value={this.state.meta.active_goals}
+                style={{ minWidth: 200, paddingLeft:10 }}
+                onChange={()=>{}}
+                size='small'
+                prefix="goal"
+                disabled={!this.state.meta.valid_nn || (this.state.meta.selected !== null && this.state.meta.selected.type === 'goal')}
+                options={this.state.config.goals.map((goal,idx)=>({label:goal.name === 'default' ? 'Default' : goal.name, value:idx}))}/>
+        </>
+        <Button type="primary" shape="circle" icon={<ArrowUpOutlined />} onClick={()=>this.moveSceneCamera(0.05,'z')}/>
+        <Button type="primary" shape="circle" icon={<ArrowDownOutlined />} onClick={()=>this.moveSceneCamera(-0.05,'z')}/>
+      </Space>
+    )
   }
 
   render() {

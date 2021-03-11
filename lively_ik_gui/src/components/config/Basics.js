@@ -1,6 +1,9 @@
 import React from 'react';
-import { Input, Select, Modal, Tabs, Button, Badge, Alert, Space, Tag, Card, List, Tooltip } from 'antd';
+import { Input, Select, Modal, Tabs, Button,
+         Badge, Alert, Space, Tag, Card, List,
+         Tooltip } from 'antd';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import DualSlider from '../../util/DualSlider';
 const { TabPane } = Tabs;
 const { TextArea } = Input;
 const { Option } = Select;
@@ -68,6 +71,12 @@ class Basics extends React.Component {
       );
   }
 
+  updateBaseLinkMotionBounds = (value,idx) => {
+    let bounds = [...this.props.config.base_link_motion_bounds];
+    bounds[idx] = value;
+    this.props.updateBaseLinkMotionBounds(bounds)
+  }
+
   selectState = () => {
     this.props.updateMeta({selected:{idx:null,type:'starting_config'},displayed_state:this.props.config.starting_config})
   }
@@ -91,11 +100,22 @@ class Basics extends React.Component {
               placeholder="Please select a fixed frame"
               value={this.props.config.fixed_frame}
               onChange={(joint)=>this.props.updateFixedFrame(joint)}
-              style={{ width:'100%'}}>
+              style={{ width:'100%',paddingBottom:10.}}>
               {this.props.meta.links.map((joint)=>{
                 return <Option key={joint}>{joint}</Option>
               })}
             </Select>
+            <h3>Base Position</h3>
+            <DualSlider showInput={true} min={-5} max={5} step={0.01}
+                        value={this.props.config.base_link_motion_bounds[0]}
+                        onChange={(v)=>this.updateBaseLinkMotionBounds(v,0)}/>
+            <DualSlider showInput={true} min={-5} max={5} step={0.01}
+                        value={this.props.config.base_link_motion_bounds[1]}
+                        onChange={(v)=>this.updateBaseLinkMotionBounds(v,1)}/>
+            <DualSlider showInput={true} min={-5} max={5} step={0.01}
+                        value={this.props.config.base_link_motion_bounds[2]}
+                        onChange={(v)=>this.updateBaseLinkMotionBounds(v,2)}/>
+
           </TabPane>
           <TabPane tab="Modes" key="2">
             <Space style={{display:'flex'}}>

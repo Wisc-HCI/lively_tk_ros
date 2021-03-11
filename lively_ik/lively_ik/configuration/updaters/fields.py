@@ -51,7 +51,7 @@ FIELDS = {
     'goals':{
         'default':[{'name':'default','values':[{},{},{},{},{}]}],
         'derivation':derive_goals,
-        'dependencies':['config','target_goals'],
+        'dependencies':['config','target_goals','markers'],
         'on_change':{},
         'force':False,
         'guards':['valid_robot']
@@ -394,7 +394,8 @@ FIELDS = {
         'force':False,
         'guards':[]
     },
-    # Misc Fields
+    ## -- Misc Fields -- ##
+    # How much forgivenes the robot has to move its base-link
     'base_link_motion_bounds':{
         'default':[[0,0],[0,0],[0,0]],
         'derivation':None,
@@ -403,6 +404,7 @@ FIELDS = {
         'force':False,
         'guards':['valid_urdf']
     },
+    # Whether the robot moves with absolute or relative control
     'mode_control':{
         'default':'absolute',
         'derivation':None,
@@ -411,6 +413,7 @@ FIELDS = {
         'force':False,
         'guards':[]
     },
+    # The type of real-time collision avoidance used.
     'mode_environment':{
         'default':'ECAA',
         'derivation':None,
@@ -419,7 +422,8 @@ FIELDS = {
         'force':False,
         'guards':[]
     },
-    # GUI Fields
+    ## -- GUI Fields -- ##
+    # The actual displayed state to the front-end, if manual control is chosen.
     'displayed_state':{
         'default':[],
         'derivation':derive_displayed_state,
@@ -428,6 +432,9 @@ FIELDS = {
         'force':False,
         'guards':[]
     },
+    # Whether the robot should be controlled with LivelyIK or direct joints.
+    # Either 'manual' or 'solve'. This should be 'manual' while configuring
+    # joints in training states, or the initial state (starting_config).
     'control':{
         'default':'manual',
         'derivation':derive_control,
@@ -436,14 +443,19 @@ FIELDS = {
         'force':False,
         'guards':[]
     },
+    # What item is displayed in the side panel/drawer. If None, it shows nothing.
+    # If not None, it should always have a type and index. Current valid types are
+    # 'starting_config','collision_state','objective','mode', and 'goal'.
     'selected':{
         'default':None,
         'derivation':None,
-        'dependencies':['markers','active_mode'],
+        'dependencies':['markers','active_mode','active_goals'],
         'on_change':{},
         'force':False,
         'guards':['valid_urdf']
     },
+    # The idealized data of the markers that are shown. These are
+    # compared to the current set and published by the interface node.
     'markers':{
         'default':{},
         'derivation':derive_markers,
@@ -452,6 +464,8 @@ FIELDS = {
         'force':False,
         'guards':['valid_urdf']
     },
+    # This can be enabled or disabled from the front-end, and should
+    # cause cylinder markers to show up in the visualizer window.
     'show_link_collision':{
         'default':False,
         'derivation':None,
@@ -460,22 +474,27 @@ FIELDS = {
         'force':False,
         'guards':['valid_urdf']
     },
+    # The index of the mode that is actively being shown
     'active_mode':{
-        'default':'default',
+        'default':0,
         'derivation':derive_active_mode,
         'dependencies':['target_weights'],
         'on_change':{},
         'force':False,
         'guards':['valid_config']
     },
+    # The index of the goal that is actively being shown
     'active_goals':{
-        'default':'default',
+        'default':0,
         'derivation':derive_active_goals,
         'dependencies':['target_goals'],
         'on_change':{},
         'force':False,
         'guards':['valid_config']
     },
+    # The current position and orientation (euler rotation and quaternion) of each joint.
+    # Note, organized first by chain, and then by joint. Has n+1 joints in each chain,
+    # since it includes the end effector fixed joint.
     'joint_poses':{
         'default':[],
         'derivation':derive_joint_poses,
@@ -484,6 +503,9 @@ FIELDS = {
         'force':False,
         'guards':['valid_robot']
     },
+    # The weights that should be used by the solver (other than changes due to interpolation on the solver end)
+    # This is derived from 'active_mode', but can be set separately in the case of configuring a mode, during
+    # which the shown target weights are not the ones present in the stored mode's specification
     'target_weights':{
         'default':[1.0,1.0,0.1,2.0,5.0],
         'derivation':derive_target_weights,
@@ -492,14 +514,18 @@ FIELDS = {
         'force':False,
         'guards':['valid_robot']
     },
+    # The goals that should be used by the solver (other than changes due to interpolation on the solver end)
+    # This is derived from 'active_goals', but can be set separately in the case of configuring a goal, during
+    # which the shown target goal are not the ones present in the stored goal's specification
     'target_goals':{
         'default':[{},{},{},{},{}],
         'derivation':derive_target_goals,
-        'dependencies':[],
+        'dependencies':['markers'],
         'on_change':{},
         'force':False,
         'guards':['valid_robot']
     },
+    # This could be any shapes or links that need to be highlighted. Treated as markers to the front end
     'highlights':{
         'default':[],
         'derivation':None,
@@ -508,6 +534,7 @@ FIELDS = {
         'force':False,
         'guards':['valid_urdf']
     },
+    # This is the value that the progress bar uses on the front-end. Derived each time a training process finishes.
     'nn_progress':{
         'default':0,
         'derivation':derive_nn_progress,

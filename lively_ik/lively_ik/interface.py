@@ -9,7 +9,7 @@ from rcl_interfaces.srv import SetParameters
 from rcl_interfaces.msg import Parameter, ParameterValue
 from sensor_msgs.msg import JointState
 from tf2_msgs.msg import TFMessage
-from geometry_msgs.msg import TransformStamped
+from geometry_msgs.msg import TransformStamped, Point
 from tf2_web_republisher_msgs.msg import TFArray
 from visualization_msgs.msg import Marker
 from std_msgs.msg import String
@@ -174,6 +174,9 @@ class InterfaceNode(Node):
                     marker.type = marker.SPHERE
                 elif current_marker['type'] == 'cube':
                     marker.type = marker.CUBE
+                elif current_marker['type'] == 'points':
+                    marker.type = marker.POINTS
+                    marker.points = [Point(x=point['x'],y=point['y'],z=point['z']) for point in current_marker['points']]
                 else:
                     marker.type = marker.MESH_RESOURCE
                     marker.mesh_resource = current_marker['type']
@@ -208,6 +211,9 @@ class InterfaceNode(Node):
                     marker.type = marker.SPHERE
                 elif current_marker['type'] == 'cube':
                     marker.type = marker.CUBE
+                elif current_marker['type'] == 'points':
+                    marker.type = marker.POINTS
+                    marker.points = [Point(x=point['x'],y=point['y'],z=point['z']) for point in current_marker['points']]
                 else:
                     marker.type = marker.MESH_RESOURCE
                     marker.mesh_resource = current_marker['type']
@@ -233,8 +239,11 @@ class InterfaceNode(Node):
             self.weight_pub.publish(String(data=json.dumps(meta['target_weights'])))
             self.direct_pub.publish(String(data=json.dumps(meta['target_goals'])))
         elif meta['valid_urdf']:
-            # self.get_logger().info('Generating joint values with manual state')
-            self.base_transform, self.displayed_state = ([0,0,0], meta['displayed_state'])
+            # Set the transform to the middle of the allowed space
+            x = (data['base_link_motion_bounds'][0][0] + data['base_link_motion_bounds'][0][1])/2
+            y = (data['base_link_motion_bounds'][1][0] + data['base_link_motion_bounds'][1][1])/2
+            z = (data['base_link_motion_bounds'][2][0] + data['base_link_motion_bounds'][2][1])/2
+            self.base_transform, self.displayed_state = ([x,y,z], meta['displayed_state'])
 
         # Send the transform for the base
         t = TransformStamped()

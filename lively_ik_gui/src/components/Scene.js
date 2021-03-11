@@ -15,9 +15,8 @@ class Scene extends Component {
     );
   }
 
-
-   componentDidUpdate(prevProps) {
-    const { width, height, fixedFrame, urdf } = this.props;
+  componentDidUpdate(prevProps) {
+    const { width, height, fixedFrame, urdf, cameraPosition } = this.props;
 
     if (width !== prevProps.width || height !== prevProps.height) {
       this.viewer.resize(width,height)
@@ -25,11 +24,15 @@ class Scene extends Component {
     if (fixedFrame !== prevProps.fixedFrame || urdf !== prevProps.urdf) {
       this.setupViewer(this.props.urdf,this.props.fixedFrame)
     }
+    if (cameraPosition) {
+      this.viewer.cameraControls.center.x = cameraPosition.x;
+      this.viewer.cameraControls.center.y = cameraPosition.y;
+      this.viewer.cameraControls.center.z = cameraPosition.z;
+    }
 
   }
 
   componentWillUnmount() {
-    console.log('UNMOUNTING AND CLEARING SCENE')
     if (this.viewer) {
       while(this.viewer.scene.children.length > 0){
         this.viewer.scene.remove(this.viewer.scene.children[0]);
@@ -54,7 +57,8 @@ class Scene extends Component {
       height: this.props.height,
       antialias: true,
       background: '#303030',
-      intensity: .65
+      intensity: .65,
+      cameraPosition: this.props.cameraPosition
     });
     // this.handleResize();
     this.viewer.addObject(new ROS3D.Grid({

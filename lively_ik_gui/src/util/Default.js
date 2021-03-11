@@ -53,6 +53,8 @@ const defaultMeta = {
   fixed_joints: [],
   selected:null,
   updating:false,
+  active_goals:0,
+  active_mode:0,
   target_weights:[],
   target_goals:[]
 }

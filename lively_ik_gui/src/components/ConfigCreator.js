@@ -140,6 +140,7 @@ class ConfigCreator extends React.Component {
                   config={this.props.config}
                   updateUrdf={(e)=>this.updateUrdf(e)}
                   updateFixedFrame={(e)=>this.updateFixedFrame(e)}
+                  updateBaseLinkMotionBounds={(e)=>this.updateBaseLinkMotionBounds(e)}
                   updateJointNames={(e)=>this.updateJointNames(e)}
                   updateJointOrdering={(e)=>this.updateJointOrdering(e)}
                   updateEeFixedJoints={(e)=>this.updateEeFixedJoints(e)}
@@ -181,7 +182,6 @@ class ConfigCreator extends React.Component {
           <Step title="Basics" description="Specify basic robot configuration" disabled={!this.canStep(0)} onClick={this.setStep}/>
           <Step title="Collision" description="Specify how the robot may collide" disabled={!this.canStep(1)} onClick={this.setStep}/>
           <Step title="Behavior" description="Specify how the robot behaves" disabled={!this.canStep(2)} onClick={this.setStep}/>
-          <Step title="Run" description="Execute Behaviors" disabled={!this.canStep(3)} onClick={this.setStep}/>
         </Steps>
         <div style={{margin:20,height:'100%'}}>
           {this.getPage()}
