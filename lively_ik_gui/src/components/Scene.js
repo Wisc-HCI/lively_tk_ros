@@ -16,13 +16,19 @@ class Scene extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    const { width, height, fixedFrame, urdf, cameraPosition } = this.props;
+    const { width, height, fixedFrame, cameraPosition, defaultUrdf } = this.props;
 
     if (width !== prevProps.width || height !== prevProps.height) {
       this.viewer.resize(width,height)
     }
+
+    let urdf = this.props.urdf;
+    if (urdf === '') {
+      urdf = defaultUrdf;
+    }
+
     if (fixedFrame !== prevProps.fixedFrame || urdf !== prevProps.urdf) {
-      this.setupViewer(this.props.urdf,this.props.fixedFrame)
+      this.setupViewer(urdf,this.props.fixedFrame)
     }
     if (cameraPosition) {
       this.viewer.cameraControls.center.x = cameraPosition.x;
@@ -82,7 +88,7 @@ class Scene extends Component {
     this.robotModel = new ROSLIB.UrdfModel({
       string:this.props.urdf.replace(/package:\/\//g, process.env.PUBLIC_URL + 'assets/')
     });
-    // console.log(this.robotModel);
+    //console.log(this.robotModel);
     this.robot = new ROS3D.Urdf({
       urdfModel: this.robotModel,
       path: '/',
@@ -95,7 +101,11 @@ class Scene extends Component {
   }
 
    componentDidMount() {
-     this.setupViewer(this.props.urdf,this.props.fixedFrame)
+     let urdf = this.props.urdf;
+     if (this.props.urdf === '') {
+        urdf = this.props.defaultUrdf;
+     }
+     this.setupViewer(urdf,this.props.fixedFrame)
   }
 }
 

@@ -135,7 +135,8 @@ class App extends React.Component {
                    baseLink={this.state.config.fixed_frame}
                    urdf={this.state.config.urdf}
                    connected={this.state.connected}
-                   cameraPosition={this.state.cameraPosition}/>
+                   cameraPosition={this.state.cameraPosition}
+                   defaultUrdf={defaultConfig.urdf}/>
           </>
           <Main meta={this.state.meta} config={this.state.config} onUpdate={(data)=>this.updateToServer(data)}/>
         </SplitPane>
@@ -162,7 +163,7 @@ class App extends React.Component {
         <span style={{color:'white'}}>Mode</span>
         <Select value={this.state.meta.active_mode}
                 style={{ minWidth: 200, paddingLeft:10 }}
-                onChange={()=>{}}
+                onChange={(v)=>{this.updateToServer({directive:'update',meta:{active_mode:v}})}}
                 size='small'
                 disabled={!this.state.meta.valid_nn || (this.state.meta.selected !== null && this.state.meta.selected.type === 'mode')}
                 options={this.state.config.modes.map((mode,idx)=>({label:mode.name === 'default' ? 'Default' : mode.name, value:idx}))}/>
@@ -171,7 +172,7 @@ class App extends React.Component {
         <span style={{color:'white'}}>Goals</span>
         <Select value={this.state.meta.active_goals}
                 style={{ minWidth: 200, paddingLeft:10 }}
-                onChange={()=>{}}
+                onChange={(v)=>{this.updateToServer({directive:'update',meta:{active_goals:v}})}}
                 size='small'
                 prefix="goal"
                 disabled={!this.state.meta.valid_nn || (this.state.meta.selected !== null && this.state.meta.selected.type === 'goal')}

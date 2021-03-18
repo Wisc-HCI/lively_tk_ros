@@ -169,6 +169,7 @@ class Detail extends React.Component {
           return <ObjectiveSpec objective={this.props.config.objectives[this.props.meta.selected.idx]}
                                 modeWeights={this.props.config.modes.map(mode=>mode.weights[this.props.meta.selected.idx])}
                                 goalValues={this.props.config.goals.map(goal=>goal.values[this.props.meta.selected.idx])}
+                                jointLimits={this.props.config.joint_limits}
                                 eeFixedJoints={this.props.config.ee_fixed_joints}
                                 jointPoses={this.props.meta.joint_poses}
                                 fixedFrame={this.props.config.fixed_frame}
@@ -204,6 +205,7 @@ class Detail extends React.Component {
 
   render() {
     return (
+
       <Drawer
         title={this.getTitle()}
         footer={this.getIsSame() ? null : <Space>

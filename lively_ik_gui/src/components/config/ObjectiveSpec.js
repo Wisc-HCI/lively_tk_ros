@@ -311,6 +311,34 @@ class ObjectiveSpec extends React.Component {
     return settings;
   }
 
+  getScaleSettings () {
+    return (
+      <>
+        <h3 style={{marginTop:10}}>Motion Scale</h3>
+        <Row>
+          <Col span={12}>
+            <Slider
+              min={0}
+              max={20}
+              step={0.01}
+              onChange={this.updateScale}
+              value={typeof this.props.objective.scale === 'number' ? this.props.objective.scale : 0}
+            />
+          </Col>
+          <Col span={4}>
+            <InputNumber
+              min={0}
+              max={20}
+              step={0.01}
+              style={{ margin: '0 16px' }}
+              value={this.props.objective.scale}
+              onChange={this.updateScale}
+            />
+          </Col>
+        </Row>
+      </>)
+  }
+
   render() {
     return (
       <>
@@ -332,30 +360,7 @@ class ObjectiveSpec extends React.Component {
         </Select>
         {this.getIndexSettings()}
         {(this.props.objective.scale !== undefined) ? (
-          <>
-          <h3 style={{marginTop:10}}>Motion Scale</h3>
-          <Row>
-            <Col span={12}>
-              <Slider
-                min={0}
-                max={20}
-                step={0.01}
-                onChange={this.updateScale}
-                value={typeof this.props.objective.scale === 'number' ? this.props.objective.scale : 0}
-              />
-            </Col>
-            <Col span={4}>
-              <InputNumber
-                min={0}
-                max={20}
-                step={0.01}
-                style={{ margin: '0 16px' }}
-                value={this.props.objective.scale}
-                onChange={this.updateScale}
-              />
-            </Col>
-          </Row>
-          </>
+          this.getScaleSettings()
         ) : (<></>)}
         {(this.props.objective.shape !== undefined) ? (
           <>
@@ -387,7 +392,7 @@ class ObjectiveSpec extends React.Component {
         ) : (<></>)}
         {(this.props.objective.frequency !== undefined) ? (
           <>
-          <h3 style={{marginTop:10}}>Motion Speed</h3>
+          <h3 style={{marginTop:10}}>Motion Length</h3>
           <Row>
             <Col span={12}>
               <Slider

@@ -132,7 +132,7 @@ def convertToArmJointList(urdf_robot, full_joint_list, fixedJoint, Debug=False):
                 displacements.append(tuple(currJoint.origin.xyz))
                 rotOffsets.append(tuple(currJoint.origin.rpy))
         if currJoint == []:
-            raise Exception('Invalid fixed_ee_joint.  Exiting.')
+            raise Exception('Invalid fixed_ee_joint {0}.  Exiting.'.format(fixedJoint))
 
 
     numDOF = len(axes)

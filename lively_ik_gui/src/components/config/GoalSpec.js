@@ -75,6 +75,7 @@ class GoalSpec extends React.Component {
         <List.Item key={idx} label={this.props.objectives[idx].tag}>
           <List.Item.Meta title={this.props.objectives[idx].tag}
                           description={<RotationInput
+                                          euler={true}
                                           step={0.1}
                                           value={this.state.cachedGoal.values[idx].quaternion}
                                           onChange={(v)=>{this.updateValues(v,idx,'quaternion')}}

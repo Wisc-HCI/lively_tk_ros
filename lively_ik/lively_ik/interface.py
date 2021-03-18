@@ -174,6 +174,8 @@ class InterfaceNode(Node):
                     marker.type = marker.SPHERE
                 elif current_marker['type'] == 'cube':
                     marker.type = marker.CUBE
+                elif current_marker['type'] == 'cylinder':
+                    marker.type = marker.CYLINDER
                 elif current_marker['type'] == 'points':
                     marker.type = marker.POINTS
                     marker.points = [Point(x=point['x'],y=point['y'],z=point['z']) for point in current_marker['points']]
@@ -211,6 +213,8 @@ class InterfaceNode(Node):
                     marker.type = marker.SPHERE
                 elif current_marker['type'] == 'cube':
                     marker.type = marker.CUBE
+                elif current_marker['type'] == 'cylinder':
+                    marker.type = marker.CYLINDER
                 elif current_marker['type'] == 'points':
                     marker.type = marker.POINTS
                     marker.points = [Point(x=point['x'],y=point['y'],z=point['z']) for point in current_marker['points']]
@@ -261,6 +265,7 @@ class InterfaceNode(Node):
         self.js_pub.publish(js)
 
         transforms = []
+        # self.get_logger().info(f'watched_transforms: {self.watched_transforms}')
         for pair in self.watched_transforms:
             try:
                 transform = self.tf_buffer.lookup_transform(pair['target'],pair['source'],Time(0,0))

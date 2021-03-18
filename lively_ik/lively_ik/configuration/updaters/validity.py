@@ -1,3 +1,18 @@
+def derive_valid_arms(config):
+    if len(config['joint_names']) == len(config['ee_fixed_joints']) and len(config['joint_names']) > 0 and len(config['joint_ordering']) > 0:
+        for chain in config['joint_names']:
+            for joint in chain:
+                if joint not in config['joint_ordering']:
+                    return False
+        result = True
+    else:
+        result = False
+    return result
+
+def derive_valid_goals(config):
+    if len(config['target_goals']) != len(config['objectives']):
+        return False
+
 def derive_valid_robot(config):
     return config['robot'] != None
 
@@ -42,12 +57,15 @@ def derive_valid_robot_output(config):
             passes = False
         if field in ['axis_types','disp_offsets','rot_offsets','joint_types','displacements']:
             for idx,info in enumerate(config[field]):
-                if field in ['axis_types','joint_types','displacements'] and len(info) != len(config['joint_names'][idx]):
+                try:
+                    if field in ['axis_types','joint_types','displacements'] and len(info) != len(config['joint_names'][idx]):
+                        passes = False
+                        # print("detail failure with {0}".format(field))
+                        # print(config[field])
+                    elif field == 'disp_offsets' and len(info) != 3:
+                        passes = False
+                        # print("detail failure with {0}".format(field))
+                        # print(config[field])
+                except:
                     passes = False
-                    # print("detail failure with {0}".format(field))
-                    # print(config[field])
-                elif field == 'disp_offsets' and len(info) != 3:
-                    passes = False
-                    # print("detail failure with {0}".format(field))
-                    # print(config[field])
     return passes

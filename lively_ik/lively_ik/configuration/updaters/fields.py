@@ -51,7 +51,7 @@ FIELDS = {
     'goals':{
         'default':[{'name':'default','values':[{},{},{},{},{}]}],
         'derivation':derive_goals,
-        'dependencies':['config','target_goals','markers'],
+        'dependencies':['config','target_goals','goal_markers',],
         'on_change':{},
         'force':False,
         'guards':['valid_robot']
@@ -63,7 +63,7 @@ FIELDS = {
                    {'tag': 'Joint Limits', 'variant': 'joint_limits', 'indices': []},
                    {'tag': 'Self-Collision', 'variant': 'nn_collision', 'indices': []}],
         'derivation':None,
-        'dependencies':['markers','config','target_weights','target_goals'],
+        'dependencies':['goal_markers','config','target_weights','target_goals'],
         'on_change':{},
         'force':False,
         'guards':['valid_robot']
@@ -165,7 +165,7 @@ FIELDS = {
                 'pcs':[]
             },
         'derivation':None,
-        'dependencies':['markers'],
+        'dependencies':['collision_markers'],
         'on_change':{'valid_nn':False,
                      'nn_main':{'intercepts':[],'coefs':[],'split_point':None},
                      'nn_jointpoint':{'intercepts':[],'coefs':[],'split_point':None},
@@ -182,7 +182,7 @@ FIELDS = {
     'robot_link_radius':{
         'default':0.05,
         'derivation':None,
-        'dependencies':['markers'],
+        'dependencies':['collision_markers'],
         'on_change':{'valid_nn':False,
                      'nn_main':{'intercepts':[],'coefs':[],'split_point':None},
                      'nn_jointpoint':{'intercepts':[],'coefs':[],'split_point':None},
@@ -318,7 +318,7 @@ FIELDS = {
         'derivation':derive_fixed_frame,
         'dependencies':['joint_names'],
         'on_change':{},
-        'force':False,
+        'force':True,
         'guards':['valid_urdf']
     },
     'joint_ordering':{
@@ -341,7 +341,7 @@ FIELDS = {
     'links':{
         'default':[],
         'derivation':derive_links,
-        'dependencies':['show_link_collision','markers'],
+        'dependencies':['show_link_collision','collision_markers','highlight_markers'],
         'on_change':{},
         'force':False,
         'guards':['valid_urdf']
@@ -383,7 +383,7 @@ FIELDS = {
         'derivation':derive_parsed_urdf,
         'dependencies':['valid_urdf'],
         'on_change':{},
-        'force':False,
+        'force':True,
         'guards':[]
     },
     'urdf':{
@@ -449,7 +449,7 @@ FIELDS = {
     'selected':{
         'default':None,
         'derivation':None,
-        'dependencies':['markers','active_mode','active_goals'],
+        'dependencies':['goal_markers','active_mode','active_goals'],
         'on_change':{},
         'force':False,
         'guards':['valid_urdf']
@@ -464,12 +464,36 @@ FIELDS = {
         'force':False,
         'guards':['valid_urdf']
     },
+    'collision_markers':{
+        'default':{},
+        'derivation':derive_collision_markers,
+        'dependencies':['markers'],
+        'on_change':{},
+        'force':False,
+        'guards':['valid_urdf']
+    },
+    'goal_markers':{
+        'default':{},
+        'derivation':derive_goal_markers,
+        'dependencies':['markers'],
+        'on_change':{},
+        'force':False,
+        'guards':['valid_config']
+    },
+    'highlight_markers':{
+        'default':{},
+        'derivation':derive_highlight_markers,
+        'dependencies':['markers'],
+        'on_change':{},
+        'force':False,
+        'guards':['valid_urdf']
+    },
     # This can be enabled or disabled from the front-end, and should
     # cause cylinder markers to show up in the visualizer window.
     'show_link_collision':{
         'default':False,
         'derivation':None,
-        'dependencies':['markers'],
+        'dependencies':['collision_markers'],
         'on_change':{},
         'force':False,
         'guards':['valid_urdf']
@@ -487,7 +511,7 @@ FIELDS = {
     'active_goals':{
         'default':0,
         'derivation':derive_active_goals,
-        'dependencies':['target_goals'],
+        'dependencies':['target_goals','goal_markers'],
         'on_change':{},
         'force':False,
         'guards':['valid_config']
@@ -520,7 +544,7 @@ FIELDS = {
     'target_goals':{
         'default':[{},{},{},{},{}],
         'derivation':derive_target_goals,
-        'dependencies':['markers'],
+        'dependencies':['goal_markers'],
         'on_change':{},
         'force':False,
         'guards':['valid_robot']
@@ -529,7 +553,7 @@ FIELDS = {
     'highlights':{
         'default':[],
         'derivation':None,
-        'dependencies':['markers'],
+        'dependencies':['highlight_markers'],
         'on_change':{},
         'force':False,
         'guards':['valid_urdf']

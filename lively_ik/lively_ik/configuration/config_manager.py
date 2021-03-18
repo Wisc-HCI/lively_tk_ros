@@ -84,15 +84,17 @@ class ConfigManager(object):
         new_config = {}
         for key in self._copy_keys:
             new_config[key] = deepcopy(current[key])
-        for rust_type in ['config','solver']:
-            new_config[rust_type] = current[rust_type]
+        for non_copy_type in ['config','solver','collision_graph']:
+            new_config[non_copy_type] = current[non_copy_type]
         # Force-clear the previous networks and settings
         for field in ['nn_main','nn_jointpoint','nn_main_utd','nn_jointpoint_utd','collision_graph']:
             new_config[field] = self._fields[field]['default']
+
+        changes = set([])
         # Initiate the first process, which sets off processing
         ## Start by creating the collision graph
         collision_graph = self._fields['collision_graph']['derivation'](new_config)
-        new_config = self.handle_update('collision_graph',collision_graph,new_config,realtime_feedback=True)
+        new_config, new_changes = self.handle_update('collision_graph',collision_graph,new_config,realtime_feedback=True)
         self.__update_config__(new_config)
 
     def __update_config__(self,config):
