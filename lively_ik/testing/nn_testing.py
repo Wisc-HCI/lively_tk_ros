@@ -23,12 +23,13 @@ with open(config_file) as handle:
 # print(lik.solve(parsed.default_inputs,9.0,max_retries=5))
 
 # print(data['objectives'])
-cm = ConfigManager()
-pprint(cm._fields)
+cm = ConfigManager(lambda: print(f'\033[93mProgress: {cm.meta["nn_progress"]}\033[0m'))
+print('Updating to config')
 cm.update(data)
-pprint(cm.test_derive('objectives'))
-# pprint(cm.simplified())
-# pprint(cm.meta)
+pprint(cm.meta)
+print('Beginning Training')
+cm.train_nn()
+
 exit()
 
 # elements = []

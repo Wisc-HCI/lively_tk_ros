@@ -12,7 +12,6 @@ const clamped = (v, minimum, maximum) => {
   }
 }
 
-
 function ScalarInput(props) {
 
   const [popoverVisible, setPopoverVisible] = useState(false);
@@ -22,6 +21,7 @@ function ScalarInput(props) {
         <Button shape="circle"
                 onClick={()=>props.onChange(clamped(props.value-props.step,props.min,props.max))}
                 icon={<ArrowLeftOutlined/>}/>
+        <span>{+props.value.toFixed(2)}</span>
         <Button shape="circle"
                 onClick={()=>props.onChange(clamped(props.value+props.step,props.min,props.max))}
                 icon={<ArrowRightOutlined/>}/>
@@ -35,8 +35,8 @@ function ScalarInput(props) {
                   max={props.max}
                   step={props.step}
                   style={{ margin: '0 16px' }}
-                  value={props.value}
-                  onChange={props.onChange}
+                  value={+props.value.toFixed(2)}
+                  onChange={(v)=>props.onChange(typeof v === 'number' ? v : props.value)}
                 />
             }
             title="Set Value"

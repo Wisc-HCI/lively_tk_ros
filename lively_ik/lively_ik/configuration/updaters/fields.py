@@ -3,568 +3,291 @@ from lively_ik.configuration.updaters.collision import *
 from lively_ik.configuration.updaters.behaviors import *
 from lively_ik.configuration.updaters.meta import *
 from lively_ik.configuration.updaters.validity import *
+from lively_ik_core import CONFIG_FIELDS
+from datetime import datetime
 
 FIELDS = {
     # Rust-Based Fields
     'valid_solver':{
-        'default':False,
         'derivation':derive_valid_solver,
-        'dependencies':['control'],
-        'on_change':{},
-        'force':True,
-        'guards':['valid_config']
+        'dependencies':{'solver'}
     },
     'solver':{
-        'default':None,
         'derivation':derive_solver,
-        'dependencies':['valid_solver'],
-        'on_change':{},
-        'force':False,
-        'guards':['valid_config']
+        'dependencies':{'config'}
     },
     'valid_config':{
-        'default':False,
         'derivation':derive_valid_config,
-        'dependencies':['solver'],
-        'on_change':{},
-        'force':True,
-        'guards':['valid_nn']
+        'dependencies':{'config','objectives','goals','modes'}
     },
     'config':{
-        'default':None,
         'derivation':derive_config,
-        'dependencies':['valid_config'],
-        'on_change':{},
-        'force':False,
-        'guards':['valid_robot_output','valid_nn']
+        'dependencies':CONFIG_FIELDS.union({'valid_nn'})
     },
     # Behavior-Based Fields
     # By default, add simple non-robot specific objectives
     'modes':{
-        'default':[{'name':'default','weights':[1.0,1.0,0.1,2.0,5.0]}],
-        'derivation':None,
-        'dependencies':['config','target_weights'],
-        'on_change':{},
-        'force':False,
-        'guards':['valid_robot']
+        'derivation':derive_modes,
+        'dependencies':{'objectives'}
     },
     'goals':{
-        'default':[{'name':'default','values':[{},{},{},{},{}]}],
         'derivation':derive_goals,
-        'dependencies':['config','target_goals','goal_markers',],
-        'on_change':{},
-        'force':False,
-        'guards':['valid_robot']
+        'dependencies':{'objectives'}
     },
     'objectives':{
-        'default':[{'tag': 'Minimize Velocity', 'variant': 'min_velocity', 'indices': []},
-                   {'tag': 'Minimize Acceleration', 'variant': 'min_acceleration', 'indices': []},
-                   {'tag': 'Minimize Jerk', 'variant': 'min_jerk', 'indices': []},
-                   {'tag': 'Joint Limits', 'variant': 'joint_limits', 'indices': []},
-                   {'tag': 'Self-Collision', 'variant': 'nn_collision', 'indices': []}],
-        'derivation':None,
-        'dependencies':['goal_markers','config','target_weights','target_goals'],
-        'on_change':{},
-        'force':False,
-        'guards':['valid_robot']
+        'derivation':derive_objectives,
+        'dependencies':{'valid_nn','joint_names','joint_ordering','ee_fixed_joints','robot_tree'}
     },
     # Neural-Network Fields
     'valid_nn':{
-        'default':False,
         'derivation':derive_valid_nn,
-        'dependencies':['nn_progress','config'],
-        'on_change':{},
-        'force':True,
-        'guards':['valid_robot','nn_main_utd','nn_jointpoint_utd']
+        'dependencies':{'train_directive','nn_main','nn_jointpoint'}
     },
-    'nn_main_utd':{
-        'default':False,
-        'derivation':None,
-        'dependencies':[],
-        'on_change':{},
-        'force':False,
-        'guards':['valid_robot']
+    'nn_out_ts':{
+        'derivation':lambda config: datetime.now().timestamp() if 'nn_out_ts' not in config or config['train_directive'] else config['nn_out_ts'],
+        'dependencies':{'train_directive','nn_main','nn_jointpoint'}
     },
-    'nn_jointpoint_utd':{
-        'default':False,
-        'derivation':None,
-        'dependencies':[],
-        'on_change':{},
-        'force':False,
-        'guards':['valid_robot']
+    'nn_precursor_ts':{
+        'derivation':lambda config: datetime.now().timestamp(),
+        'dependencies':{'train_directive','states','static_environment','robot','robot_link_radius'}
+    },
+    'nn_utd':{
+        'derivation':lambda config: datetime.fromtimestamp(config['nn_out_ts']) > datetime.fromtimestamp(config['nn_precursor_ts']),
+        'dependencies':{'train_directive','nn_out_ts','nn_precursor_ts'}
     },
     'nn_jointpoint':{
-        'default':{'intercepts':[],'coefs':[],'split_point':None},
         'derivation':derive_nn_jointpoint,
-        'dependencies':['nn_progress','valid_nn'],
-        'on_change':{'nn_jointpoint_utd':True},
-        'force':True,
-        'guards':['valid_robot']
+        'dependencies':{'train_directive','training_frames','training_scores','collision_graph','robot'}
     },
     'nn_main':{
-        'default':{'intercepts':[],'coefs':[],'split_point':None},
         'derivation':derive_nn_main,
-        'dependencies':['nn_progress','valid_nn'],
-        'on_change':{'nn_main_utd':True},
-        'force':True,
-        'guards':['valid_robot']
+        'dependencies':{'train_directive','training_samples','training_scores','collision_graph','robot'}
     },
     'training_scores':{
-        'default':[],
         'derivation':derive_training_scores,
-        'dependencies':['nn_progress'],
-        'on_change':{},
-        'force':False,
-        'guards':['valid_robot']
+        'dependencies':{'train_directive','robot','training_samples','collision_graph'}
     },
     'training_frames':{
-        'default':[],
         'derivation':derive_training_frames,
-        'dependencies':['nn_progress','nn_jointpoint'],
-        'on_change':{},
-        'force':False,
-        'guards':['valid_robot']
+        'dependencies':{'train_directive','robot','training_samples'}
     },
     'training_samples':{
-        'default':[],
         'derivation':derive_training_samples,
-        'dependencies':['nn_progress','training_scores','nn_main','training_frames'],
-        'on_change':{},
-        'force':False,
-        'guards':['valid_robot']
+        'dependencies':{'train_directive','robot','states'}
     },
     'collision_graph':{
-        'default':None,
         'derivation':derive_collision_graph,
-        'dependencies':['nn_progress','training_samples'],
-        'on_change':{},
-        'force':False,
-        'guards':['valid_robot']
+        'dependencies':{'train_directive','robot','states'}
     },
     'states':{
-        'default':[],
-        'derivation':None,
-        'dependencies':[],
-        'on_change':{'valid_nn':False,
-                     'nn_main':{'intercepts':[],'coefs':[],'split_point':None},
-                     'nn_jointpoint':{'intercepts':[],'coefs':[],'split_point':None},
-                     'nn_main_utd':False,
-                     'nn_jointpoint_utd':False,
-                     'collision_graph':None,
-                     'training_samples':[],
-                     'training_frames':[],
-                     'training_scores':[]
-                     },
-        'force':False,
-        'guards':['valid_robot']
+        'derivation':lambda config: [],
+        'dependencies':set([])
     },
     'static_environment':{
-        'default':{
-                'cuboids':[],
-                'spheres':[],
-                'pcs':[]
-            },
-        'derivation':None,
-        'dependencies':['collision_markers'],
-        'on_change':{'valid_nn':False,
-                     'nn_main':{'intercepts':[],'coefs':[],'split_point':None},
-                     'nn_jointpoint':{'intercepts':[],'coefs':[],'split_point':None},
-                     'nn_main_utd':False,
-                     'nn_jointpoint_utd':False,
-                     'collision_graph':None,
-                     'training_samples':[],
-                     'training_frames':[],
-                     'training_scores':[]
-                     },
-        'force':False,
-        'guards':['valid_urdf']
+        'derivation':lambda config: {'cuboids':[],'spheres':[],'pcs':[]},
+        'dependencies':set([])
     },
     'robot_link_radius':{
-        'default':0.05,
-        'derivation':None,
-        'dependencies':['collision_markers'],
-        'on_change':{'valid_nn':False,
-                     'nn_main':{'intercepts':[],'coefs':[],'split_point':None},
-                     'nn_jointpoint':{'intercepts':[],'coefs':[],'split_point':None},
-                     'nn_main_utd':False,
-                     'nn_jointpoint_utd':False,
-                     'collision_graph':None,
-                     'training_samples':[],
-                     'training_frames':[],
-                     'training_scores':[]
-                     },
-        'force':False,
-        'guards':[]
+        'derivation':lambda config: 0.05,
+        'dependencies':set([])
+    },
+    'train_directive':{
+        'derivation':lambda config: False,
+        'dependencies':set([])
     },
     # Robot-Derived Fields
     'starting_config':{
-        'default':[],
         'derivation':derive_starting_config,
-        'dependencies':['displayed_state','config','goals'],
-        'on_change':{},
-        'force':False,
-        'guards':['valid_robot']
-    },
-    'valid_robot_output':{
-        'default':[],
-        'derivation':derive_valid_robot_output,
-        'dependencies':['starting_config','config'],
-        'on_change':{},
-        'force':True,
-        'guards':['valid_robot']
+        'dependencies':{'joint_limits'}
     },
     'axis_types':{
-        'default':[],
         'derivation':derive_axis_types,
-        'dependencies':['valid_robot_output'],
-        'on_change':{},
-        'force':False,
-        'guards':['valid_robot']
+        'dependencies':{'robot'}
     },
     'joint_limits':{
-        'default':[],
         'derivation':derive_joint_limits,
-        'dependencies':['valid_robot_output'],
-        'on_change':{},
-        'force':False,
-        'guards':['valid_robot']
+        'dependencies':{'robot'}
     },
     'joint_types':{
-        'default':[],
         'derivation':derive_joint_types,
-        'dependencies':['valid_robot_output'],
-        'on_change':{},
-        'force':False,
-        'guards':['valid_robot']
+        'dependencies':{'robot'}
     },
     'velocity_limits':{
-        'default':[],
         'derivation':derive_velocity_limits,
-        'dependencies':['valid_robot_output'],
-        'on_change':{},
-        'force':False,
-        'guards':['valid_robot']
+        'dependencies':{'robot'}
     },
     'rot_offsets':{
-        'default':[],
         'derivation':derive_rot_offsets,
-        'dependencies':['valid_robot_output'],
-        'on_change':{},
-        'force':False,
-        'guards':['valid_robot']
+        'dependencies':{'robot'}
     },
     'disp_offsets':{
-        'default':[],
         'derivation':derive_disp_offsets,
-        'dependencies':['valid_robot_output'],
-        'on_change':{},
-        'force':False,
-        'guards':['valid_robot']
+        'dependencies':{'robot'}
     },
     'displacements':{
-        'default':[],
         'derivation':derive_displacements,
-        'dependencies':['valid_robot_output'],
-        'on_change':{},
-        'force':False,
-        'guards':['valid_robot']
+        'dependencies':{'robot'}
     },
     # Robot-Based Fields
     'valid_robot':{
-        'default':False,
-        'derivation':derive_valid_robot,
-        'dependencies':['axis_types','joint_types','joint_limits',
-                        'rot_offsets','velocity_limits','disp_offsets',
-                        'displacements','states','objectives','modes',
-                        'goals','joint_poses'],
-        'on_change':{},
-        'force':True,
-        'guards':['valid_arms']
+        'derivation':lambda config: config['robot'] != None,
+        'dependencies':{'robot'}
     },
     'robot':{
-        'default':None,
         'derivation':derive_robot,
-        'dependencies':['valid_robot'],
-        'on_change':{'nn_main_utd':False,'nn_jointpoint_utd':False},
-        'force':False,
-        'guards':['valid_arms']
+        'dependencies':{'valid_arms','joint_names','urdf','extra_joints',
+                        'joint_ordering','fixed_frame','ee_fixed_joints'}
     },
     'valid_arms':{
-        'default':False,
         'derivation':derive_valid_arms,
-        'dependencies':['robot'],
-        'on_change':{},
-        'force':True,
-        'guards':['valid_urdf']
+        'dependencies':{'parsed_urdf','joint_names','ee_fixed_joints',
+                        'joint_ordering'}
     },
     'extra_joints':{
-        'default':{},
         'derivation':derive_extra_joints,
-        'dependencies':['valid_arms'],
-        'on_change':{},
-        'force':False,
-        'guards':['valid_urdf']
+        'dependencies':{'joint_ordering','joint_names','parsed_urdf'}
     },
     'ee_fixed_joints':{
-        'default':[],
         'derivation':derive_ee_fixed_joints,
-        'dependencies':['valid_arms'],
-        'on_change':{},
-        'force':False,
-        'guards':['valid_urdf']
+        'dependencies':{'joint_names','robot_tree'}
     },
     'fixed_frame':{
-        'default':'base_link',
         'derivation':derive_fixed_frame,
-        'dependencies':['joint_names'],
-        'on_change':{},
-        'force':True,
-        'guards':['valid_urdf']
+        'dependencies':{'robot_tree'}
     },
     'joint_ordering':{
-        'default':[],
         'derivation':derive_joint_ordering,
-        'dependencies':['extra_joints'],
-        'on_change':{},
-        'force':False,
-        'guards':['valid_urdf']
+        'dependencies':{'joint_names'}
     },
     'joint_names':{
-        'default':[],
         'derivation':derive_joint_names,
-        'dependencies':['joint_ordering','extra_joints'],
-        'on_change':{},
-        'force':False,
-        'guards':['valid_urdf']
+        'dependencies':{'fixed_frame','robot_tree'}
     },
     # Simple URDF Fields
     'links':{
-        'default':[],
         'derivation':derive_links,
-        'dependencies':['show_link_collision','collision_markers','highlight_markers'],
-        'on_change':{},
-        'force':False,
-        'guards':['valid_urdf']
+        'dependencies':{'parsed_urdf'}
     },
     'fixed_joints':{
-        'default':[],
         'derivation':derive_fixed_joints,
-        'dependencies':[],
-        'on_change':{},
-        'force':False,
-        'guards':['valid_urdf']
+        'dependencies':{'parsed_urdf'}
     },
     'dynamic_joints':{
-        'default':[],
         'derivation':derive_dynamic_joints,
-        'dependencies':[],
-        'on_change':{},
-        'force':False,
-        'guards':['valid_urdf']
+        'dependencies':{'parsed_urdf'}
     },
     'robot_tree':{
-        'default':[],
         'derivation':derive_robot_tree,
-        'dependencies':['fixed_frame','joint_ordering','ee_fixed_joints'],
-        'on_change':{},
-        'force':False,
-        'guards':['valid_urdf']
+        'dependencies':{'parsed_urdf'}
     },
     'valid_urdf':{
-        'default':False,
-        'derivation':derive_valid_urdf,
-        'dependencies':['links','fixed_joints','dynamic_joints','robot_tree'],
-        'on_change':{},
-        'force':True,
-        'guards':[]
+        'derivation':lambda config: config['parsed_urdf'] != [],
+        'dependencies':{'parsed_urdf'}
     },
     'parsed_urdf':{
-        'default':None,
         'derivation':derive_parsed_urdf,
-        'dependencies':['valid_urdf'],
-        'on_change':{},
-        'force':True,
-        'guards':[]
+        'dependencies':{'urdf'}
     },
     'urdf':{
-        'default':'<?xml version="1.0" ?><robot name="default" xmlns:xacro="http://www.ros.org/wiki/xacro"><link name="base_link"/><joint name="default_joint" type="fixed"><parent link="base_link" /><child link="default_link" /><origin xyz="0 0 0" rpy="0 0 0" /></joint><link name="default_link"/></robot>',
-        'derivation':None,
-        'dependencies':['parsed_urdf'],
-        'on_change':{},
-        'force':False,
-        'guards':[]
+        'derivation':lambda config:'<?xml version="1.0" ?><robot name="default" xmlns:xacro="http://www.ros.org/wiki/xacro"><link name="base_link"/><joint name="default_joint" type="fixed"><parent link="base_link" /><child link="default_link" /><origin xyz="0 0 0" rpy="0 0 0" /></joint><link name="default_link"/></robot>',
+        'dependencies':set([])
     },
     ## -- Misc Fields -- ##
     # How much forgivenes the robot has to move its base-link
     'base_link_motion_bounds':{
-        'default':[[0,0],[0,0],[0,0]],
-        'derivation':None,
-        'dependencies':['config'],
-        'on_change':{},
-        'force':False,
-        'guards':['valid_urdf']
+        'derivation':lambda config: [[0,0],[0,0],[0,0]],
+        'dependencies':set([])
     },
     # Whether the robot moves with absolute or relative control
     'mode_control':{
-        'default':'absolute',
-        'derivation':None,
-        'dependencies':['config'],
-        'on_change':{},
-        'force':False,
-        'guards':[]
+        'derivation':lambda config: 'absolute',
+        'dependencies':set([])
     },
     # The type of real-time collision avoidance used.
     'mode_environment':{
-        'default':'ECAA',
-        'derivation':None,
-        'dependencies':['config'],
-        'on_change':{},
-        'force':False,
-        'guards':[]
+        'derivation':lambda config: 'ECAA',
+        'dependencies':set([])
     },
     ## -- GUI Fields -- ##
     # The actual displayed state to the front-end, if manual control is chosen.
     'displayed_state':{
-        'default':[],
         'derivation':derive_displayed_state,
-        'dependencies':[],
-        'on_change':{},
-        'force':False,
-        'guards':[]
+        'dependencies':{'selected','starting_config','states'}
     },
     # Whether the robot should be controlled with LivelyIK or direct joints.
     # Either 'manual' or 'solve'. This should be 'manual' while configuring
     # joints in training states, or the initial state (starting_config).
     'control':{
-        'default':'manual',
         'derivation':derive_control,
-        'dependencies':[],
-        'on_change':{},
-        'force':False,
-        'guards':[]
+        'dependencies':{'valid_solver'}
     },
     # What item is displayed in the side panel/drawer. If None, it shows nothing.
     # If not None, it should always have a type and index. Current valid types are
     # 'starting_config','collision_state','objective','mode', and 'goal'.
     'selected':{
-        'default':None,
-        'derivation':None,
-        'dependencies':['goal_markers','active_mode','active_goals'],
-        'on_change':{},
-        'force':False,
-        'guards':['valid_urdf']
+        'derivation':lambda config: None,
+        'dependencies':set([])
     },
     # The idealized data of the markers that are shown. These are
     # compared to the current set and published by the interface node.
     'markers':{
-        'default':{},
         'derivation':derive_markers,
-        'dependencies':[],
-        'on_change':{},
-        'force':False,
-        'guards':['valid_urdf']
+        'dependencies':{'collision_markers','goal_markers','highlight_markers'}
     },
     'collision_markers':{
-        'default':{},
         'derivation':derive_collision_markers,
-        'dependencies':['markers'],
-        'on_change':{},
-        'force':False,
-        'guards':['valid_urdf']
+        'dependencies':{'static_environment','show_link_collision',
+                        'joint_names','joint_poses'}
     },
     'goal_markers':{
-        'default':{},
         'derivation':derive_goal_markers,
-        'dependencies':['markers'],
-        'on_change':{},
-        'force':False,
-        'guards':['valid_config']
+        'dependencies':{'valid_config','target_goals','selected',
+                        'objectives','fixed_frame','joint_poses'}
     },
     'highlight_markers':{
-        'default':{},
         'derivation':derive_highlight_markers,
-        'dependencies':['markers'],
-        'on_change':{},
-        'force':False,
-        'guards':['valid_urdf']
+        'dependencies':{'highlights','robot_tree'}
     },
     # This can be enabled or disabled from the front-end, and should
     # cause cylinder markers to show up in the visualizer window.
     'show_link_collision':{
-        'default':False,
-        'derivation':None,
-        'dependencies':['collision_markers'],
-        'on_change':{},
-        'force':False,
-        'guards':['valid_urdf']
+        'derivation':lambda config: False,
+        'dependencies':set([])
     },
     # The index of the mode that is actively being shown
     'active_mode':{
-        'default':0,
         'derivation':derive_active_mode,
-        'dependencies':['target_weights'],
-        'on_change':{},
-        'force':False,
-        'guards':['valid_config']
+        'dependencies':{'selected'}
     },
     # The index of the goal that is actively being shown
     'active_goals':{
-        'default':0,
         'derivation':derive_active_goals,
-        'dependencies':['target_goals','goal_markers'],
-        'on_change':{},
-        'force':False,
-        'guards':['valid_config']
+        'dependencies':{'selected'}
     },
     # The current position and orientation (euler rotation and quaternion) of each joint.
     # Note, organized first by chain, and then by joint. Has n+1 joints in each chain,
     # since it includes the end effector fixed joint.
     'joint_poses':{
-        'default':[],
         'derivation':derive_joint_poses,
-        'dependencies':[],
-        'on_change':{},
-        'force':False,
-        'guards':['valid_robot']
+        'dependencies':{'robot','displayed_state'}
     },
     # The weights that should be used by the solver (other than changes due to interpolation on the solver end)
     # This is derived from 'active_mode', but can be set separately in the case of configuring a mode, during
     # which the shown target weights are not the ones present in the stored mode's specification
     'target_weights':{
-        'default':[1.0,1.0,0.1,2.0,5.0],
         'derivation':derive_target_weights,
-        'dependencies':[],
-        'on_change':{},
-        'force':False,
-        'guards':['valid_robot']
+        'dependencies':{'modes','active_mode'}
     },
     # The goals that should be used by the solver (other than changes due to interpolation on the solver end)
     # This is derived from 'active_goals', but can be set separately in the case of configuring a goal, during
     # which the shown target goal are not the ones present in the stored goal's specification
     'target_goals':{
-        'default':[{},{},{},{},{}],
         'derivation':derive_target_goals,
-        'dependencies':['goal_markers'],
-        'on_change':{},
-        'force':False,
-        'guards':['valid_robot']
+        'dependencies':{'goals','active_goals'}
     },
     # This could be any shapes or links that need to be highlighted. Treated as markers to the front end
     'highlights':{
-        'default':[],
-        'derivation':None,
-        'dependencies':['highlight_markers'],
-        'on_change':{},
-        'force':False,
-        'guards':['valid_urdf']
-    },
-    # This is the value that the progress bar uses on the front-end. Derived each time a training process finishes.
-    'nn_progress':{
-        'default':0,
-        'derivation':derive_nn_progress,
-        'dependencies':[],
-        'on_change':{},
-        'force':False,
-        'guards':['valid_robot_output']
+        'derivation':lambda config: [],
+        'dependencies':set([])
     }
 }

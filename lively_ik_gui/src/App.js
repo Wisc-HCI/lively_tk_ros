@@ -197,7 +197,7 @@ class App extends React.Component {
           <Space align="center">
             {this.state.meta.updating ? <Spin/> : <span>Up To Date</span>}
             {this.state.connected ? <Button ghost onClick={()=>this.setState({showUploader:true})} style={{marginLeft:10}}>Upload</Button> : <></>}
-            {this.state.meta.valid_config ? <Button ghost href={`data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(this.state.config))}`} download="config.json" style={{marginLeft:10}}>Export</Button> : <></>}
+            {this.state.meta.valid_urdf ? <Button ghost href={`data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(this.state.config))}`} download="config.json" style={{marginLeft:10}}>Export</Button> : <></>}
           </Space>
         </Header>
         <Content style={{ height: 'calc(100vh - 48pt)', backgroundColor: "#46484d", marginTop:'48pt', padding:0}}>

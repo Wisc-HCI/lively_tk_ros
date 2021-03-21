@@ -53,6 +53,8 @@ def derive_collision_markers(config):
             'type':'sphere',
             'color':COLLISION_OBJECT_COLOR
         }
+        my_str = 'my_string_is_substituted_with_{0}_and_{1}'.format("hi","bye")
+        markers['marker_key'] = {}
         markers['collision_sphere_{0}'.format(i)] = marker_data
 
 
@@ -66,6 +68,25 @@ def derive_collision_markers(config):
                     mdpt = {'x':(joint_1_pose_info['position']['x']+joint_2_pose_info['position']['x'])/2-joint_1_pose_info['position']['x'],
                             'y':(joint_1_pose_info['position']['y']+joint_2_pose_info['position']['y'])/2-joint_1_pose_info['position']['y'],
                             'z':(joint_1_pose_info['position']['z']+joint_2_pose_info['position']['z'])/2-joint_1_pose_info['position']['z']}
+                    link_name = config['robot_tree']['joints'][joint]['parent'] # Could be child
+                    marker_data = {
+                        #Change these values
+                        'frame_id':link_name,
+                        # Pose will be determined by how the coordinate frame is structured
+                        # Rotation is probably the same as here
+                        'pose':{'position':{'x':None,'y':None,'z':None},
+                                'rotation':{'r':0,'p':0,'y':0}
+                               },
+                        # Figure out scale
+                        # from http://wiki.ros.org/rviz/DisplayTypes/Marker
+                        # scale.x is diameter in x direction, scale.y in y direction,
+                        # by setting these to different values you get an ellipse
+                        # instead of a circle. Use scale.z to specify the height.
+                        'scale':{'x':collision_sphere['radius']*2,'y':collision_sphere['radius']*2,'z':collision_sphere['radius']*2},
+                        'type':'cylinder',
+                        'color':COLLISION_OBJECT_COLOR
+                    }
+                    markers['collision_{0}'.format(link)] = marker_data
 
     return markers
 
@@ -109,7 +130,10 @@ def derive_goal_markers(config):
             else:
                 color = GOAL_COLOR
             # Get the objective information, since this is useful in some cases
-            objective = config['objectives'][idx]
+            try:
+                objective = config['objectives'][idx]
+            except:
+                objective = {'variant':None}
 
             # First check the goal value itself and discern the type.
             if 'vector' in goal_value.keys():
@@ -139,21 +163,21 @@ def derive_goal_markers(config):
                 arm_index = int(objective['indices'][0])
                 joint_index = int(objective['indices'][1])
                 position = config['joint_poses'][arm_index][joint_index]['position']
-                points = []
-                for i in range(200):
-                    x = np.random.normal(0,objective['shape'][0]/3)
-                    y = np.random.normal(0,objective['shape'][1]/3)
-                    z = np.random.normal(0,objective['shape'][2]/3)
-                    points.append({'x':x,'y':y,'z':z})
+                # points = []
+                # for i in range(200):
+                #     x = np.random.normal(0,objective['shape'][0]/3)
+                #     y = np.random.normal(0,objective['shape'][1]/3)
+                #     z = np.random.normal(0,objective['shape'][2]/3)
+                #     points.append({'x':x,'y':y,'z':z})
                 marker_data = {
                     'frame_id':config['fixed_frame'],
                     'pose':{'position':position,
                             'rotation':{'r':0,'p':0,'y':0}
                            },
-                    'scale':{'x':0.01,'y':0,'z':0},
-                    'type':'points',
+                    'scale':{'x':objective['shape'][0],'y':objective['shape'][1],'z':objective['shape'][2]},
+                    'type':'sphere',
                     'color':color,
-                    'points':points
+                    # 'points':points
                 }
                 markers['objective_{0}'.format(idx)] = marker_data
             elif objective['variant'] == 'orientation_liveliness':

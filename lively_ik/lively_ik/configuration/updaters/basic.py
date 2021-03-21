@@ -55,6 +55,8 @@ def search_for_next_fixed_joint(joint,tree):
     return None
 
 def derive_robot_tree(config):
+    if config['parsed_urdf'] == []:
+        return {'joints':{},'links':{}}
     tree = {'joints':{},'links':{}}
     for child in config['parsed_urdf']:
         if child.tag == 'link':
@@ -86,15 +88,17 @@ def derive_robot_tree(config):
 
 def derive_parsed_urdf(config):
     if config['urdf'] == '':
-        result = None
+        result = []
     else:
         try:
             result = et.fromstring(config['urdf'])
         except:
-            result = None
+            result = []
     return result
 
 def derive_robot(config):
+    if not config['valid_arms']:
+        return None
     arms = []
     for i in range(len(config['joint_names'])):
         urdf_robot, arm, arm_c, tree = urdf_load_from_string(config['urdf'], '', '', config['joint_names'][i], config['ee_fixed_joints'][i])
@@ -121,6 +125,8 @@ def derive_ee_fixed_joints(config):
     return joints
 
 def derive_joint_poses(config):
+    if config['robot'] == None:
+        return []
     chain_frames = config['robot'].getFrames(config['displayed_state'])
     joint_poses = []
     for chain_frame in chain_frames:
@@ -141,6 +147,8 @@ def derive_joint_poses(config):
     return joint_poses
 
 def derive_axis_types(config):
+    if config['robot'] == None:
+        return []
     num_chains = config['robot'].numChains
     axis_types = []
     for i in range(num_chains):
@@ -160,12 +168,18 @@ def derive_fixed_frame(config):
     for node, info in config['robot_tree']['joints'].items():
         if info['child'] in root_candidates:
             root_candidates.remove(info['child'])
-    return root_candidates[0]
+    if len(root_candidates) > 0:
+        return root_candidates[0]
+    return 'base_link'
 
 def derive_joint_limits(config):
+    if config['robot'] == None:
+        return []
     return [[pair[0],pair[1]] for pair in config['robot'].bounds]
 
 def derive_joint_types(config):
+    if config['robot'] == None:
+        return []
     num_chains = config['robot'].numChains
     joint_types = []
     for i in range(num_chains):
@@ -177,6 +191,8 @@ def derive_joint_types(config):
     return joint_types
 
 def derive_rot_offsets(config):
+    if config['robot'] == None:
+        return []
     num_chains = config['robot'].numChains
     rot_offsets = []
     for i in range(num_chains):
@@ -192,9 +208,13 @@ def derive_starting_config(config):
     return [(limit[0]+limit[1])/2.0 for limit in config['joint_limits']]
 
 def derive_velocity_limits(config):
+    if config['robot'] == None:
+        return []
     return config['robot'].velocity_limits
 
 def derive_disp_offsets(config):
+    if config['robot'] == None:
+        return []
     num_chains = config['robot'].numChains
     disp_offsets = []
     for i in range(num_chains):
@@ -203,6 +223,8 @@ def derive_disp_offsets(config):
     return disp_offsets
 
 def derive_displacements(config):
+    if config['robot'] == None:
+        return []
     num_chains = config['robot'].numChains
     displacements = []
     for i in range(num_chains):

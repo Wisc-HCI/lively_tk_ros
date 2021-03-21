@@ -39,7 +39,7 @@ class Collision extends React.Component {
   }
 
   getNNStatus = () => {
-    if (this.props.meta.nn_main_utd && this.props.meta.nn_jointpoint_utd) {
+    if (this.props.meta.nn_utd) {
       return 'success'
     } else if (this.props.meta.nn_progress > 0) {
       return 'info'
@@ -49,7 +49,7 @@ class Collision extends React.Component {
   }
 
   getNNIcon = () => {
-    if (this.props.meta.nn_main_utd && this.props.meta.nn_jointpoint_utd) {
+    if (this.props.meta.nn_utd) {
       return null
     } else if (this.props.meta.nn_progress > 0) {
       return <Progress type="circle" percent={this.props.meta.nn_progress} width={80} />
@@ -59,7 +59,7 @@ class Collision extends React.Component {
   }
 
   getNNTitle = () => {
-    if (this.props.meta.nn_main_utd && this.props.meta.nn_jointpoint_utd) {
+    if (this.props.meta.nn_utd) {
       return 'Collision Neural Network Up-To-Date!'
     } else if (this.props.meta.nn_progress > 0) {
       return 'Training...'
@@ -69,7 +69,7 @@ class Collision extends React.Component {
   }
 
   getNNExtra = () => {
-    if (this.props.meta.nn_main_utd && this.props.meta.nn_jointpoint_utd) {
+    if (this.props.meta.nn_utd) {
       return <Button type="primary" onClick={()=>this.props.beginTraining()}>Train</Button>
     } else if (this.props.meta.nn_progress > 0) {
       return <Button disabled type="primary" onClick={()=>this.props.beginTraining()}>Train</Button>
@@ -132,7 +132,7 @@ class Collision extends React.Component {
                 )}
           />
         </TabPane>
-        <TabPane tab={(this.props.meta.nn_main_utd && this.props.meta.nn_jointpoint_utd) ? 'Training' : <Badge style={{ backgroundColor: '#faad14' }} offset={[14,0]} count='!'>Training</Badge>} key='4'>
+        <TabPane tab={(this.props.meta.nn_utd) ? 'Training' : <Badge style={{ backgroundColor: '#faad14' }} offset={[14,0]} count='!'>Training</Badge>} key='4'>
         <Result
           status={this.getNNStatus()}
           icon={this.getNNIcon()}

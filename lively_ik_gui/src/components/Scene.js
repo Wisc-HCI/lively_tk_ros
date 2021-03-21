@@ -3,6 +3,7 @@ import * as ROS3D from 'ros3d';
 import * as ROSLIB from 'roslib';
 import * as THREE from 'three-full';
 import SimpleTFClient from '../util/SimpleTFClient';
+import SimpleUrdf from '../util/SimpleUrdf';
 
 // import sizeMe from 'react-sizeme';
 import { withResizeDetector } from 'react-resize-detector';
@@ -89,7 +90,7 @@ class Scene extends Component {
       string:this.props.urdf.replace(/package:\/\//g, process.env.PUBLIC_URL + 'assets/')
     });
     //console.log(this.robotModel);
-    this.robot = new ROS3D.Urdf({
+    this.robot = new SimpleUrdf({
       urdfModel: this.robotModel,
       path: '/',
       tfClient: this.tfClient,
