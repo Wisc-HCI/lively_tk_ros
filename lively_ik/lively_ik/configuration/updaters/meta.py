@@ -10,6 +10,8 @@ def derive_displayed_state(config):
             return config['starting_config']
         elif config['selected']['type'] == 'collision_state' and config['selected']['idx'] != None:
             return config['states'][idx]
+        else:
+            return config['starting_config']
     else:
         return config['starting_config']
 
@@ -162,7 +164,7 @@ def derive_goal_markers(config):
             elif objective['variant'] == 'position_liveliness':
                 arm_index = int(objective['indices'][0])
                 joint_index = int(objective['indices'][1])
-                position = config['joint_poses'][arm_index][joint_index]['position']
+                position = config['joint_poses'][arm_index][joint_index]['position_global']
                 # points = []
                 # for i in range(200):
                 #     x = np.random.normal(0,objective['shape'][0]/3)
@@ -183,7 +185,7 @@ def derive_goal_markers(config):
             elif objective['variant'] == 'orientation_liveliness':
                 arm_index = int(objective['indices'][0])
                 joint_index = int(objective['indices'][1])
-                position = config['joint_poses'][arm_index][joint_index]['position']
+                position = config['joint_poses'][arm_index][joint_index]['position_global']
                 rotation = config['joint_poses'][arm_index][joint_index]['rotation']
 
                 # marker_data = {

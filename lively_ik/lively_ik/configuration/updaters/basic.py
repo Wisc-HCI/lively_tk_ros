@@ -75,6 +75,9 @@ def derive_robot_tree(config):
         elif child.tag == 'joint':
             parent_link = None
             child_link = None
+            joint_limits = [0,0]
+            velocity_limit = 0
+            multiplier = 1
             mimic = None
             for prop in child:
                 if prop.tag == 'parent':
@@ -83,8 +86,37 @@ def derive_robot_tree(config):
                     child_link = prop.attrib['link']
                 elif prop.tag == 'mimic':
                     mimic = prop.attrib['joint']
-            tree['joints'][child.attrib['name']] = {'parent':parent_link,'child':child_link,'dynamic': child.attrib['type'] != 'fixed','mimic':mimic}
+                elif prop.tag == 'limit':
+                    joint_limits = [float(prop.attrib.get('lower',0)),float(prop.attrib.get('upper',0))]
+                    velocity_limit = float(prop.attrib.get('velocity',0))
+                    multiplier = float(prop.attrib.get('multiplier',1.0))
+            tree['joints'][child.attrib['name']] = {'parent':parent_link,
+                                                    'child':child_link,
+                                                    'dynamic': child.attrib['type'] != 'fixed',
+                                                    'mimic':mimic,
+                                                    'multiplier':multiplier,
+                                                    'joint_limits':joint_limits,
+                                                    'velocity_limit':velocity_limit}
+    # Run through the tree and apply any limits of mimic joints
+    for joint in tree['joints']:
+        if tree['joints'][joint]['mimic'] != None:
+            mimic = tree['joints'][joint]['mimic']
+            tree['joints'][joint]['velocity_limit'] = tree['joints'][mimic]['velocity_limit']
+            multiplier = tree['joints'][mimic]['multiplier']
+            if multiplier >= 0:
+                tree['joints'][joint]['joint_limits'] = [multiplier*tree['joints'][mimic]['joint_limits'][0],
+                                                         multiplier*tree['joints'][mimic]['joint_limits'][1]]
+            else:
+                tree['joints'][joint]['joint_limits'] = [multiplier*tree['joints'][mimic]['joint_limits'][1],
+                                                         multiplier*tree['joints'][mimic]['joint_limits'][0]]
     return tree
+
+def derive_starting_transform(config):
+    transform = [0,0,0]
+    for i in range(3):
+        span = config['base_link_motion_bounds'][i]
+        transform[i] = (span[0]+span[1])/2
+    return transform
 
 def derive_parsed_urdf(config):
     if config['urdf'] == '':
@@ -139,6 +171,11 @@ def derive_joint_poses(config):
             rotation = euler_from_matrix(rot_mat, 'szxy')
             quaternion = quaternion_from_euler(rotation[0],rotation[1],rotation[2],'szxy')
             info = {'position':{'x':pos[0],'y':pos[1],'z':pos[2]},
+                    'position_global':{
+                        'x':pos[0]+config['starting_transform'][0],
+                        'y':pos[1]+config['starting_transform'][1],
+                        'z':pos[2]+config['starting_transform'][2],
+                    },
                     'rotation':{'r':rotation[0],'p':rotation[1],'y':rotation[2]},
                     'quaternion':{'w':quaternion[0],'x':quaternion[1],'y':quaternion[2],'z':quaternion[3]}
                    }
@@ -266,12 +303,5 @@ def derive_extra_joints(config):
                 found = True
         if not found:
             extra_joint_names.append(joint)
-    extra_joints = {name:{'bounds':[0,0],'velocity':0} for name in extra_joint_names}
-    for child in config['parsed_urdf']:
-        if child.tag == 'joint' and child.attrib['type'] != 'fixed' and child.attrib['name'] in extra_joint_names:
-            for attrib in child:
-                if attrib.tag == 'limit':
-                    extra_joints[child.attrib['name']]['bounds'][0] = float(attrib.attrib['lower'])
-                    extra_joints[child.attrib['name']]['bounds'][1] = float(attrib.attrib['upper'])
-                    extra_joints[child.attrib['name']]['velocity'] = float(attrib.attrib['velocity'])
-    return extra_joints
+    return {name:{'bounds':config['robot_tree']['joints'][name]['joint_limits'],
+                  'velocity':config['robot_tree']['joints'][name]['velocity_limit']} for name in extra_joint_names}

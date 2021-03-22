@@ -13,6 +13,13 @@ const { Option } = Select;
 
 class ObjectiveSpec extends React.Component {
 
+  constructor(props) {
+    super(props);
+    this.state = {cachedObjective:props.objective,
+                  cachedModeWeights:props.modeWeights,
+                  cachedGoalValues:props.goalValues};
+  }
+
   debounce = (func, timeout = 200) => {
     let timer;
     return (...args) => {
@@ -23,9 +30,9 @@ class ObjectiveSpec extends React.Component {
 
   getVariantOptions = () => {
     let optionNames = [];
-    if (BASE_OBJECTIVES.indexOf(this.props.objective.variant) >= 0) {
+    if (BASE_OBJECTIVES.indexOf(this.state.cachedObjective.variant) >= 0) {
       optionNames = BASE_OBJECTIVES;
-    } else if (DIRECTION_OBJECTIVES.indexOf(this.props.objective.variant) >= 0) {
+    } else if (DIRECTION_OBJECTIVES.indexOf(this.state.cachedObjective.variant) >= 0) {
       optionNames = DIRECTION_OBJECTIVES;
     } else {
       optionNames = LIVELINESS_OBJECTIVES;
@@ -37,9 +44,9 @@ class ObjectiveSpec extends React.Component {
 
   getIdxOptions = () => {
     let optionNames = [];
-    if (JOINT_OBJECTIVES.indexOf(this.props.objective.variant) >= 0) {
+    if (JOINT_OBJECTIVES.indexOf(this.state.cachedObjective.variant) >= 0) {
       optionNames = this.props.jointOrdering;
-    } else if (CARTESIAN_OBJECTIVES.indexOf(this.props.objective.variant) >= 0) {
+    } else if (CARTESIAN_OBJECTIVES.indexOf(this.state.cachedObjective.variant) >= 0) {
       optionNames = this.props.eeFixedJoints;
     }
     return optionNames.map((name,idx)=>(
@@ -48,22 +55,20 @@ class ObjectiveSpec extends React.Component {
   }
 
   getIdxValue = (idx) => {
-    if (JOINT_OBJECTIVES.indexOf(this.props.objective.variant) >= 0) {
+    if (JOINT_OBJECTIVES.indexOf(this.state.cachedObjective.variant) >= 0) {
       return this.props.jointOrdering[idx];
-    } else if (CARTESIAN_OBJECTIVES.indexOf(this.props.objective.variant) >= 0) {
+    } else if (CARTESIAN_OBJECTIVES.indexOf(this.state.cachedObjective.variant) >= 0) {
       return this.props.eeFixedJoints[idx];
     }
   }
 
   updateTag = (e) => {
-    let objective = {...this.props.objective};
+    let objective = {...this.state.cachedObjective};
     objective.tag = e.target.value;
-    this.props.onUpdate({objective:objective,modeWeights:this.props.modeWeights})
+    this.setState({cachedObjective:objective},()=>{this.props.onUpdate(this.state)})
   }
 
   getGoalFromCurrent = (variant,idx1,idx2) => {
-    console.log(idx1);
-    console.log(this.props.displayedState)
     switch (variant) {
       case 'position_match':
         let position = this.props.jointPoses[idx1][idx2]['position']
@@ -72,16 +77,16 @@ class ObjectiveSpec extends React.Component {
         let quaternion = this.props.jointPoses[idx1][idx2]['quaternion']
         return {quaternion:[quaternion.w,quaternion.x,quaternion.y,quaternion.z]}
       case 'joint_match':
-        return {scalar:this.props.displayedState[idx1]}
+        return {scalar:this.props.startingConfig[idx1]}
       default:
         return {}
     }
   }
 
   updateVariant = (variant) => {
-    let currObj = {...this.props.objective};
-    let weights = [...this.props.modeWeights];
-    let goalValues = [...this.props.goalValues];
+    let currObj = {...this.state.cachedObjective};
+    let weights = [...this.state.cachedModeWeights];
+    let goalValues = [...this.state.cachedGoalValues];
     let newObj = JSON.parse(JSON.stringify(defaultObjectives[variant]))
 
     // First handle indices
@@ -96,6 +101,16 @@ class ObjectiveSpec extends React.Component {
       // In cases where the profiles match up just copy them over.
       // Otherwise, keep the defaults of the new one.
       newObj.indices = currObj.indices;
+    } else if (newIsCartesianObjective && currentIsPairedObjective && this.props.jointNames.length > 1) {
+      newObj.indices = [0, this.props.jointNames[0].length, 1, this.props.jointNames[1].length]
+    } else if (newIsCartesianObjective && currentIsPairedObjective) {
+      newObj.indices = [0, this.props.jointNames[0].length, 0, this.props.jointNames[0].length-1]
+    } else if (newIsCartesianObjective) {
+      newObj.indices = [0, this.props.jointNames[0].length]
+    } else if (newIsJointObjective && newIsPairedObjective) {
+      newObj.indices = [this.props.jointOrdering.length-1,this.props.jointOrdering.length-2]
+    } else if (newIsJointObjective) {
+      newObj.indices = [this.props.jointOrdering.length-1]
     }
 
     // Copy over other fields
@@ -116,12 +131,13 @@ class ObjectiveSpec extends React.Component {
     })
 
     // console.log(newObj);
-    this.props.onUpdate({objective:newObj,modeWeights:weights,goalValues:goalValues})
+    let cache = {cachedObjective:newObj,cachedModeWeights:weights,cachedGoalValues:goalValues};
+    this.setState(cache,()=>{this.props.onUpdate({cachedData:this.state})})
   }
 
   updateIndices = (values) => {
-    let objective = {...this.props.objective};
-    let goalValues = [...this.props.goalValues];
+    let objective = {...this.state.cachedObjective};
+    let goalValues = [...this.props.cachedGoalValues];
     objective.indices = values;
 
     // Update goal values across all the goals
@@ -129,7 +145,9 @@ class ObjectiveSpec extends React.Component {
       goalValues[idx] = this.getGoalFromCurrent(objective.variant,objective.indices[0],objective.indices[1])
     })
 
-    this.props.onUpdate({objective:objective,goalValues:goalValues})
+    // this.props.onUpdate({objective:objective,goalValues:goalValues})
+    let cache = {cachedObjective:objective,cachedGoalValues:goalValues};
+    this.setState(cache,()=>{this.props.onUpdate({cachedData:this.state})})
   }
 
   updateScale = (value) => {
@@ -137,9 +155,10 @@ class ObjectiveSpec extends React.Component {
       if (typeof(value) == 'string') {
         value = parseFloat(value)
       }
-      let objective = {...this.props.objective};
+      let objective = {...this.state.cachedObjective};
       objective.scale = (value);
-      this.props.onUpdate({objective:objective})
+      let cache = {cachedObjective:objective};
+      this.setState(cache,()=>{this.props.onUpdate({cachedData:this.state})})
     } else {
       console.log(`Ignoring erroneous input ${value}`)
     }
@@ -150,9 +169,10 @@ class ObjectiveSpec extends React.Component {
       if (typeof(value) == 'string') {
         value = parseFloat(value)
       }
-      let objective = {...this.props.objective};
+      let objective = {...this.state.cachedObjective};
       objective.shape[idx] = value;
-      this.props.onUpdate({objective:objective})
+      let cache = {cachedObjective:objective};
+      this.setState(cache,()=>{this.props.onUpdate({cachedData:this.state})})
     } else {
       console.log(`Ignoring erroneous input ${value}`)
     }
@@ -163,9 +183,10 @@ class ObjectiveSpec extends React.Component {
       if (typeof(value) == 'string') {
         value = parseFloat(value)
       }
-      let objective = {...this.props.objective};
+      let objective = {...this.state.cachedObjective};
       objective.frequency = value;
-      this.props.onUpdate({objective:objective})
+      let cache = {cachedObjective:objective,cachedModeWeights:this.state.cachedWeights,cachedGoalValues:this.state.cachedGoalValues}
+      this.setState(cache,()=>{this.props.onUpdate({cachedData:this.state})})
     } else {
       console.log(`Ignoring erroneous input ${value}`)
     }
@@ -185,9 +206,9 @@ class ObjectiveSpec extends React.Component {
   }
 
   getIdxPlaceholder = () => {
-    if (JOINT_OBJECTIVES.indexOf(this.props.objective.variant) >= 0) {
+    if (JOINT_OBJECTIVES.indexOf(this.state.cachedObjective.variant) >= 0) {
       return 'Select the joint';
-    } else if (CARTESIAN_OBJECTIVES.indexOf(this.props.objective.variant) >= 0) {
+    } else if (CARTESIAN_OBJECTIVES.indexOf(this.state.cachedObjective.variant) >= 0) {
       return 'Select the arm\'s end effector';
     }
   }
@@ -197,10 +218,10 @@ class ObjectiveSpec extends React.Component {
       if (typeof(value) == 'string') {
         value = parseFloat(value)
       }
-      let modeWeights = [...this.props.modeWeights];
+      let modeWeights = [...this.state.cachedModeWeights];
       modeWeights[idx] = value
-      console.log(value);
-      this.props.onUpdate({modeWeights:this.props.modeWeights})
+      let cache = {cachedModeWeights:modeWeights}
+      this.setState(cache,()=>{this.props.onUpdate({cachedData:this.state})})
     } else {
       console.log(`Ignoring erroneous input ${value}`)
     }
@@ -210,7 +231,7 @@ class ObjectiveSpec extends React.Component {
     return (
       <List.Item key={this.props.modeNames[idx]}>
         <List.Item.Meta title={this.props.modeNames[idx] === 'default' ? 'Default' : this.props.modeNames[idx]}
-                        description={<LogSlider min={0} max={100} step={0.01} showInput={true} value={this.props.modeWeights[idx]}
+                        description={<LogSlider min={0} max={100} step={0.01} showInput={true} value={this.state.cachedModeWeights[idx]}
                                                 onChange={(v)=>this.debounce(this.updateWeightAtIdx(idx,v))}/>}
         />
       </List.Item>
@@ -218,19 +239,18 @@ class ObjectiveSpec extends React.Component {
   }
 
   getIndexSettings = () => {
-    console.log(this.props.objective.indices);
     let settings = [];
-    if ((CARTESIAN_OBJECTIVES).indexOf(this.props.objective.variant) >= 0) {
-      if (PAIRED_OBJECTIVES.indexOf(this.props.objective.variant) >= 0) {
+    if ((CARTESIAN_OBJECTIVES).indexOf(this.state.cachedObjective.variant) >= 0) {
+      if (PAIRED_OBJECTIVES.indexOf(this.state.cachedObjective.variant) >= 0) {
         settings.push(
           <>
             <h3 style={{marginTop:10}}>Cartesian-Controlled Joint</h3>
             <Cascader style={{ width:'100%'}}
                       expandTrigger="hover"
-                      value={[this.props.objective.indices[0],this.props.objective.indices[1]]}
+                      value={[this.state.cachedObjective.indices[0],this.state.cachedObjective.indices[1]]}
                       options={this.getIdxOptionsFromJointNames()}
                       onChange={(v)=>{
-                        let current = [...this.props.objective.indices];
+                        let current = [...this.state.cachedObjective.indices];
                         current[0] = v[0]
                         current[1] = v[1]
                         this.updateIndices(current)
@@ -239,10 +259,10 @@ class ObjectiveSpec extends React.Component {
             <h3 style={{marginTop:10}}>Reference Joint</h3>
             <Cascader style={{ width:'100%'}}
                       expandTrigger="hover"
-                      value={[this.props.objective.indices[2],this.props.objective.indices[3]]}
+                      value={[this.state.cachedObjective.indices[2],this.state.cachedObjective.indices[3]]}
                       options={this.getIdxOptionsFromJointNames()}
                       onChange={(v)=>{
-                        let current = [...this.props.objective.indices];
+                        let current = [...this.state.cachedObjective.indices];
                         current[2] = v[0]
                         current[3] = v[1]
                         this.updateIndices(current)
@@ -256,23 +276,23 @@ class ObjectiveSpec extends React.Component {
             <h3 style={{marginTop:10}}>Cartesian-Controlled Joint</h3>
             <Cascader style={{ width:'100%'}}
                       expandTrigger="hover"
-                      value={this.props.objective.indices}
+                      value={this.state.cachedObjective.indices}
                       options={this.getIdxOptionsFromJointNames()}
                       onChange={v=>this.updateIndices(v)}
             />
           </>
         )
       }
-    } else if ((JOINT_OBJECTIVES).indexOf(this.props.objective.variant) >= 0) {
-      if (PAIRED_OBJECTIVES.indexOf(this.props.objective.variant) >= 0) {
+    } else if ((JOINT_OBJECTIVES).indexOf(this.state.cachedObjective.variant) >= 0) {
+      if (PAIRED_OBJECTIVES.indexOf(this.state.cachedObjective.variant) >= 0) {
         settings.push(
           <>
             <h3 style={{marginTop:10}}>Controlled Joint</h3>
             <Select
               placeholder='Select Joint'
-              value={this.props.jointOrdering[this.props.objective.indices[0]]}
+              value={this.props.jointOrdering[this.state.cachedObjective.indices[0]]}
               onChange={(v)=>{
-                let current = [...this.props.objective.indices];
+                let current = [...this.state.cachedObjective.indices];
                 current[0] = v
                 this.updateIndices(current)
               }}
@@ -282,9 +302,9 @@ class ObjectiveSpec extends React.Component {
             <h3 style={{marginTop:10}}>Reference Joint</h3>
             <Select
               placeholder='Select Joint'
-              value={this.props.jointOrdering[this.props.objective.indices[1]]}
+              value={this.props.jointOrdering[this.state.cachedObjective.indices[1]]}
               onChange={(v)=>{
-                let current = [...this.props.objective.indices];
+                let current = [...this.state.cachedObjective.indices];
                 current[1] = v
                 this.updateIndices(current)
               }}
@@ -299,7 +319,7 @@ class ObjectiveSpec extends React.Component {
             <h3 style={{marginTop:10}}>Controlled Joint</h3>
             <Select
               placeholder='Select Joint'
-              value={this.props.jointOrdering[this.props.objective.indices[0]]}
+              value={this.props.jointOrdering[this.state.cachedObjective.indices[0]]}
               onChange={(v)=>{this.updateIndices([v])}}
               style={{ width:'100%'}}>
                 {this.getIdxOptions()}
@@ -322,7 +342,7 @@ class ObjectiveSpec extends React.Component {
               max={20}
               step={0.01}
               onChange={this.updateScale}
-              value={typeof this.props.objective.scale === 'number' ? this.props.objective.scale : 0}
+              value={typeof this.state.cachedObjective.scale === 'number' ? this.state.cachedObjective.scale : 0}
             />
           </Col>
           <Col span={4}>
@@ -331,7 +351,7 @@ class ObjectiveSpec extends React.Component {
               max={20}
               step={0.01}
               style={{ margin: '0 16px' }}
-              value={this.props.objective.scale}
+              value={this.state.cachedObjective.scale}
               onChange={this.updateScale}
             />
           </Col>
@@ -343,9 +363,9 @@ class ObjectiveSpec extends React.Component {
     return (
       <>
         <h3>Name</h3>
-        <Input placeholder='Name this Attribute' value={this.props.objective.tag} onChange={(v)=>this.debounce(this.updateTag(v))}/>
+        <Input placeholder='Name this Attribute' value={this.state.cachedObjective.tag} onChange={(v)=>this.updateTag(v)}/>
         <div style={{marginTop:10, padding: 10, borderRadius:5, backgroundColor: '#ececec'}}>
-          {getObjectivePreview(this.props.objective,
+          {getObjectivePreview(this.state.cachedObjective,
                                this.props.fixedFrame,
                                this.props.eeFixedJoints,
                                this.props.jointOrdering,
@@ -353,16 +373,16 @@ class ObjectiveSpec extends React.Component {
         <h3 style={{marginTop:10}}>Type</h3>
         <Select
           placeholder="Select the Attribute Type"
-          value={defaultObjectiveNames[this.props.objective.variant]}
+          value={defaultObjectiveNames[this.state.cachedObjective.variant]}
           onChange={(v)=>this.updateVariant(v)}
           style={{ width:'100%'}}>
             {this.getVariantOptions()}
         </Select>
         {this.getIndexSettings()}
-        {(this.props.objective.scale !== undefined) ? (
+        {(this.state.cachedObjective.scale !== undefined) ? (
           this.getScaleSettings()
         ) : (<></>)}
-        {(this.props.objective.shape !== undefined) ? (
+        {(this.state.cachedObjective.shape !== undefined) ? (
           <>
             <h3 style={{marginTop:10}}>Motion Shape</h3>
             {[0,1,2].map(idx=>(
@@ -373,7 +393,7 @@ class ObjectiveSpec extends React.Component {
                     max={2}
                     step={0.01}
                     onChange={(v)=>this.updateShape(v,idx)}
-                    value={typeof this.props.objective.shape[idx] === 'number' ? this.props.objective.shape[idx] : 0}
+                    value={typeof this.state.cachedObjective.shape[idx] === 'number' ? this.state.cachedObjective.shape[idx] : 0}
                   />
                 </Col>
                 <Col span={4}>
@@ -382,7 +402,7 @@ class ObjectiveSpec extends React.Component {
                     max={20}
                     step={0.01}
                     style={{ margin: '0 16px' }}
-                    value={this.props.objective.shape[idx]}
+                    value={this.state.cachedObjective.shape[idx]}
                     onChange={(v)=>this.updateShape(v,idx)}
                   />
                 </Col>
@@ -390,7 +410,7 @@ class ObjectiveSpec extends React.Component {
             ))}
           </>
         ) : (<></>)}
-        {(this.props.objective.frequency !== undefined) ? (
+        {(this.state.cachedObjective.frequency !== undefined) ? (
           <>
           <h3 style={{marginTop:10}}>Motion Length</h3>
           <Row>
@@ -400,7 +420,7 @@ class ObjectiveSpec extends React.Component {
                 max={20}
                 step={0.01}
                 onChange={this.updateFrequency}
-                value={typeof this.props.objective.frequency === 'number' ? this.props.objective.frequency : 0}
+                value={typeof this.state.cachedObjective.frequency === 'number' ? this.state.cachedObjective.frequency : 0}
               />
             </Col>
             <Col span={4}>
@@ -409,7 +429,7 @@ class ObjectiveSpec extends React.Component {
                 max={20}
                 step={0.01}
                 style={{ margin: '0 16px' }}
-                value={this.props.objective.frequency}
+                value={this.state.cachedObjective.frequency}
                 onChange={this.updateFrequency}
               />
             </Col>

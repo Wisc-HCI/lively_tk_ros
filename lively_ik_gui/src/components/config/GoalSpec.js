@@ -104,7 +104,7 @@ class GoalSpec extends React.Component {
         <Input placeholder='Name this Goal'
                disabled={this.state.cachedGoal.name === 'default'}
                value={this.state.cachedGoal.name === 'default' ? 'Default' : this.state.cachedGoal.name}
-               onChange={(v)=>this.debounce(this.updateName(v))}/>
+               onChange={(v)=>this.updateName(v)}/>
         {this.state.showNameError ? (
           <Alert
              message="Name Error"

@@ -1,14 +1,12 @@
 import rclpy
 from rclpy.node import Node
-
 import json
 from std_msgs.msg import String, Bool
-
 from lively_ik.configuration.default import DEFAULT_CONFIG
-
 from lively_ik_core import ObjectiveInput, LivelyIK, parse_config_data
-
 from datetime import datetime
+
+CONFIG_MATCH_FIELDS = {'ee_fixed_joints', 'static_environment','fixed_frame','joint_names', 'joint_ordering'}
 
 def ewma(target,last=None,a=0.6):
     if last:
@@ -40,7 +38,8 @@ class SolverNode(Node):
 
         self.enabled = False
 
-        self.create_timer(.05,self.standard_loop)
+        # self.create_timer(5,self.standard_loop)
+        self.iterations = 15*(3+len(self.config_data['starting_config']))
 
         self.base_transform = [0,0,0]
         self.displayed_state = []
@@ -60,13 +59,23 @@ class SolverNode(Node):
                 pass
             else:
                 self.get_logger().info('Changing config')
+                is_similar = True
+                for field in CONFIG_MATCH_FIELDS:
+                    if self.config_data[field] != data[field]:
+                        is_similar = False
+                if is_similar and data['mode_control'] == 'absolute':
+                    data['starting_config'] = self.displayed_state
+                    data['starting_transform'] = self.base_transform
+                self.config_data = data
+                self.iterations = 15*(3+len(self.config_data['starting_config']))
+
                 self.config = parse_config_data(data)
+                self.current_weights = self.config.default_weights
+                self.target_weights = self.current_weights
                 try:
                     self.solver = LivelyIK(self.config)
                 except:
                     self.solver = None
-                self.current_weights = self.config.default_weights
-                self.target_weights = self.current_weights
 
                 # Parse the rust goal specs into a python dictionary
                 current_directions = []
@@ -94,12 +103,14 @@ class SolverNode(Node):
     def handle_weight_update(self,msg):
         self.get_logger().debug('Received request to update weights')
         data = json.loads(msg.data)
-        self.target_weights = data
+        if len(data) == len(self.target_weights):
+            self.target_weights = data
 
     def handle_direct_update(self,msg):
         self.get_logger().debug('Received request to update directions')
         data = json.loads(msg.data)
-        self.target_directions = data
+        if len(data) == len(self.target_directions):
+            self.target_directions = data
 
     def update_current_weights(self):
         # If the weights were changed in size, just replace and don't interpolate.
@@ -144,13 +155,20 @@ class SolverNode(Node):
             input_value.update({'weight':self.current_weights[idx]})
             input_value.update(self.current_directions[idx])
             inputs.append(ObjectiveInput(**input_value))
-        return self.solver.solve(inputs,datetime.utcnow().timestamp(),max_retries=3)
+        return self.solver.solve(inputs,datetime.utcnow().timestamp(),max_retries=0,max_iterations=self.iterations)
 
 
 def main():
     rclpy.init(args=None)
     node = SolverNode()
-    rclpy.spin(node)
+    while True:
+        try:
+            node.standard_loop()
+            rclpy.spin_once(node)
+        except (KeyboardInterrupt, SystemExit):
+            break
+
+    # rclpy.spin(node)
 
 if __name__ == '__main__':
     main()

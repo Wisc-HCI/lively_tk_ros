@@ -4,6 +4,8 @@ const getObjectivePreview = (objectiveData, fixedFrame, eeFixedJoints, jointOrde
   let jointName1 = '';
   let jointName2 = '';
   switch (objectiveData.variant) {
+    case 'macro_smoothness':
+      return 'General Smoothness that incorporates velocity, acceleration, and jerk'
     case 'joint_limits':
       return 'Ensure joints remain within their limits'
     case 'nn_collision':
@@ -17,7 +19,7 @@ const getObjectivePreview = (objectiveData, fixedFrame, eeFixedJoints, jointOrde
     case 'min_jerk':
       return 'Ensure joints don\'t jerk too quickly'
     case 'position_match':
-      if (objectiveData.indices[1] >= jointNames.length) {
+      if (objectiveData.indices[1] >= jointNames[objectiveData.indices[0]].length) {
         jointName1 = eeFixedJoints[objectiveData.indices[0]]
       } else {
         jointName1 = jointNames[objectiveData.indices[0]][objectiveData.indices[1]]
@@ -30,7 +32,7 @@ const getObjectivePreview = (objectiveData, fixedFrame, eeFixedJoints, jointOrde
               <span> have a given position</span>
              </span>
     case 'orientation_match':
-      if (objectiveData.indices[1] >= jointNames.length) {
+      if (objectiveData.indices[1] >= jointNames[objectiveData.indices[0]].length) {
         jointName1 = eeFixedJoints[objectiveData.indices[0]]
       } else {
         jointName1 = jointNames[objectiveData.indices[0]][objectiveData.indices[1]]
@@ -51,12 +53,12 @@ const getObjectivePreview = (objectiveData, fixedFrame, eeFixedJoints, jointOrde
               <span> have a given value</span>
             </span>
     case 'position_mirroring':
-      if (objectiveData.indices[1] >= jointNames.length) {
+      if (objectiveData.indices[1] >= jointNames[objectiveData.indices[0]].length) {
         jointName1 = eeFixedJoints[objectiveData.indices[0]]
       } else {
         jointName1 = jointNames[objectiveData.indices[0]][objectiveData.indices[1]]
       }
-      if (objectiveData.indices[3] >= jointNames.length) {
+      if (objectiveData.indices[3] >= jointNames[objectiveData.indices[2]].length) {
         jointName2 = eeFixedJoints[objectiveData.indices[2]]
       } else {
         jointName2 = jointNames[objectiveData.indices[2]][objectiveData.indices[3]]
@@ -72,12 +74,12 @@ const getObjectivePreview = (objectiveData, fixedFrame, eeFixedJoints, jointOrde
               </span>
              </span>
     case 'orientation_mirroring':
-      if (objectiveData.indices[1] >= jointNames.length) {
+      if (objectiveData.indices[1] >= jointNames[objectiveData.indices[0]].length) {
         jointName1 = eeFixedJoints[objectiveData.indices[0]]
       } else {
         jointName1 = jointNames[objectiveData.indices[0]][objectiveData.indices[1]]
       }
-      if (objectiveData.indices[3] >= jointNames.length) {
+      if (objectiveData.indices[3] >= jointNames[objectiveData.indices[2]].length) {
         jointName2 = eeFixedJoints[objectiveData.indices[2]]
       } else {
         jointName2 = jointNames[objectiveData.indices[2]][objectiveData.indices[3]]
@@ -93,7 +95,7 @@ const getObjectivePreview = (objectiveData, fixedFrame, eeFixedJoints, jointOrde
               </span>
              </span>
     case 'position_bounding':
-      if (objectiveData.indices[1] >= jointNames.length) {
+      if (objectiveData.indices[1] >= jointNames[objectiveData.indices[0]].length) {
         jointName1 = eeFixedJoints[objectiveData.indices[0]]
       } else {
         jointName1 = jointNames[objectiveData.indices[0]][objectiveData.indices[1]]
@@ -106,7 +108,7 @@ const getObjectivePreview = (objectiveData, fixedFrame, eeFixedJoints, jointOrde
               <span> stay within a certain range</span>
              </span>
     case 'orientation_bounding':
-      if (objectiveData.indices[1] >= jointNames.length) {
+      if (objectiveData.indices[1] >= jointNames[objectiveData.indices[0]].length) {
         jointName1 = eeFixedJoints[objectiveData.indices[0]]
       } else {
         jointName1 = jointNames[objectiveData.indices[0]][objectiveData.indices[1]]
@@ -130,7 +132,7 @@ const getObjectivePreview = (objectiveData, fixedFrame, eeFixedJoints, jointOrde
               </span>
              </span>
     case 'position_liveliness':
-      if (objectiveData.indices[1] >= jointNames.length) {
+      if (objectiveData.indices[1] >= jointNames[objectiveData.indices[0]].length) {
         jointName1 = eeFixedJoints[objectiveData.indices[0]]
       } else {
         jointName1 = jointNames[objectiveData.indices[0]][objectiveData.indices[1]]
@@ -143,7 +145,7 @@ const getObjectivePreview = (objectiveData, fixedFrame, eeFixedJoints, jointOrde
               <span> have lifelike motion</span>
              </span>
     case 'orientation_liveliness':
-      if (objectiveData.indices[1] >= jointNames.length) {
+      if (objectiveData.indices[1] >= jointNames[objectiveData.indices[0]].length) {
         jointName1 = eeFixedJoints[objectiveData.indices[0]]
       } else {
         jointName1 = jointNames[objectiveData.indices[0]][objectiveData.indices[1]]
@@ -164,12 +166,12 @@ const getObjectivePreview = (objectiveData, fixedFrame, eeFixedJoints, jointOrde
               <span> have lifelike motion</span>
              </span>
     case 'relative_motion_liveliness':
-      if (objectiveData.indices[1] >= jointNames.length) {
+      if (objectiveData.indices[1] >= jointNames[objectiveData.indices[0]].length) {
         jointName1 = eeFixedJoints[objectiveData.indices[0]]
       } else {
         jointName1 = jointNames[objectiveData.indices[0]][objectiveData.indices[1]]
       }
-      if (objectiveData.indices[3] >= jointNames.length) {
+      if (objectiveData.indices[3] >= jointNames[objectiveData.indices[2]].length) {
         jointName2 = eeFixedJoints[objectiveData.indices[2]]
       } else {
         jointName2 = jointNames[objectiveData.indices[2]][objectiveData.indices[3]]

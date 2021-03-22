@@ -100,6 +100,10 @@ FIELDS = {
         'derivation':derive_starting_config,
         'dependencies':{'joint_limits'}
     },
+    'starting_transform':{
+        'derivation':derive_starting_transform,
+        'dependencies':{'base_link_motion_bounds'}
+    },
     'axis_types':{
         'derivation':derive_axis_types,
         'dependencies':{'robot'}
@@ -145,7 +149,7 @@ FIELDS = {
     },
     'extra_joints':{
         'derivation':derive_extra_joints,
-        'dependencies':{'joint_ordering','joint_names','parsed_urdf'}
+        'dependencies':{'joint_ordering','joint_names','robot_tree'}
     },
     'ee_fixed_joints':{
         'derivation':derive_ee_fixed_joints,
@@ -269,7 +273,7 @@ FIELDS = {
     # since it includes the end effector fixed joint.
     'joint_poses':{
         'derivation':derive_joint_poses,
-        'dependencies':{'robot','displayed_state'}
+        'dependencies':{'robot','default_transform','displayed_state'}
     },
     # The weights that should be used by the solver (other than changes due to interpolation on the solver end)
     # This is derived from 'active_mode', but can be set separately in the case of configuring a mode, during

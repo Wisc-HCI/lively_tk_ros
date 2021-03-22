@@ -9,8 +9,8 @@ const defaultConfig = {
     pcs:[]
   },
   fixed_frame:'base_link',
-  modes:[{name:'default',weights:[1.0,1.0,0.1,2.0,5.0]}],
-  goals:[{name:'default',values:[{},{},{},{},{}]}],
+  modes:[{name:'default',weights:[1.0,2.0,5.0]}],
+  goals:[{name:'default',values:[{},{},{}]}],
   joint_limits:[],
   joint_names:[],
   joint_ordering:[],
@@ -19,9 +19,7 @@ const defaultConfig = {
   mode_environment:'ECAA',
   nn_jointpoint:[],
   nn_main:[],
-  objectives:[{tag: 'Minimize Velocity', variant: 'min_velocity', indices: []},
-              {tag: 'Minimize Acceleration', variant: 'min_acceleration', indices: []},
-              {tag: 'Minimize Jerk', variant: 'min_jerk', indices: []},
+  objectives:[{tag: 'Smoothness Macro', variant: 'macro_smoothness', indices: []},
               {tag: 'Joint Limits', variant: 'joint_limits', indices: []},
               {tag: 'Self-Collision', variant: 'nn_collision', indices: []}],
   states:[],
@@ -61,6 +59,7 @@ const defaultMeta = {
 
 const defaultObjectives = {
   joint_limits:{tag: 'Joint Limits', variant: 'joint_limits', indices: []},
+  macro_smoothness:{tag: 'Smoothness Macro', variant: 'macro_smoothness', indices: []},
   nn_collision:{tag: 'Self-Collision', variant: 'nn_collision', indices: []},
   env_collision:{tag: 'Dynamic Collision', variant: 'env_collision', indices: []},
   min_velocity:{tag: 'Minimize Velocity', variant: 'min_velocity', indices: []},
@@ -100,7 +99,8 @@ const defaultGoals = {
   orientation_liveliness:{},
   joint_liveliness:{},
   relative_motion_liveliness:{},
-  base_link_position_liveliness:{}
+  base_link_position_liveliness:{},
+  macro_smoothness:{}
 }
 
 const defaultWeights = {
@@ -122,7 +122,8 @@ const defaultWeights = {
   orientation_liveliness:10.0,
   joint_liveliness:10.0,
   relative_motion_liveliness:10.0,
-  base_link_position_liveliness:10.0
+  base_link_position_liveliness:10.0,
+  macro_smoothness:1.0
 }
 
 const defaultObjectiveNames = {
@@ -144,7 +145,8 @@ const defaultObjectiveNames = {
   orientation_liveliness:'Rotation Liveliness',
   joint_liveliness:'Joint Liveliness',
   relative_motion_liveliness:'Relative Motion Liveliness',
-  base_link_position_liveliness:'Root Liveliness'
+  base_link_position_liveliness:'Root Liveliness',
+  macro_smoothness:'Smoothness Macro'
 }
 
 export {defaultConfig, defaultMeta, defaultObjectives, defaultGoals, defaultWeights, defaultObjectiveNames}

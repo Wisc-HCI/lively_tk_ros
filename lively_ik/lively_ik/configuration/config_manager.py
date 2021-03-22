@@ -27,7 +27,8 @@ class ConfigManager(object):
                              'joint_names','joint_ordering','joint_types','mode_control',
                              'mode_environment','nn_jointpoint','nn_main','objectives',
                              'states','robot_link_radius','rot_offsets','starting_config',
-                             'urdf','velocity_limits','disp_offsets','displacements']
+                             'starting_transform','urdf','velocity_limits','disp_offsets',
+                             'displacements']
 
         self._meta_keys = ['valid_urdf','valid_robot','valid_nn','valid_config','highlights',
                            'valid_solver','links','dynamic_joints','fixed_joints','active_mode','active_goals',

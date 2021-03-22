@@ -21,7 +21,7 @@ class ModeSpec extends React.Component {
   validateName = (name) => {
     if (name === this.props.modeInfo.name) {
       return true
-    } else if (this.props.modeInfo.names.indexOf(name) >= 0) {
+    } else if (this.props.modeNames.indexOf(name) >= 0) {
       return false
     } else if (name !== undefined && name.toLowerCase() === 'default') {
       return false
@@ -78,7 +78,7 @@ class ModeSpec extends React.Component {
         <Input placeholder='Name this Mode'
                disabled={this.state.cachedMode.name === 'default'}
                value={this.state.cachedMode.name === 'default' ? 'Default' : this.state.cachedMode.name}
-               onChange={(v)=>this.debounce(this.updateName(v))}/>
+               onChange={(v)=>this.updateName(v)}/>
         {this.state.showNameError ? (
           <Alert
              message="Name Error"

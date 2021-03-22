@@ -19,7 +19,7 @@ def derive_goals(config):
         if objective['variant'] == 'position_match':
             arm_idx = objective['indices'][0]
             jnt_idx = objective['indices'][1]
-            position = config['joint_poses'][arm_idx][jnt_idx]['position']
+            position = config['joint_poses'][arm_idx][jnt_idx]['position_global']
             goals[0]['values'].append({'vector':[position['x'],position['y'],position['z']]})
         elif objective['variant'] == 'orientation_match':
             arm_idx = objective['indices'][0]
@@ -56,6 +56,8 @@ def derive_objectives(config):
     for chain_idx, chain in enumerate(config['joint_names']):
         objectives.append({'tag': '{0} Position Control'.format(config['ee_fixed_joints'][chain_idx]),
                            'variant': 'position_match', 'indices': [chain_idx,len(chain)]})
+        objectives.append({'tag': '{0} Rotation Control'.format(config['ee_fixed_joints'][chain_idx]),
+                           'variant': 'orientation_match', 'indices': [chain_idx,len(chain)]})
 
     # For each mimic joint, add a joint_mirroring objectives
     for joint_idx,joint in enumerate(config['joint_ordering']):

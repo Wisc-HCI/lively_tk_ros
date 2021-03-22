@@ -14,7 +14,9 @@ class Detail extends React.Component {
     if (this.props.meta.selected) {
       switch (this.props.meta.selected.type) {
         case 'objective':
-          this.state = {cachedData:this.props.config.objectives[this.props.meta.selected.idx]}
+          this.state = {cachedData:{cachedObjective:this.props.config.objectives[this.props.meta.selected.idx],
+                                    cachedModeWeights:this.props.config.modes.map((mode)=>mode.weights[this.props.meta.selected.idx]),
+                                    cachedGoalValues:this.props.config.goals.map((goal)=>goal.values[this.props.meta.selected.idx])}}
           break
         case 'mode':
           this.state = {cachedData:this.props.config.modes[this.props.meta.selected.idx]}
@@ -57,7 +59,9 @@ class Detail extends React.Component {
     if (this.props.meta.selected) {
       switch (this.props.meta.selected.type) {
         case 'objective':
-          return true
+          return _.isEqual({cachedObjective:this.props.config.objectives[this.props.meta.selected.idx],
+                            cachedModeWeights:this.props.config.modes.map((mode)=>mode.weights[this.props.meta.selected.idx]),
+                            cachedGoalValues:this.props.config.goals.map((goal)=>goal.values[this.props.meta.selected.idx])}, this.state.cachedData);
         case 'mode':
           return _.isEqual(this.props.config.modes[this.props.meta.selected.idx], this.state.cachedData);
         case 'goal':
@@ -81,18 +85,33 @@ class Detail extends React.Component {
 
   onSave = () => {
     if (this.props.meta.selected) {
+      let objectives = [...this.props.config.objectives];
+      let modes = [...this.props.config.modes];
+      let goals = [...this.props.config.goals];
       switch (this.props.meta.selected.type) {
         case 'objective':
           break
         case 'mode':
-          let modes = [...this.props.config.modes];
           modes[this.props.meta.selected.idx] = this.state.cachedData;
           this.props.onUpdate({directive:'update',config:{modes:modes}})
           break
         case 'goal':
-          let goals = [...this.props.config.goals];
           goals[this.props.meta.selected.idx] = this.state.cachedData;
           this.props.onUpdate({directive:'update',config:{goals:goals}})
+          break
+        case 'objective':
+          objectives[this.props.meta.selected.idx] = this.state.cachedData.cachedObjective;
+          modes = modes.map((modeInfo,idx)=>{
+            let newModeInfo = {...modeInfo};
+            newModeInfo.weights[this.props.meta.selected.idx] = this.state.cachedData.cachedModeWeights[idx]
+            return newModeInfo;
+          })
+          goals = goals.map((goalInfo,idx)=>{
+            let newGoalInfo = {...goalInfo};
+            newGoalInfo.values[this.props.meta.selected.idx] = this.state.cachedData.cachedGoalValues[idx]
+            return newGoalInfo;
+          })
+          this.props.onUpdate({directive:'update',config:{objectives:objectives,goals:goals,modes:modes}})
           break
         default:
       }
@@ -100,11 +119,8 @@ class Detail extends React.Component {
   }
 
   onUpdate = (values) => {
-    let states = [...this.props.config.states];
-    let objectives = [...this.props.config.objectives];
-    let modes = [...this.props.config.modes];
-    let goals = [...this.props.config.goals];
     if (this.props.meta.selected) {
+      let states = [...this.props.config.states];
       switch (this.props.meta.selected.type) {
         case 'starting_config':
           this.props.onUpdate({directive:'update',config:{starting_config:values},meta:{displayed_state:values}})
@@ -114,21 +130,9 @@ class Detail extends React.Component {
           this.props.onUpdate({directive:'update',config:{states:states},meta:{displayed_state:values}})
           break;
         case 'objective':
-          if (values.objective !== undefined) {
-            // Update the objective at the active index
-            objectives[this.props.meta.selected.idx] = values.objective
+          if (values.cachedData !== undefined) {
+            this.setState({cachedData:values.cachedData})
           }
-          if (values.modeWeights !== undefined) {
-            values.modeWeights.forEach((modeWeight,modeIdx)=>{
-              modes[modeIdx].weights[this.props.meta.selected.idx] = modeWeight
-            })
-          }
-          if (values.goalValues !== undefined) {
-            values.goalValues.forEach((goalValue,goalIdx)=>{
-              goals[goalIdx].values[this.props.meta.selected.idx] = goalValue
-            })
-          }
-          this.props.onUpdate({directive:'update',config:{objectives:objectives,modes:modes,goals:goals}})
           break;
         case 'mode':
           if (values.targetModeWeights !== undefined) {
@@ -147,7 +151,7 @@ class Detail extends React.Component {
           }
           break;
         default:
-
+          
       }
     }
   }
@@ -178,6 +182,7 @@ class Detail extends React.Component {
                                 modeNames={this.props.config.modes.map(mode=>mode.name)}
                                 goalNames={this.props.config.goals.map(goal=>goal.name)}
                                 displayedState={this.props.meta.displayed_state}
+                                startingConfig={this.props.config.starting_config}
                                 onUpdate={this.onUpdate}/>
         case 'mode':
           return <ModeSpec modeInfo={this.props.config.modes[this.props.meta.selected.idx]}
@@ -204,6 +209,7 @@ class Detail extends React.Component {
   }
 
   render() {
+    console.log(this.getIsSame())
     return (
 
       <Drawer
