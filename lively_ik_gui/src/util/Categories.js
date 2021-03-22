@@ -2,10 +2,10 @@ const BASE_OBJECTIVES = ['joint_limits','nn_collision','env_collision','min_velo
 const DIRECTION_OBJECTIVES = ['position_match','orientation_match','position_mirroring','orientation_mirroring',
                               'position_bounding','orientation_bounding','joint_mirroring','joint_match'];
 const LIVELINESS_OBJECTIVES = ['position_liveliness','orientation_liveliness','joint_liveliness',
-                               'base_link_position_liveliness','relative_motion_liveliness'];
+                               'base_link_position_liveliness','relative_motion_liveliness','gravity'];
 const CARTESIAN_OBJECTIVES = ['position_match','orientation_match','position_mirroring','orientation_mirroring',
                               'position_bounding','orientation_bounding','position_liveliness','orientation_liveliness',
-                              'relative_motion_liveliness'];
+                              'relative_motion_liveliness','gravity'];
 const JOINT_OBJECTIVES = ['joint_mirroring','joint_match','joint_liveliness'];
 const PAIRED_OBJECTIVES = ['position_mirroring','orientation_mirroring','joint_mirroring','relative_motion_liveliness'];
 const BEHAVIOR_ATTRIBUTE_GROUPS = [BASE_OBJECTIVES,DIRECTION_OBJECTIVES,LIVELINESS_OBJECTIVES];

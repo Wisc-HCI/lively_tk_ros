@@ -78,7 +78,9 @@ const defaultObjectives = {
   orientation_liveliness:{tag: 'Arm Rotation Liveliness', frequency:  5, shape: [0.15,0.15,0.15], variant: 'orientation_liveliness', indices: [0,0]},
   joint_liveliness:{tag: 'Joint Liveliness', frequency: 5, scale: 1.0, variant: 'joint_liveliness', indices: [0]},
   relative_motion_liveliness:{tag: 'Lively Extension', frequency: 5, scale: 1.0, variant: 'relative_motion_liveliness', indices: [0,0,0,0]},
-  base_link_position_liveliness:{tag: 'Base Liveliness', frequency: 5, shape: [0.15,0.15,0.15], variant: 'base_link_position_liveliness', indices: []}
+  base_link_position_liveliness:{tag: 'Base Liveliness', frequency: 5, shape: [0.15,0.15,0.15], variant: 'base_link_position_liveliness', indices: []},
+  gravity:{tag: 'Gravity', variant: 'gravity', indices: [0,0]}
+
 }
 
 const defaultGoals = {
@@ -100,7 +102,8 @@ const defaultGoals = {
   orientation_liveliness:{},
   joint_liveliness:{},
   relative_motion_liveliness:{},
-  base_link_position_liveliness:{}
+  base_link_position_liveliness:{},
+  gravity:{}
 }
 
 const defaultWeights = {
@@ -122,7 +125,8 @@ const defaultWeights = {
   orientation_liveliness:10.0,
   joint_liveliness:10.0,
   relative_motion_liveliness:10.0,
-  base_link_position_liveliness:10.0
+  base_link_position_liveliness:10.0,
+  gravity:1.0
 }
 
 const defaultObjectiveNames = {
@@ -144,7 +148,8 @@ const defaultObjectiveNames = {
   orientation_liveliness:'Rotation Liveliness',
   joint_liveliness:'Joint Liveliness',
   relative_motion_liveliness:'Relative Motion Liveliness',
-  base_link_position_liveliness:'Root Liveliness'
+  base_link_position_liveliness:'Root Liveliness',
+  gravity: 'Gravity'
 }
 
 export {defaultConfig, defaultMeta, defaultObjectives, defaultGoals, defaultWeights, defaultObjectiveNames}
