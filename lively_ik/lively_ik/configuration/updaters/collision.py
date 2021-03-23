@@ -11,21 +11,9 @@ def recursive_tolist(obj):
     else:
         return obj
 
-def derive_nn_progress(config):
-    statuses = [
-        config['valid_nn'],
-        config['nn_main'] != {'intercepts':[],'coefs':[],'split_point':None},
-        config['nn_jointpoint'] != {'intercepts':[],'coefs':[],'split_point':None},
-        len(config['training_scores']) >= 200000,
-        len(config['training_frames']) >= 200000,
-        len(config['training_samples']) >= 200000,
-        config['collision_graph'] != None
-    ]
-    # print(statuses)
-    percent = int(sum(statuses) / float(len(statuses)) * 100)
-    return percent
-
 def derive_nn_main(config):
+    if not config['train_directive']:
+        return {'intercepts':[],'coefs':[],'split_point':None}
     layer_width = 15
     num_layers = 5
 
@@ -47,6 +35,8 @@ def derive_nn_main(config):
     return {'intercepts':intercepts,'coefs':coefs,'split_point':split_point}
 
 def derive_nn_jointpoint(config):
+    if not config['train_directive']:
+        return {'intercepts':[],'coefs':[],'split_point':None}
     layer_width = 15
     num_layers = 5
 
@@ -68,6 +58,8 @@ def derive_nn_jointpoint(config):
     return {'intercepts':intercepts,'coefs':coefs,'split_point':split_point}
 
 def derive_training_scores(config):
+    if config['robot'] == None or not config['train_directive']:
+        return []
     scores = []
     for sample in config['training_samples']:
         frames = config['robot'].getFrames(sample)
@@ -75,9 +67,13 @@ def derive_training_scores(config):
     return scores
 
 def derive_collision_graph(config):
+    if config['robot'] == None or not config['train_directive']:
+        return None
     return CollisionGraph(config, config['robot'], sample_states=config['states'])
 
 def derive_training_frames(config):
+    if config['robot'] == None or not config['train_directive']:
+        return []
     training_frames = []
     for sample in config['training_samples']:
         frames = config['robot'].getFrames(sample)
@@ -85,6 +81,8 @@ def derive_training_frames(config):
     return training_frames
 
 def derive_training_samples(config):
+    if config['robot'] == None or not config['train_directive']:
+        return []
     samples = []
     for i in range(200000):
         try:

@@ -143,3 +143,4 @@ install.out
 
 lively_ik_gui/node_modules/*
 **/archive/*
+lively_ik_gui/.eslintcache

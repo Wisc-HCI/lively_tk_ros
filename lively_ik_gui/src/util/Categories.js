@@ -1,4 +1,4 @@
-const BASE_OBJECTIVES = ['joint_limits','nn_collision','env_collision','min_velocity','min_acceleration','min_jerk'];
+const BASE_OBJECTIVES = ['macro_smoothness','joint_limits','nn_collision','env_collision','min_velocity','min_acceleration','min_jerk'];
 const DIRECTION_OBJECTIVES = ['position_match','orientation_match','position_mirroring','orientation_mirroring',
                               'position_bounding','orientation_bounding','joint_mirroring','joint_match'];
 const LIVELINESS_OBJECTIVES = ['position_liveliness','orientation_liveliness','joint_liveliness',

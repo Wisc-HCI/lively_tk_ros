@@ -28,7 +28,7 @@ class Time(object):
 class InterfaceNode(Node):
     def __init__(self):
         super(InterfaceNode,self).__init__('lively_ik_interface')
-        self.config_manager = ConfigManager(self.on_feedback)
+        self.config_manager = ConfigManager(self.on_feedback,logger=lambda content:self.get_logger().info(str(content)))
 
         # Services and Topics
         self.robot_description_client = self.create_client(SetParameters, '/robot_state_publisher/set_parameters')
@@ -64,15 +64,7 @@ class InterfaceNode(Node):
 
     def on_feedback(self):
         self.get_logger().info('Reporting Feedback')
-        self.get_logger().info('PROGRESS: {0}'.format([
-            self.config_manager.current['valid_nn'],
-            self.config_manager.current['nn_main'] != self.config_manager._fields['nn_main']['default'],
-            self.config_manager.current['nn_jointpoint'] != self.config_manager._fields['nn_jointpoint']['default'],
-            len(self.config_manager.current['training_scores']) >= 200000,
-            len(self.config_manager.current['training_frames']) >= 200000,
-            len(self.config_manager.current['training_samples']) >= 200000,
-            self.config_manager.current['collision_graph'] != None
-        ]))
+        self.get_logger().info(f'NN PROGRESS: {self.config_manager.meta["nn_progress"]}')
         self.pub_to_gui({'directive':'update','config':self.config_manager.data,'meta':self.config_manager.meta})
 
     def handle_tf_request(self,msg):
@@ -93,7 +85,7 @@ class InterfaceNode(Node):
         self.get_logger().info('Async update request')
         self.pub_to_gui({'directive':'update','meta':{'updating':True}})
         self.get_logger().info('{0}'.format(data))
-        changes = self.config_manager.load(data.get('config',{}),data.get('meta',{}))
+        changes = self.config_manager.update(data.get('config',{}),data.get('meta',{}),realtime_feedback=False)
         self.pub_to_gui({'directive':'update','config':self.config_manager.data,'meta':self.config_manager.meta})
         if 'urdf' in changes and self.config_manager.meta['valid_urdf']:
             self.get_logger().info('Updating robot description!')
@@ -119,7 +111,7 @@ class InterfaceNode(Node):
 
     def handle_clear(self,data):
         self.pub_to_gui({'directive':'update','meta':{'updating':True}})
-        self.config_manager = ConfigManager(self.on_feedback)
+        self.config_manager = ConfigManager(self.on_feedback,logger=lambda content:self.get_logger().info(str(content)))
         self.update_markers()
         self.get_logger().info('Handled clear request')
 
@@ -174,6 +166,8 @@ class InterfaceNode(Node):
                     marker.type = marker.SPHERE
                 elif current_marker['type'] == 'cube':
                     marker.type = marker.CUBE
+                elif current_marker['type'] == 'cylinder':
+                    marker.type = marker.CYLINDER
                 elif current_marker['type'] == 'points':
                     marker.type = marker.POINTS
                     marker.points = [Point(x=point['x'],y=point['y'],z=point['z']) for point in current_marker['points']]
@@ -211,6 +205,8 @@ class InterfaceNode(Node):
                     marker.type = marker.SPHERE
                 elif current_marker['type'] == 'cube':
                     marker.type = marker.CUBE
+                elif current_marker['type'] == 'cylinder':
+                    marker.type = marker.CYLINDER
                 elif current_marker['type'] == 'points':
                     marker.type = marker.POINTS
                     marker.points = [Point(x=point['x'],y=point['y'],z=point['z']) for point in current_marker['points']]
@@ -261,6 +257,7 @@ class InterfaceNode(Node):
         self.js_pub.publish(js)
 
         transforms = []
+        # self.get_logger().info(f'watched_transforms: {self.watched_transforms}')
         for pair in self.watched_transforms:
             try:
                 transform = self.tf_buffer.lookup_transform(pair['target'],pair['source'],Time(0,0))

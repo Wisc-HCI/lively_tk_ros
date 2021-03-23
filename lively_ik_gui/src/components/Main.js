@@ -9,7 +9,8 @@ class Main extends Component {
     return (
       <>
         <ConfigCreator meta={this.props.meta} config={this.props.config} onUpdate={this.props.onUpdate}/>
-        <Detail meta={this.props.meta} config={this.props.config} onUpdate={this.props.onUpdate}/>
+        {this.props.meta.selected ? <Detail meta={this.props.meta} config={this.props.config} onUpdate={this.props.onUpdate}/> : null}
+
       </>)
   }
 }

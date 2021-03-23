@@ -157,7 +157,7 @@ class Basics extends React.Component {
                 {this.getOptions(this.props.meta.dynamic_joints)}
             </Select>
           </TabPane>
-          <TabPane tab="Chains" key="4" style={{height:'100%'}}>
+          <TabPane tab="Chains" key="4" style={{height:'100%', overflow:'auto'}}>
             <List bordered header={null} style={{marginBottom:10}} footer={<Button type='primary' onClick={this.addChain}>Add Chain</Button>}
                   dataSource={this.props.config.joint_names.map((item,idx)=>idx)}
                   renderItem={(idx)=>{

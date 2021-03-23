@@ -8,8 +8,8 @@ DEFAULT_CONFIG = {
     'pcs':[]
   },
   'fixed_frame':'base_link',
-  'modes':[{'name':'default', 'weights':[1.0, 1.0, 0.1, 2.0, 5.0]}],
-  'goals':[{'name':'default', 'values':[{}, {}, {}, {}, {}]}],
+  'modes':[{'name':'default', 'weights':[1.0, 2.0, 5.0]}],
+  'goals':[{'name':'default', 'values':[{}, {}, {}]}],
   'joint_limits':[],
   'joint_names':[],
   'joint_ordering':[],
@@ -19,9 +19,7 @@ DEFAULT_CONFIG = {
   'nn_jointpoint':{'intercepts':[],'coefs':[],'split_point':0},
   'nn_main':{'intercepts':[],'coefs':[],'split_point':0},
   'objectives':[
-              {'tag': 'Minimize Velocity', 'variant': 'min_velocity', 'indices': []},
-              {'tag': 'Minimize Acceleration', 'variant': 'min_acceleration', 'indices': []},
-              {'tag': 'Minimize Jerk', 'variant': 'min_jerk', 'indices': []},
+              {'tag': 'General Smoothness', 'variant': 'macro_smoothness', 'indices': []},
               {'tag': 'Joint Limits', 'variant': 'joint_limits', 'indices': []},
               {'tag': 'Self-Collision', 'variant': 'nn_collision', 'indices': []}
               ],
@@ -54,5 +52,7 @@ DEFAULT_WEIGHTS = {
   'orientation_liveliness':10.0,
   'joint_liveliness':10.0,
   'relative_motion_liveliness':10.0,
+  'gravity':1.0,
+  'macro_smoothness':1.0,
   'base_link_position_liveliness':10.0
 }

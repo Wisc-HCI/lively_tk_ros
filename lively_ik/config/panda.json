@@ -2,14 +2,28 @@
   "axis_types": [
     ["z", "z", "z", "z", "z", "z", "z"]
   ],
-  "fixed_joints": [],
+  "fixed_joints": ["panda_joint8", "panda_hand_joint"],
   "base_link_motion_bounds": [
     [0, 0],
     [0, 0],
     [0, 0]
   ],
   "static_environment": {
-    "cuboids": [],
+    "cuboids": [
+      {"name": "Table",
+       "x_halflength": 0.3,
+       "y_halflength": 0.5,
+       "z_halflength": 0.01,
+       "rx": 0.0,
+       "ry": 0.0,
+       "rz": 0.0,
+       "tx": 0.0,
+       "ty": 0.0,
+       "tz": -0.01,
+       "is_dynamic": false,
+       "coordinate_frame": "panda_link0"
+      }
+     ],
     "spheres": [],
     "pcs": []
   },
@@ -17,17 +31,15 @@
   "modes": [
     {
       "name": "default",
-      "weights": [7.0, 2.0, 1.0, 2, 5, 30, 10, 20, 50, 50]
+      "weights": [1.0, 2, 5, 30, 10, 20, 50, 50]
     },
     {
       "name": "Happy",
-      "weights": [7.0, 2.0, 1.0, 2, 5, 30, 10, 20, 50, 50]}
+      "weights": [1.0, 2, 5, 30, 10, 20, 50, 50]}
   ],
   "goals": [{
     "name": "default",
     "values": [
-      {},
-      {},
       {},
       {},
       {},
@@ -39,8 +51,6 @@
   },{
     "name": "Grasp Pose",
     "values": [
-      {},
-      {},
       {},
       {},
       {},
@@ -304,16 +314,8 @@
     "split_point": 8
   },
   "objectives": [{
-    "tag": "Minimize Velocity",
-    "variant": "min_velocity",
-    "indices": []
-  }, {
-    "tag": "Minimize Acceleration",
-    "variant": "min_acceleration",
-    "indices": []
-  }, {
-    "tag": "Minimize Jerk",
-    "variant": "min_jerk",
+    "tag": "General Smoothness",
+    "variant": "macro_smoothness",
     "indices": []
   }, {
     "tag": "Joint Limits",

@@ -75,6 +75,7 @@ class GoalSpec extends React.Component {
         <List.Item key={idx} label={this.props.objectives[idx].tag}>
           <List.Item.Meta title={this.props.objectives[idx].tag}
                           description={<RotationInput
+                                          euler={true}
                                           step={0.1}
                                           value={this.state.cachedGoal.values[idx].quaternion}
                                           onChange={(v)=>{this.updateValues(v,idx,'quaternion')}}
@@ -103,7 +104,7 @@ class GoalSpec extends React.Component {
         <Input placeholder='Name this Goal'
                disabled={this.state.cachedGoal.name === 'default'}
                value={this.state.cachedGoal.name === 'default' ? 'Default' : this.state.cachedGoal.name}
-               onChange={(v)=>this.debounce(this.updateName(v))}/>
+               onChange={(v)=>this.updateName(v)}/>
         {this.state.showNameError ? (
           <Alert
              message="Name Error"

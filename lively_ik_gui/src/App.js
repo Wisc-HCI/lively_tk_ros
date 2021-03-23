@@ -135,7 +135,8 @@ class App extends React.Component {
                    baseLink={this.state.config.fixed_frame}
                    urdf={this.state.config.urdf}
                    connected={this.state.connected}
-                   cameraPosition={this.state.cameraPosition}/>
+                   cameraPosition={this.state.cameraPosition}
+                   defaultUrdf={defaultConfig.urdf}/>
           </>
           <Main meta={this.state.meta} config={this.state.config} onUpdate={(data)=>this.updateToServer(data)}/>
         </SplitPane>
@@ -162,7 +163,7 @@ class App extends React.Component {
         <span style={{color:'white'}}>Mode</span>
         <Select value={this.state.meta.active_mode}
                 style={{ minWidth: 200, paddingLeft:10 }}
-                onChange={()=>{}}
+                onChange={(v)=>{this.updateToServer({directive:'update',meta:{active_mode:v}})}}
                 size='small'
                 disabled={!this.state.meta.valid_nn || (this.state.meta.selected !== null && this.state.meta.selected.type === 'mode')}
                 options={this.state.config.modes.map((mode,idx)=>({label:mode.name === 'default' ? 'Default' : mode.name, value:idx}))}/>
@@ -171,7 +172,7 @@ class App extends React.Component {
         <span style={{color:'white'}}>Goals</span>
         <Select value={this.state.meta.active_goals}
                 style={{ minWidth: 200, paddingLeft:10 }}
-                onChange={()=>{}}
+                onChange={(v)=>{this.updateToServer({directive:'update',meta:{active_goals:v}})}}
                 size='small'
                 prefix="goal"
                 disabled={!this.state.meta.valid_nn || (this.state.meta.selected !== null && this.state.meta.selected.type === 'goal')}
@@ -196,7 +197,7 @@ class App extends React.Component {
           <Space align="center">
             {this.state.meta.updating ? <Spin/> : <span>Up To Date</span>}
             {this.state.connected ? <Button ghost onClick={()=>this.setState({showUploader:true})} style={{marginLeft:10}}>Upload</Button> : <></>}
-            {this.state.meta.valid_config ? <Button ghost href={`data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(this.state.config))}`} download="config.json" style={{marginLeft:10}}>Export</Button> : <></>}
+            {this.state.meta.valid_urdf ? <Button ghost href={`data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(this.state.config))}`} download="config.json" style={{marginLeft:10}}>Export</Button> : <></>}
           </Space>
         </Header>
         <Content style={{ height: 'calc(100vh - 48pt)', backgroundColor: "#46484d", marginTop:'48pt', padding:0}}>

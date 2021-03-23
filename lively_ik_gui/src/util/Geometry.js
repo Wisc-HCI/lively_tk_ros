@@ -16,7 +16,7 @@ const dot = (a, b) => a.map((x, i) => a[i] * b[i]).reduce((m, n) => m + n);
 
 const outer = (a,b) => a.map((x) => b.map(y => x*y));
 
-const quaternionFromEuler = (ai, aj, ak, axes='szxy') => {
+const quaternionFromEuler = (vec3, axes='szxy') => {
   /*
   Return quaternion from Euler angles and axis sequence.
   ai, aj, ak : Euler's roll, pitch and yaw angles
@@ -25,6 +25,7 @@ const quaternionFromEuler = (ai, aj, ak, axes='szxy') => {
   >>> numpy.allclose(q, [0.435953, 0.310622, -0.718287, 0.444435])
   True
   */
+  let [ai, aj, ak] = [...vec3];
   let [firstaxis, parity, repetition, frame] = [..._AXES2TUPLE[axes.toLowerCase()]];
 
   let i = firstaxis + 1;
@@ -148,8 +149,8 @@ const quaternionMatrix = (quaternion) => {
     >>> numpy.allclose(M, numpy.diag([1, -1, -1, 1]))
     True
     */
-    let q = [...quaternion]
-    let n = dot(q, q)
+    let q = [...quaternion];
+    let n = dot(q, q);
     if (n < _EPS) {
       return [[1,0,0,0],
               [0,1,0,0],
@@ -169,4 +170,104 @@ const eulerFromQuaternion = (quaternion, axes='szxy') => {
   return eulerFromMatrix(quaternionMatrix(quaternion), axes)
 }
 
-export {quaternionFromEuler, eulerFromQuaternion};
+const quaternionLog = (quaternion) => {
+  /*
+  Returns the log map vec3 of quaternion
+  quaternion list is [w x y z]
+  :param quaternion:
+  :return:
+  */
+  let v = [quaternion[1], quaternion[2], quaternion[3]];
+  if (Math.abs(quaternion[0]) < 1.0) {
+    let a = Math.acos(quaternion[0]);
+    if (isNaN(a)) {
+      a = 1.0;
+    }
+    let sina = Math.sin(a)
+    if (Math.abs(sina) >= 0.005) {
+      let c = a/sina
+      v[0] *= c
+      v[1] *= c
+      v[2] *= c
+    }
+  }
+  return v
+}
+
+const quaternionExp = (vec3) => {
+    /*
+    Returns the exponentiated quaternion from rotation vector vec3
+    :param vec3:
+    :return: quaternion in format [w x y z]
+    */
+    let q = [1.0, vec3[0], vec3[1], vec3[2]];
+    let a = Math.sqrt(Math.pow(q[0],2)+Math.pow(q[1],2)+Math.pow(q[2],2)+Math.pow(q[3],2));
+    let sina = Math.sin(a);
+    if (Math.abs(sina) >= 0.005) {
+      let c = sina/a;
+      q[1] *= c;
+      q[2] *= c;
+      q[3] *= c;
+    }
+
+    q[0] = Math.cos(a)
+
+    return q
+}
+
+const quaternionSlerp = (quat0, quat1, fraction, spin=0, shortestpath=true) => {
+  /*Return spherical linear interpolation between two quaternions.
+  >>> q0 = random_quaternion()
+  >>> q1 = random_quaternion()
+  >>> q = quaternion_slerp(q0, q1, 0)
+  >>> numpy.allclose(q, q0)
+  True
+  >>> q = quaternion_slerp(q0, q1, 1, 1)
+  >>> numpy.allclose(q, q1)
+  True
+  >>> q = quaternion_slerp(q0, q1, 0.5)
+  >>> angle = math.acos(numpy.dot(q0, q))
+  >>> numpy.allclose(2, math.acos(numpy.dot(q0, q1)) / angle) or \
+      numpy.allclose(2, math.acos(-numpy.dot(q0, q1)) / angle)
+  True
+  */
+  let q0 = unitVector(quat0);
+  let q1 = unitVector(quat1);
+  if (fraction === 0.0) {
+    return q0
+  } else if (fraction === 1.0) {
+    return q1
+  }
+
+  let d = dot(q0, q1);
+
+  if (Math.abs(Math.abs(d) - 1.0) < _EPS) {
+    return q0
+  }
+  if (shortestpath && d < 0.0) {
+    // invert rotation
+    d = -d;
+    q1 = q1.map(v=>-1*v);
+  }
+
+  let angle = Math.acos(d) + spin * Math.PI;
+  if (Math.abs(angle) < _EPS) {
+    return q0
+  }
+
+  let isin = 1.0 / Math.sin(angle);
+  q0 = q0.map(v=>v*Math.sin((1.0 - fraction) * angle) * isin);
+  q1 = q1.map(v=>v*Math.sin(fraction * angle) * isin);
+  q0 = q0.map((v,i)=>v*q1[i]);
+  return q0
+}
+
+const unitVector = (data) => {
+  /*Return normalized by length, i.e. Euclidean norm, along axis.
+  */
+  let scale = Math.sqrt(dot(data,data))
+  return data.map(v=>v*scale);
+}
+
+
+export {quaternionFromEuler, eulerFromQuaternion, quaternionExp, quaternionLog, quaternionSlerp};
