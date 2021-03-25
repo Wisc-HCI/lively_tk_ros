@@ -194,6 +194,19 @@ const getObjectivePreview = (objectiveData, fixedFrame, eeFixedJoints, jointOrde
             </span>
             <span> have lifelike motion</span>
            </span>
+    case 'gravity':
+      if (objectiveData.indices[1] >= jointNames[objectiveData.indices[0]].length) {
+        jointName1 = eeFixedJoints[objectiveData.indices[0]]
+      } else {
+        jointName1 = jointNames[objectiveData.indices[0]][objectiveData.indices[1]]
+      }
+      return <span>
+              <span>Make the position of </span>
+              <span style={{backgroundColor:'#1890ff',color:'white',padding:4,borderRadius:5}}>
+                {jointName1}
+              </span>
+              <span> be subject to gravity.</span>
+             </span>
     default:
       return <></>
   }
