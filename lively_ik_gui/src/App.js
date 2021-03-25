@@ -130,7 +130,7 @@ class App extends React.Component {
       return (
         <SplitPane split='vertical' defaultSize="50%" style={{width: '100%', display:'flex', height:'calc(100vh - 48pt)', backgroundColor:'white'}}>
           <>
-            {this.state.connected && this.state.meta.valid_solver ? this.getModeGoalSelector() : <></>}
+            {this.state.connected ? this.getModeGoalSelector() : <></>}
             <Scene ros={this.ros}
                    baseLink={this.state.config.fixed_frame}
                    urdf={this.state.config.urdf}
@@ -159,25 +159,27 @@ class App extends React.Component {
   getModeGoalSelector = () => {
     return (
       <Space align="baseline" style={{paddingTop:7,paddingBottom:7,backgroundColor:'#232323',display:'flex',justifyContent:'space-around'}}>
-        <>
-        <span style={{color:'white'}}>Mode</span>
-        <Select value={this.state.meta.active_mode}
-                style={{ minWidth: 200, paddingLeft:10 }}
-                onChange={(v)=>{this.updateToServer({directive:'update',meta:{active_mode:v}})}}
-                size='small'
-                disabled={!this.state.meta.valid_nn || (this.state.meta.selected !== null && this.state.meta.selected.type === 'mode')}
-                options={this.state.config.modes.map((mode,idx)=>({label:mode.name === 'default' ? 'Default' : mode.name, value:idx}))}/>
-        </>
-        <>
-        <span style={{color:'white'}}>Goals</span>
-        <Select value={this.state.meta.active_goals}
-                style={{ minWidth: 200, paddingLeft:10 }}
-                onChange={(v)=>{this.updateToServer({directive:'update',meta:{active_goals:v}})}}
-                size='small'
-                prefix="goal"
-                disabled={!this.state.meta.valid_nn || (this.state.meta.selected !== null && this.state.meta.selected.type === 'goal')}
-                options={this.state.config.goals.map((goal,idx)=>({label:goal.name === 'default' ? 'Default' : goal.name, value:idx}))}/>
-        </>
+        {this.state.meta.valid_solver ? (
+          <>
+          <span style={{color:'white'}}>Mode</span>
+          <Select value={this.state.meta.active_mode}
+                  style={{ minWidth: 200, paddingLeft:10 }}
+                  onChange={(v)=>{this.updateToServer({directive:'update',meta:{active_mode:v}})}}
+                  size='small'
+                  disabled={!this.state.meta.valid_nn || (this.state.meta.selected !== null && this.state.meta.selected.type === 'mode')}
+                  options={this.state.config.modes.map((mode,idx)=>({label:mode.name === 'default' ? 'Default' : mode.name, value:idx}))}/>
+          <span style={{color:'white'}}>Goals</span>
+          <Select value={this.state.meta.active_goals}
+                  style={{ minWidth: 200, paddingLeft:10 }}
+                  onChange={(v)=>{this.updateToServer({directive:'update',meta:{active_goals:v}})}}
+                  size='small'
+                  prefix="goal"
+                  disabled={!this.state.meta.valid_nn || (this.state.meta.selected !== null && this.state.meta.selected.type === 'goal')}
+                  options={this.state.config.goals.map((goal,idx)=>({label:goal.name === 'default' ? 'Default' : goal.name, value:idx}))}/>
+          </>
+        ) : (
+          <></>
+        )}
         <Button type="primary" shape="circle" icon={<ArrowUpOutlined />} onClick={()=>this.moveSceneCamera(0.05,'z')}/>
         <Button type="primary" shape="circle" icon={<ArrowDownOutlined />} onClick={()=>this.moveSceneCamera(-0.05,'z')}/>
       </Space>

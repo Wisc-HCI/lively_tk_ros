@@ -26,7 +26,7 @@ DEFAULT_CONFIG = {
   'states':[],
   'robot_link_radius':0.05,
   'rot_offsets':[],
-  'starting_config':[],
+  'starting_config':[[0,0,0],[]],
   'urdf':'<?xml version="1.0" ?><robot name="default" xmlns:xacro="http://www.ros.org/wiki/xacro"><link name="base_link"/><joint name="default_joint" type="fixed"><parent link="base_link" /><child link="default_link" /><origin xyz="0 0 0" rpy="0 0 0" /></joint><link name="default_link"/></robot>',
   'velocity_limits':[],
   'disp_offsets':[],

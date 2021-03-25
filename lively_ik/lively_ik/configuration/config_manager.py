@@ -27,8 +27,7 @@ class ConfigManager(object):
                              'joint_names','joint_ordering','joint_types','mode_control',
                              'mode_environment','nn_jointpoint','nn_main','objectives',
                              'states','robot_link_radius','rot_offsets','starting_config',
-                             'starting_transform','urdf','velocity_limits','disp_offsets',
-                             'displacements']
+                             'urdf','velocity_limits','disp_offsets','displacements']
 
         self._meta_keys = ['valid_urdf','valid_robot','valid_nn','valid_config','highlights',
                            'valid_solver','links','dynamic_joints','fixed_joints','active_mode','active_goals',
@@ -38,8 +37,8 @@ class ConfigManager(object):
         self._settable_config_keys = ['urdf','fixed_frame','joint_names','ee_fixed_joints',
                                       'joint_ordering','states','starting_config',
                                       'robot_link_radius','static_environment',
-                                      'nn_jointpoint','nn_main','objectives',
-                                      'modes','goals','base_link_motion_bounds','mode_control',
+                                      'nn_jointpoint','nn_main','objectives','modes',
+                                      'goals','base_link_motion_bounds','mode_control',
                                       'mode_environment']
 
         self._settable_meta_keys = ['control','show_link_collision','selected','highlights','displayed_state',
@@ -81,7 +80,7 @@ class ConfigManager(object):
 
         # Initial creation
         new_config = {}
-        updates = self.get_needed_updates(self._front_boundary.union(set(DEFAULT_CONFIG.keys())))
+        updates = self.get_needed_updates(self._front_boundary)
         self.log(f'Initial Updates: {updates}')
         for update in updates:
             if update in DEFAULT_CONFIG:
@@ -102,6 +101,7 @@ class ConfigManager(object):
             self.history = self.history[0:20]
 
     def get_needed_updates(self,updated:set):
+        self.log('getting needed updates')
         update_sequence = []
         immediate_updates = updated.copy()
 
@@ -135,6 +135,7 @@ class ConfigManager(object):
         if len(graph) > 0:
             self.log(f'\033[93mmissing : {graph}\033[0m')
 
+        self.log('finished getting needed updates')
         return update_sequence
 
     def update(self,data,meta={},realtime_feedback=False):

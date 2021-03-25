@@ -39,10 +39,10 @@ class SolverNode(Node):
         self.enabled = False
 
         # self.create_timer(5,self.standard_loop)
-        self.iterations = 15*(3+len(self.config_data['starting_config']))
+        self.iterations = 15*(3+len(self.config_data['starting_config'][1]))
 
-        self.base_transform = [0,0,0]
-        self.displayed_state = []
+        self.base_transform = self.config_data['starting_config'][0]
+        self.displayed_state = self.config_data['starting_config'][1]
         self.target_weights = []
         self.current_weights = []
         self.target_directions = []
@@ -64,10 +64,9 @@ class SolverNode(Node):
                     if self.config_data[field] != data[field]:
                         is_similar = False
                 if is_similar and data['mode_control'] == 'absolute':
-                    data['starting_config'] = self.displayed_state
-                    data['starting_transform'] = self.base_transform
+                    data['starting_config'] = [self.base_transform,self.displayed_state]
                 self.config_data = data
-                self.iterations = 15*(3+len(self.config_data['starting_config']))
+                self.iterations = 15*(3+len(self.config_data['starting_config'][1]))
 
                 self.config = parse_config_data(data)
                 self.current_weights = self.config.default_weights

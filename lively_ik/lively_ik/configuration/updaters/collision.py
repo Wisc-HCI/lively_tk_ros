@@ -27,7 +27,10 @@ def derive_nn_main(config):
                             learning_rate='adaptive')
 
     clf_main.fit(config['training_samples'], config['training_scores'])
-    split_point = find_optimal_split_point(clf_main,config['robot'],config['collision_graph'],2000,jointpoint=False)
+    split_point = find_optimal_split_point(clf_main,config['robot'],
+                                           config['base_link_motion_bounds'],
+                                           config['collision_graph'],
+                                           2000,jointpoint=False)
 
     intercepts = recursive_tolist(clf_main.intercepts_)
     coefs = recursive_tolist(clf_main.coefs_)
@@ -50,7 +53,10 @@ def derive_nn_jointpoint(config):
                             learning_rate='adaptive')
 
     clf_jp.fit(config['training_frames'], config['training_scores'])
-    split_point = find_optimal_split_point(clf_jp,config['robot'],config['collision_graph'],2000,jointpoint=True)
+    split_point = find_optimal_split_point(clf_jp,config['robot'],
+                                           config['base_link_motion_bounds'],
+                                           config['collision_graph'],
+                                           2000,jointpoint=True)
 
     intercepts = recursive_tolist(clf_jp.intercepts_)
     coefs = recursive_tolist(clf_jp.coefs_)
@@ -62,7 +68,7 @@ def derive_training_scores(config):
         return []
     scores = []
     for sample in config['training_samples']:
-        frames = config['robot'].getFrames(sample)
+        frames = config['robot'].getFrames(sample[0:3],sample[3:])
         scores.append(config['collision_graph'].get_collision_score(frames))
     return scores
 
@@ -76,7 +82,7 @@ def derive_training_frames(config):
         return []
     training_frames = []
     for sample in config['training_samples']:
-        frames = config['robot'].getFrames(sample)
+        frames = config['robot'].getFrames(sample[0:3],sample[3:])
         training_frames.append(frames_to_jt_pt_vec(frames))
     return training_frames
 
@@ -86,9 +92,13 @@ def derive_training_samples(config):
     samples = []
     for i in range(200000):
         try:
-            state = config['states'][i]
+            state = config['states'][i][0]+config['states'][i][1]
         except:
             state = []
+            for dim in [0,1,2]:
+                rand = nprandom.uniform(low=config['base_link_motion_bounds'][dim][0],
+                                        high=config['base_link_motion_bounds'][dim][1], size=(1))[0]
+                state.append(rand)
             for b in config['robot'].bounds:
                 rand = nprandom.uniform(low=b[0], high=b[1], size=(1))[0]
                 state.append(rand)
@@ -105,25 +115,24 @@ def frames_to_jt_pt_vec(all_frames):
             out_vec.append(j[2])
     return out_vec
 
-def find_optimal_split_point(clf,robot,graph,num_samples=2000,jointpoint=False):
+def find_optimal_split_point(clf,robot,base_bounds,graph,num_samples=2000,jointpoint=False):
     predictions = []
     ground_truths = []
     for i in range(num_samples):
+        state = []
+        for b in base_bounds:
+            rand = nprandom.uniform(low=b[0], high=b[1], size=(1))[0]
+            state.append(rand)
+        for b in robot.bounds:
+            rand = nprandom.uniform(low=b[0], high=b[1], size=(1))[0]
+            state.append(rand)
         if jointpoint:
-            state = []
-            for b in robot.bounds:
-                rand = nprandom.uniform(low=b[0], high=b[1], size=(1))[0]
-                state.append(rand)
-            frames = robot.getFrames(state)
+            frames = robot.getFrames(state[0:3],state[3:])
             jt_pt_vec = frames_to_jt_pt_vec(frames)
             pred = clf.predict([jt_pt_vec])
         else:
-            state = []
-            for b in robot.bounds:
-                rand = nprandom.uniform(low=b[0], high=b[1], size=(1))[0]
-                state.append(rand)
             pred = clf.predict([state])
-        ground_truth = graph.get_collision_score_of_state(state)
+        ground_truth = graph.get_collision_score_of_state(state[0:3],state[3:])
         predictions.append(pred)
         ground_truths.append(ground_truth)
     best_split = 5.0

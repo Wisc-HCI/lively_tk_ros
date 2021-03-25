@@ -73,7 +73,7 @@ FIELDS = {
     },
     'training_samples':{
         'derivation':derive_training_samples,
-        'dependencies':{'train_directive','robot','states'}
+        'dependencies':{'train_directive','base_link_motion_bounds','robot','states'}
     },
     'collision_graph':{
         'derivation':derive_collision_graph,
@@ -99,10 +99,6 @@ FIELDS = {
     'starting_config':{
         'derivation':derive_starting_config,
         'dependencies':{'joint_limits'}
-    },
-    'starting_transform':{
-        'derivation':derive_starting_transform,
-        'dependencies':{'base_link_motion_bounds'}
     },
     'axis_types':{
         'derivation':derive_axis_types,
@@ -236,7 +232,7 @@ FIELDS = {
     # compared to the current set and published by the interface node.
     'markers':{
         'derivation':derive_markers,
-        'dependencies':{'collision_markers','goal_markers','highlight_markers'}
+        'dependencies':{'collision_markers','goal_markers','gui_markers'}
     },
     'collision_markers':{
         'derivation':derive_collision_markers,
@@ -248,9 +244,9 @@ FIELDS = {
         'dependencies':{'valid_config','target_goals','selected',
                         'objectives','fixed_frame','joint_poses'}
     },
-    'highlight_markers':{
-        'derivation':derive_highlight_markers,
-        'dependencies':{'highlights','robot_tree'}
+    'gui_markers':{
+        'derivation':lambda config: {},
+        'dependencies':{'robot_tree'}
     },
     # This can be enabled or disabled from the front-end, and should
     # cause cylinder markers to show up in the visualizer window.
@@ -273,7 +269,7 @@ FIELDS = {
     # since it includes the end effector fixed joint.
     'joint_poses':{
         'derivation':derive_joint_poses,
-        'dependencies':{'robot','default_transform','displayed_state'}
+        'dependencies':{'robot','displayed_state'}
     },
     # The weights that should be used by the solver (other than changes due to interpolation on the solver end)
     # This is derived from 'active_mode', but can be set separately in the case of configuring a mode, during
@@ -289,9 +285,4 @@ FIELDS = {
         'derivation':derive_target_goals,
         'dependencies':{'goals','active_goals'}
     },
-    # This could be any shapes or links that need to be highlighted. Treated as markers to the front end
-    'highlights':{
-        'derivation':lambda config: [],
-        'dependencies':set([])
-    }
 }

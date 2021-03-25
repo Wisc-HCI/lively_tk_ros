@@ -24,7 +24,7 @@ def derive_control(config):
 
 def derive_markers(config):
     markers = {}
-    for marker_set in ['collision_markers','highlight_markers','goal_markers']:
+    for marker_set in ['collision_markers','gui_markers','goal_markers']:
         for name,info in config[marker_set].items():
             markers[name] = info
     return markers
@@ -92,36 +92,6 @@ def derive_collision_markers(config):
 
     return markers
 
-def derive_highlight_markers(config):
-    markers = {}
-    # Add any highlighted joints or links
-    for highlight in config['highlights']:
-        if highlight['id'] in config['robot_tree']['links']:
-            robot_node = config['robot_tree']['links'][highlight['id']]
-            marker_data = {
-                'frame_id':highlight['id'],
-                'pose':{'position':{'x':0,'y':0,'z':0},
-                        'rotation':{'r':0,'p':0,'y':0}
-                       },
-                'scale':{'x':1,'y':1,'z':1},
-                'type':robot_node['model'],
-                'color':HIGHLIGHT_COLOR
-            }
-            markers['highlight_{0}'.format(highlight['id'])] = marker_data
-        elif highlight['id'] in config['robot_tree']['joints']:
-            marker_data = {
-                'frame_id':highlight['id'],
-                'pose':{'position':{'x':0,'y':0,'z':0},
-                        'rotation':{'r':0,'p':0,'y':0}
-                       },
-                'scale':{'x':0.2,'y':0.2,'z':0.2},
-                'type':'sphere',
-                'color':{'r':0.75,'g':0.2,'b':1.0,'a':0.5}
-            }
-            markers['highlight_{0}'.format(highlight['id'])] = marker_data
-
-    return markers
-
 def derive_goal_markers(config):
     markers = {}
     if config['valid_config']:
@@ -164,13 +134,7 @@ def derive_goal_markers(config):
             elif objective['variant'] == 'position_liveliness':
                 arm_index = int(objective['indices'][0])
                 joint_index = int(objective['indices'][1])
-                position = config['joint_poses'][arm_index][joint_index]['position_global']
-                # points = []
-                # for i in range(200):
-                #     x = np.random.normal(0,objective['shape'][0]/3)
-                #     y = np.random.normal(0,objective['shape'][1]/3)
-                #     z = np.random.normal(0,objective['shape'][2]/3)
-                #     points.append({'x':x,'y':y,'z':z})
+                position = config['joint_poses'][arm_index][joint_index]['position']
                 marker_data = {
                     'frame_id':config['fixed_frame'],
                     'pose':{'position':position,
@@ -185,7 +149,7 @@ def derive_goal_markers(config):
             elif objective['variant'] == 'orientation_liveliness':
                 arm_index = int(objective['indices'][0])
                 joint_index = int(objective['indices'][1])
-                position = config['joint_poses'][arm_index][joint_index]['position_global']
+                position = config['joint_poses'][arm_index][joint_index]['position']
                 rotation = config['joint_poses'][arm_index][joint_index]['rotation']
 
                 # marker_data = {

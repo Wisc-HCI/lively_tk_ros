@@ -66,8 +66,8 @@ class Robot:
 
         return subchains
 
-    def get_ee_positions(self, x):
-        frames = self.getFrames(x)
+    def get_ee_positions(self, translation, x):
+        frames = self.getFrames(translation, x)
         positions = []
 
         for f in frames:
@@ -75,8 +75,8 @@ class Robot:
 
         return positions
 
-    def get_ee_rotations(self, x, quaternions=True):
-        frames = self.getFrames(x)
+    def get_ee_rotations(self, translation, x, quaternions=True):
+        frames = self.getFrames(translation, x)
         rotations = []
 
         for f in frames:
@@ -87,13 +87,15 @@ class Robot:
 
         return rotations
 
-    def getFrames(self, x):
+    def getFrames(self, translation, x):
         all_frames = []
 
         chains = self.split_state_into_subchains(x)
 
         for i,c in enumerate(chains):
             frames = self.arms[i].getFrames(c)
+            for i in range(len(frames[0])):
+                frames[0][i] = (frames[0][i][0]+translation[0],frames[0][i][1]+translation[1],frames[0][i][2]+translation[2])
             all_frames.append(frames)
 
         return all_frames

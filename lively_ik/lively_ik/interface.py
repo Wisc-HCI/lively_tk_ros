@@ -59,8 +59,7 @@ class InterfaceNode(Node):
         self.get_logger().info('Initialized!')
         self.create_timer(.05,self.standard_loop)
 
-        self.base_transform = [0,0,0]
-        self.displayed_state = []
+        self.displayed_state = [[0,0,0],[]]
 
     def on_feedback(self):
         self.get_logger().info('Reporting Feedback')
@@ -78,8 +77,7 @@ class InterfaceNode(Node):
 
     def handle_result_update(self,msg):
         data = json.loads(msg.data)
-        self.base_transform = data['base_transform']
-        self.displayed_state = data['joint_states']
+        self.displayed_state = [data['base_transform'],data['joint_states']]
 
     def handle_update(self,data):
         self.get_logger().info('Async update request')
@@ -236,23 +234,20 @@ class InterfaceNode(Node):
             self.direct_pub.publish(String(data=json.dumps(meta['target_goals'])))
         elif meta['valid_urdf']:
             # Set the transform to the middle of the allowed space
-            x = (data['base_link_motion_bounds'][0][0] + data['base_link_motion_bounds'][0][1])/2
-            y = (data['base_link_motion_bounds'][1][0] + data['base_link_motion_bounds'][1][1])/2
-            z = (data['base_link_motion_bounds'][2][0] + data['base_link_motion_bounds'][2][1])/2
-            self.base_transform, self.displayed_state = ([x,y,z], meta['displayed_state'])
+            self.displayed_state = meta['displayed_state']
 
         # Send the transform for the base
         t = TransformStamped()
         t.header.stamp = self.get_clock().now().to_msg()
         t.header.frame_id = "world"
         t.child_frame_id = data['fixed_frame']
-        t.transform.translation.x = float(self.base_transform[0])
-        t.transform.translation.y = float(self.base_transform[1])
-        t.transform.translation.z = float(self.base_transform[2])
+        t.transform.translation.x = float(self.displayed_state[0][0])
+        t.transform.translation.y = float(self.displayed_state[0][1])
+        t.transform.translation.z = float(self.displayed_state[0][2])
         self.tf_broadcaster.sendTransform(t)
 
         # Send the joint states
-        js = JointState(name=data['joint_ordering'],position=self.displayed_state)
+        js = JointState(name=data['joint_ordering'],position=self.displayed_state[1])
         js.header.stamp = self.get_clock().now().to_msg()
         self.js_pub.publish(js)
 

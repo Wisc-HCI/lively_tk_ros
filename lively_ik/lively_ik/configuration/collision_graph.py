@@ -22,8 +22,8 @@ class CollisionGraph:
         # print('cg 2.5')
         self.c_values = self.get_c_values(self.original_distances)
 
-    def get_collision_score_of_state(self, state):
-        frames = self.robot.getFrames(state)
+    def get_collision_score_of_state(self, transform, state):
+        frames = self.robot.getFrames(transform, state)
         return self.get_collision_score(frames)
 
     def get_collision_score(self, frames):
@@ -46,8 +46,8 @@ class CollisionGraph:
         return sum
 
     def initialize_table(self):
-        for s in self.sample_states:
-            frames = self.robot.getFrames(s)
+        for (t,s) in self.sample_states:
+            frames = self.robot.getFrames(t,s)
             self.c.update_all_transforms(frames)
             for pair in self.combinations:
                 a = pair[0]

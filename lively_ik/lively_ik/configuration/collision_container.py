@@ -26,7 +26,7 @@ class CollisionObjectContainer:
     def add_collision_objects_from_robot(self, robot, exclusion=[]):
         numDOF = robot.numDOF
 
-        frames_list = robot.getFrames(numDOF*[0])
+        frames_list = robot.getFrames([0,0,0],numDOF*[0])
         for arm_idx in range(len(frames_list)):
             frames = frames_list[arm_idx]
             jtPts = frames[0]
@@ -35,8 +35,8 @@ class CollisionObjectContainer:
             for l in range(numLinks):
                 curr_idx = numLinks*arm_idx + l
                 if not curr_idx in exclusion:
-                    ptA = jtPts[l]
-                    ptB = jtPts[l+1]
+                    ptA = np.array(jtPts[l])
+                    ptB = np.array(jtPts[l+1])
                     midPt = ptA + 0.5*(ptB - ptA)
                     dis = np.linalg.norm(ptA - ptB)
                     if dis < 0.02:
@@ -67,8 +67,8 @@ class CollisionObjectContainer:
                 name_arr = name.split('_')
                 arm_id = int(name_arr[1])
                 link_id = int(name_arr[2])
-                ptA = all_frames[arm_id][0][link_id]
-                ptB = all_frames[arm_id][0][link_id+1]
+                ptA = np.array(all_frames[arm_id][0][link_id])
+                ptB = np.array(all_frames[arm_id][0][link_id+1])
                 midPt = ptA + 0.5 * (ptB - ptA)
                 final_pos = midPt
                 rot_mat = np.zeros((3,3))
@@ -89,17 +89,20 @@ class CollisionObjectContainer:
                 # first, do local transforms
                 arm_idx = 0
                 joint_idx = 0
+
+                final_pos = np.array([0,0,0])
+                final_quat = np.array([1,0,0,0])
+                rot_mat = np.identity(3)
+
                 for i,arm in enumerate(self.joint_names):
                     for j,joint in enumerate(arm):
                         if joint == coordinate_frame:
                             arm_idx = i
                             joint_idx = j
+                            final_pos = all_frames[arm_idx][0][joint_idx]
+                            rot_mat = all_frames[arm_idx][1][joint_idx]
+                            final_quat = T.quaternion_from_matrix(rot_mat)
                             break
-
-                final_pos = all_frames[arm_idx][0][joint_idx]
-                rot_mat = all_frames[arm_idx][1][joint_idx]
-
-                final_quat = T.quaternion_from_matrix(rot_mat)
 
                 local_translation = np.array(c.translation)
                 rotated_local_translation = np.dot(rot_mat, local_translation)

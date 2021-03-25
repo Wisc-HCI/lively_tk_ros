@@ -19,7 +19,7 @@ def derive_goals(config):
         if objective['variant'] == 'position_match':
             arm_idx = objective['indices'][0]
             jnt_idx = objective['indices'][1]
-            position = config['joint_poses'][arm_idx][jnt_idx]['position_global']
+            position = config['joint_poses'][arm_idx][jnt_idx]['position']
             goals[0]['values'].append({'vector':[position['x'],position['y'],position['z']]})
         elif objective['variant'] == 'orientation_match':
             arm_idx = objective['indices'][0]
@@ -29,7 +29,7 @@ def derive_goals(config):
             goals[0]['values'].append({'quaternion':quat})
         elif objective['variant'] == 'joint_match':
             jnt_idx = objective['indices'][0]
-            goals[0]['values'].append({'scalar':config['starting_config'][jnt_idx]})
+            goals[0]['values'].append({'scalar':config['starting_config'][1][jnt_idx]})
         else:
             goals[0]['values'].append({})
     return goals

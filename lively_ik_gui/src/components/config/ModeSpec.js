@@ -1,109 +1,136 @@
-import React from 'react';
-import { List, Input, Tabs, Alert } from 'antd';
+import React, { useState } from 'react';
+import _ from 'lodash';
+import { List, Input, Alert, Drawer, Space, Button, Tabs } from 'antd';
+import TranslationInput from '../../util/TranslationInput';
+import RotationInput from '../../util/RotationInput';
+import ScalarInput from '../../util/ScalarInput';
 import LogSlider from '../../util/LogSlider';
 import { BEHAVIOR_ATTRIBUTE_GROUPS,
          BEHAVIOR_ATTRIBUTE_GROUP_NAMES } from '../../util/Categories';
 const { TabPane } = Tabs;
 
-class ModeSpec extends React.Component {
+const debounce = (func, timeout = 200) => {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => { func.apply(this, args); }, timeout);
+  };
+}
 
-  constructor(props) {
-    super(props);
-    this.state = {modeCategory:'Base',
-                  cachedMode:props.modeInfo,
-                  showNameError:!this.validateName(props.modeInfo.name)};
+export default function ModeSpec(props) {
+
+  let visible = props.meta.selected && props.meta.selected.type === 'mode';
+  let onFile = visible ? props.config.modes[props.meta.selected.idx] : {name:'null',weights:[]}
+  let modeNames = props.config.modes.map(mode=>mode.name);
+  let isDefault = props.meta.selected && props.meta.selected.idx === 0;
+
+  const [cachedMode, setCachedMode] = useState(onFile);
+  const [activeTab, setActiveTab] = useState('Base');
+
+  let validName = true;
+  if (cachedMode.name !== onFile.name && modeNames.indexOf(cachedMode.name) >= 0) {
+    validName = false
+  } else if (!isDefault && cachedMode.name !== undefined && cachedMode.name.toLowerCase() === 'default') {
+    validName = false
+  } else if (cachedMode.name === '') {
+    validName = false
   }
 
-  setModeCategory = (category) => {
-    this.setState({modeCategory:category})
-  }
+  let matches = _.isEqual(cachedMode, onFile);
 
-  validateName = (name) => {
-    if (name === this.props.modeInfo.name) {
-      return true
-    } else if (this.props.modeNames.indexOf(name) >= 0) {
-      return false
-    } else if (name !== undefined && name.toLowerCase() === 'default') {
-      return false
-    } else if (name === '') {
-      return false
-    }
-    return true
-  }
-
-  debounce = (func, timeout = 200) => {
-    let timer;
-    return (...args) => {
-      clearTimeout(timer);
-      timer = setTimeout(() => { func.apply(this, args); }, timeout);
-    };
-  }
-
-  updateName = (event) => {
-    let name = event.target.value;
-    let cachedMode = {...this.state.cachedMode};
-    let showNameError = false;
-    cachedMode.name = name;
-    if (!this.validateName(name)) {
-      showNameError = true
-    }
-    this.props.onUpdate({cachedData:cachedMode});
-    this.setState({cachedMode:cachedMode,showNameError:showNameError})
-  }
-
-  updateWeightAtIdx = (idx,value) => {
-    let weights = [...this.state.cachedMode.weights];
-    let cachedMode = {...this.state.cachedMode};
-    weights[idx] = value;
-    cachedMode.weights = weights;
-    this.props.onUpdate({cachedData:cachedMode,targetModeWeights:weights});
-    this.setState({cachedMode:cachedMode})
-  }
-
-  getWeightSlider = (idx) => {
-    return (
-      <List.Item key={idx} label={this.props.objectives[idx].tag}>
-        <List.Item.Meta title={this.props.objectives[idx].tag}
-                        description={<LogSlider min={0} max={100} step={0.01} showInput={true} value={this.state.cachedMode.weights[idx]}
-                                                onChange={(v)=>this.debounce(this.updateWeightAtIdx(idx,v))}/>}
-        />
-      </List.Item>
-    )
-  }
-
-  render() {
-    return (
-      <>
-        <h3>Name</h3>
-        <Input placeholder='Name this Mode'
-               disabled={this.state.cachedMode.name === 'default'}
-               value={this.state.cachedMode.name === 'default' ? 'Default' : this.state.cachedMode.name}
-               onChange={(v)=>this.updateName(v)}/>
-        {this.state.showNameError ? (
+  return (
+    <Drawer
+      afterVisibleChange={(visible)=>{
+        let onFile = visible ? props.config.modes[props.meta.selected.idx] : {name:'null',weights:[]}
+        setCachedMode(onFile)
+      }}
+      title={
+        <Space align="start">
+          <h3>{isDefault ? "Specify Default Mode" : "Specify Mode - "+cachedMode.name}</h3>
+          {!matches &&
+            <Button size="small" type="primary" onClick={()=>{
+              let modes = [...props.config.modes];
+              modes[props.meta.selected.idx] = cachedMode;
+              props.onUpdate({directive:'update',config:{modes:modes}})
+            }}>
+              Save
+            </Button>}
+          {!matches &&
+            <Button size="small" danger type="ghost" onClick={()=>{
+              props.onUpdate({directive:'update',meta:{selected:null}})
+              setCachedMode(onFile)
+            }}>
+              Discard
+            </Button>
+          }
+        </Space>
+      }
+      placement="right"
+      closable={matches}
+      maskClosable={matches}
+      width='50%'
+      onClose={()=>props.onUpdate({directive:'update',meta:{selected:null}})}
+      visible={visible}
+      getContainer={false}
+      style={{ position: 'absolute' }}
+    >
+      {visible && (
+        <>
+        {!isDefault &&
+          <>
+          <h3>Name</h3>
+          <Input placeholder='Name this Mode'
+               value={cachedMode.name}
+               onChange={(e)=>{
+                 let editedCache = {...cachedMode};
+                 editedCache.name = e.target.value
+                 setCachedMode(editedCache)
+               }}/>
+          </>
+          }
+        {!validName && (
           <Alert
              message="Name Error"
              description="Please select a unique name for this mode."
              type="error"
              showIcon
            />
-         ) : (<></>)
-        }
-        <Tabs activeKey={this.state.modeCategory}
+         )}
+        <h3 style={{marginTop:10}}>Behavior Importance</h3>
+        <Tabs activeKey={activeTab}
               centered
               style={{height: '100%', width:'100%' }}
-              onChange={(key)=>this.setModeCategory(key)}>
+              onChange={(key)=>setActiveTab(key)}>
           {BEHAVIOR_ATTRIBUTE_GROUPS.map((group,groupIdx)=>(
             <TabPane tab={BEHAVIOR_ATTRIBUTE_GROUP_NAMES[groupIdx]} key={BEHAVIOR_ATTRIBUTE_GROUP_NAMES[groupIdx]} style={{ height: '100%', width:'100%' }}>
-              <List header={null} footer={null} bordered dataSource={this.props.objectives.map((obj,idx)=>idx).filter((idx)=>BEHAVIOR_ATTRIBUTE_GROUPS[groupIdx].indexOf(this.props.objectives[idx].variant)>=0)}
-                    renderItem={(idx)=>this.getWeightSlider(idx)}
+              <List header={null}
+                    footer={null}
+                    bordered
+                    dataSource={props.config.objectives.map((obj,idx)=>idx).filter((idx)=>BEHAVIOR_ATTRIBUTE_GROUPS[groupIdx].indexOf(props.config.objectives[idx].variant)>=0)}
+                    renderItem={(idx)=>(
+                      <List.Item key={idx} label={props.config.objectives[idx].tag}>
+                        <List.Item.Meta title={props.config.objectives[idx].tag}
+                                        description={<LogSlider
+                                                        min={0} max={100}
+                                                        step={0.01}
+                                                        showInput={true}
+                                                        value={cachedMode.weights[idx]}
+                                                        onChange={(v)=>{
+                                                          let editedCache = {...cachedMode};
+                                                          editedCache.weights[idx] = v;
+                                                          debounce(props.onUpdate({directive:'update',meta:{target_weights:editedCache.weights}}));
+                                                          setCachedMode(editedCache);
+                                                        }}/>}
+                        />
+                      </List.Item>
+                    )}
               />
             </TabPane>
           ))}
         </Tabs>
       </>
-    )
-  }
+      )}
+    </Drawer>
+  )
 
 }
-
-export default ModeSpec

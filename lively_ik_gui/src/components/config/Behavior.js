@@ -1,10 +1,16 @@
 import React from 'react';
-import { Tabs, List, Space, Tooltip, Button } from 'antd';
+import { Tabs, List, Space, Tooltip, Button, Dropdown, Menu } from 'antd';
 import { EditOutlined, CopyOutlined, DeleteOutlined } from '@ant-design/icons';
-import { defaultObjectives, defaultGoals, defaultWeights } from '../../util/Default';
+import { defaultObjectives, defaultGoals, defaultWeights, defaultObjectiveNames } from '../../util/Default';
 import { getObjectivePreview } from '../../util/Englishify';
 import { BEHAVIOR_ATTRIBUTE_GROUPS,
-         BEHAVIOR_ATTRIBUTE_GROUP_NAMES } from '../../util/Categories';
+         BEHAVIOR_ATTRIBUTE_GROUP_NAMES,
+         BASE_OBJECTIVES,
+         DIRECTION_OBJECTIVES,
+         LIVELINESS_OBJECTIVES,
+         PAIRED_OBJECTIVES,
+         JOINT_OBJECTIVES,
+         CARTESIAN_OBJECTIVES } from '../../util/Categories';
 const { TabPane } = Tabs;
 
 
@@ -61,45 +67,63 @@ class Behavior extends React.Component {
     return this.props.config.joint_ordering[idx]
   }
 
-  addObjective = (groupName) => {
+  createObjective = (variant) => {
     let objectives = [...this.props.config.objectives];
     let modes = [...this.props.config.modes];
     let goals = [...this.props.config.goals];
-    switch (groupName) {
-      case 'Base':
-        objectives.push(defaultObjectives.joint_limits)
-        modes.forEach((mode)=>{
-          mode.weights.push(defaultWeights.joint_limits)
-        })
-        goals.forEach((goalSpec)=>{
-          goalSpec.values.push(defaultGoals.joint_limits)
-        })
-        break
-      case 'Directions':
-        console.log('ADDING DIRECTIONS OBJ')
-        objectives.push(defaultObjectives.position_match)
-        modes.forEach((goalMode)=>{
-          goalMode.weights.push(defaultWeights.position_match)
-        })
-        goals.forEach((goalSpec)=>{
-          let position = this.props.meta.joint_poses[0][this.props.meta.joint_poses[0].length-1]['position']
-          goalSpec.values.push({vector:[position.x,position.y,position.z]})
-        })
-        break
-      case 'Liveliness':
-        objectives.push(defaultObjectives.base_link_position_liveliness)
-        modes.forEach((goalMode)=>{
-          goalMode.weights.push(defaultWeights.base_link_position_liveliness)
-        })
-        goals.forEach((goalSpec)=>{
-          goalSpec.values.push(defaultGoals.base_link_position_liveliness)
-        })
-        break
-      default:
-        break
+
+    let objective = {...defaultObjectives[variant]};
+    let weight = defaultWeights[variant];
+    let values = {...defaultGoals[variant]};
+
+    console.log(variant);
+    console.log(objective);
+    console.log(weight);
+    console.log(values)
+
+    const isJointObjective = (JOINT_OBJECTIVES.indexOf(variant) >= 0);
+    const isCartesianObjective = (CARTESIAN_OBJECTIVES.indexOf(variant) >= 0);
+    const isPairedObjective = (PAIRED_OBJECTIVES.indexOf(variant) >= 0);
+
+    if (isPairedObjective && isCartesianObjective && this.props.config.joint_names.length > 1) {
+      objective.indices = [0, this.props.config.joint_names[0].length, 1, this.props.config.joint_names[1].length]
+    } else if (isPairedObjective && isCartesianObjective) {
+      objective.indices = [0, this.props.config.joint_names[0].length, 0, this.props.config.joint_names[0].length-1]
+    } else if (isCartesianObjective) {
+      objective.indices = [0, this.props.config.joint_names[0].length]
+    } else if (isJointObjective && isPairedObjective) {
+      objective.indices = [this.props.config.joint_ordering.length-1,this.props.config.joint_ordering.length-2]
+    } else if (isJointObjective) {
+      objective.indices = [this.props.config.joint_ordering.length-1]
     }
-    console.log(objectives);
+
+    if (variant === 'position_match') {
+      let position = this.props.meta.joint_poses[objective.indices[0]][objective.indices[1]]['position']
+      values.vector = [position.x,position.y,position.z];
+    } else if (variant === 'orientation_match') {
+      let quaternion = this.props.meta.joint_poses[objective.indices[0]][objective.indices[1]]['quaternion']
+      values.quaternion = [quaternion.w,quaternion.x,quaternion.y,quaternion.z];
+    } else if (variant === 'joint_match') {
+      values.scalar = this.props.config.starting_config[1][objective.indices[0]]
+    } else if (variant === 'position_boundng') {
+      let position = this.props.meta.joint_poses[objective.indices[0]][objective.indices[1]]['position']
+      values.pose = [[position.x,position.y,position.z],[1,0,0,0]]
+    }
+
+    objectives.push(objective)
+    modes.forEach((mode)=>{
+      mode.weights.push(weight)
+    })
+    goals.forEach((goal)=>{
+      goal.values.push(values)
+    })
+
+    console.log(objective);
+    console.log(weight);
+    console.log(values);
+
     this.props.onUpdate({objectives:objectives,modes:modes,goals:goals},{selected:{idx:objectives.length-1,type:'objective'}})
+
   }
 
   deleteObjective = (idx) => {
@@ -302,9 +326,15 @@ class Behavior extends React.Component {
                        key={BEHAVIOR_ATTRIBUTE_GROUP_NAMES[groupIdx]}
                        style={{ height: '100%', width:'100%' }}>
                 <List header={null}
-                      footer={<Button type="primary" onClick={()=>this.addObjective(BEHAVIOR_ATTRIBUTE_GROUP_NAMES[groupIdx])}>
-                                Add {BEHAVIOR_ATTRIBUTE_GROUP_NAMES[groupIdx]} Attribute
-                              </Button>}
+                      footer={
+                        <Dropdown trigger='click' overlay={
+                          <Menu onClick={(e)=>this.createObjective(e.key)}>
+                            {group.map((variant)=><Menu.Item key={variant}>{defaultObjectiveNames[variant]}</Menu.Item>)}
+                          </Menu>
+                        } placement="topLeft">
+                          <Button>Add {BEHAVIOR_ATTRIBUTE_GROUP_NAMES[groupIdx]} Attribute</Button>
+                        </Dropdown>
+                      }
                       bordered
                       style={{ maxHeight: '100%', width:'100%', overflow:'scroll'}}
                       dataSource={this.props.config.objectives.map((objective,idx)=>idx).filter((idx)=>group.indexOf(this.props.config.objectives[idx].variant)>=0)}

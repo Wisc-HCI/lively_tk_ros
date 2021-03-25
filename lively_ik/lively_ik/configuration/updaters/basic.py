@@ -159,7 +159,7 @@ def derive_ee_fixed_joints(config):
 def derive_joint_poses(config):
     if config['robot'] == None:
         return []
-    chain_frames = config['robot'].getFrames(config['displayed_state'])
+    chain_frames = config['robot'].getFrames(config['displayed_state'][0],config['displayed_state'][1])
     joint_poses = []
     for chain_frame in chain_frames:
         chain_poses =  []
@@ -171,11 +171,6 @@ def derive_joint_poses(config):
             rotation = euler_from_matrix(rot_mat, 'szxy')
             quaternion = quaternion_from_euler(rotation[0],rotation[1],rotation[2],'szxy')
             info = {'position':{'x':pos[0],'y':pos[1],'z':pos[2]},
-                    'position_global':{
-                        'x':pos[0]+config['starting_transform'][0],
-                        'y':pos[1]+config['starting_transform'][1],
-                        'z':pos[2]+config['starting_transform'][2],
-                    },
                     'rotation':{'r':rotation[0],'p':rotation[1],'y':rotation[2]},
                     'quaternion':{'w':quaternion[0],'x':quaternion[1],'y':quaternion[2],'z':quaternion[3]}
                    }
@@ -242,7 +237,8 @@ def derive_rot_offsets(config):
     return rot_offsets
 
 def derive_starting_config(config):
-    return [(limit[0]+limit[1])/2.0 for limit in config['joint_limits']]
+    return ([(limit[0]+limit[1])/2.0 for limit in config['base_link_motion_bounds']],
+            [(limit[0]+limit[1])/2.0 for limit in config['joint_limits']])
 
 def derive_velocity_limits(config):
     if config['robot'] == None:

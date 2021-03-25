@@ -121,7 +121,7 @@ class Collision extends React.Component {
                       </Space>
                     }>
                     <div style={{width:'100%'}}>
-                      {this.props.config.states[idx].map((value,i)=>(
+                      {this.props.config.states[idx][1].map((value,i)=>(
                         <Tag key={this.props.config.joint_ordering[i]} style={{margin: 1}}>
                           {value.toFixed(2)}
                         </Tag>

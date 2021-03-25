@@ -11,25 +11,47 @@ class Detail extends React.Component {
 
   constructor(props) {
     super(props);
-    if (this.props.meta.selected) {
-      switch (this.props.meta.selected.type) {
+    this.state = this.utilConstructInitial(this.props,true);
+  }
+
+  utilConstructInitial(props,copyIntialToCache=false) {
+    let state = {initialData:null};
+    if (props.meta.selected) {
+      switch (props.meta.selected.type) {
         case 'objective':
-          this.state = {cachedData:{cachedObjective:this.props.config.objectives[this.props.meta.selected.idx],
-                                    cachedModeWeights:this.props.config.modes.map((mode)=>mode.weights[this.props.meta.selected.idx]),
-                                    cachedGoalValues:this.props.config.goals.map((goal)=>goal.values[this.props.meta.selected.idx])}}
+          state.initialData = {cachedObjective:props.config.objectives[props.meta.selected.idx],
+                           cachedModeWeights:props.config.modes.map((mode)=>mode.weights[props.meta.selected.idx]),
+                           cachedGoalValues:props.config.goals.map((goal)=>goal.values[props.meta.selected.idx])}
           break
         case 'mode':
-          this.state = {cachedData:this.props.config.modes[this.props.meta.selected.idx]}
+          state.initialData = props.config.modes[props.meta.selected.idx]
           break
         case 'goal':
-          this.state = {cachedData:this.props.config.goals[this.props.meta.selected.idx]}
+          state.initialData = props.config.goals[props.meta.selected.idx]
           break
         default:
-          this.state = {cachedData:null}
+          state.initialData = null
           break
       }
     } else {
-      this.state = {cachedData:null}
+      state.initialData = null
+    }
+    if (copyIntialToCache) {
+      state.cachedData = JSON.parse(JSON.stringify(state.initialData));
+    }
+    return state
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.meta.selected !== prevProps.meta.selected) {
+      this.setState(this.utilConstructInitial(this.props,true))
+    } else {
+      let candidateState = this.utilConstructInitial(this.props,false);
+      let prevState = this.utilConstructInitial(prevProps,false);
+      if (!_.isEqual(prevState.initialData, candidateState.initialData)) {
+        console.log('component updated intial')
+        this.setState(candidateState)
+      }
     }
   }
 
@@ -57,18 +79,7 @@ class Detail extends React.Component {
 
   getIsSame = () => {
     if (this.props.meta.selected) {
-      switch (this.props.meta.selected.type) {
-        case 'objective':
-          return _.isEqual({cachedObjective:this.props.config.objectives[this.props.meta.selected.idx],
-                            cachedModeWeights:this.props.config.modes.map((mode)=>mode.weights[this.props.meta.selected.idx]),
-                            cachedGoalValues:this.props.config.goals.map((goal)=>goal.values[this.props.meta.selected.idx])}, this.state.cachedData);
-        case 'mode':
-          return _.isEqual(this.props.config.modes[this.props.meta.selected.idx], this.state.cachedData);
-        case 'goal':
-          return _.isEqual(this.props.config.goals[this.props.meta.selected.idx], this.state.cachedData);
-        default:
-          return true
-      }
+      return _.isEqual(this.state.initialData, this.state.cachedData);
     }
     return true
   }
@@ -89,8 +100,6 @@ class Detail extends React.Component {
       let modes = [...this.props.config.modes];
       let goals = [...this.props.config.goals];
       switch (this.props.meta.selected.type) {
-        case 'objective':
-          break
         case 'mode':
           modes[this.props.meta.selected.idx] = this.state.cachedData;
           this.props.onUpdate({directive:'update',config:{modes:modes}})
@@ -131,7 +140,7 @@ class Detail extends React.Component {
           break;
         case 'objective':
           if (values.cachedData !== undefined) {
-            this.setState({cachedData:values.cachedData})
+            this.setState({cachedData:values.cachedData},console.log(this.getIsSame()))
           }
           break;
         case 'mode':
@@ -151,7 +160,7 @@ class Detail extends React.Component {
           }
           break;
         default:
-          
+
       }
     }
   }
@@ -160,14 +169,16 @@ class Detail extends React.Component {
     if (this.props.meta.selected) {
       switch (this.props.meta.selected.type) {
         case 'starting_config':
-          return <JointSpec joints={this.props.config.starting_config}
+          return <JointSpec state={this.props.config.starting_config}
                             names={this.props.config.joint_ordering}
-                            limits={this.props.config.joint_limits}
+                            baseLimits={this.props.config.base_link_motion_bounds}
+                            jointLimits={this.props.config.joint_limits}
                             onUpdate={this.onUpdate}/>
         case 'collision_state':
-          return <JointSpec joints={this.props.config.states[this.props.meta.selected.idx]}
+          return <JointSpec state={this.props.config.states[this.props.meta.selected.idx]}
                             names={this.props.config.joint_ordering}
-                            limits={this.props.config.joint_limits}
+                            baseLimits={this.props.config.base_link_motion_bounds}
+                            jointLimits={this.props.config.joint_limits}
                             onUpdate={this.onUpdate}/>
         case 'objective':
           return <ObjectiveSpec objective={this.props.config.objectives[this.props.meta.selected.idx]}
@@ -209,7 +220,6 @@ class Detail extends React.Component {
   }
 
   render() {
-    console.log(this.getIsSame())
     return (
 
       <Drawer
