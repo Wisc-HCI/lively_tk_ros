@@ -29,7 +29,7 @@ class ConfigManager(object):
                              'states','robot_link_radius','rot_offsets','starting_config',
                              'urdf','velocity_limits','disp_offsets','displacements']
 
-        self._meta_keys = ['valid_urdf','valid_robot','valid_nn','valid_config','highlights',
+        self._meta_keys = ['valid_urdf','valid_robot','valid_nn','valid_config','gui_markers',
                            'valid_solver','links','dynamic_joints','fixed_joints','active_mode','active_goals',
                            'displayed_state','control','show_link_collision','robot_tree','joint_poses',
                            'selected','nn_utd','target_weights','target_goals']
@@ -41,7 +41,7 @@ class ConfigManager(object):
                                       'goals','base_link_motion_bounds','mode_control',
                                       'mode_environment']
 
-        self._settable_meta_keys = ['control','show_link_collision','selected','highlights','displayed_state',
+        self._settable_meta_keys = ['control','show_link_collision','selected','displayed_state','gui_markers',
                                     'active_mode','active_goals','target_weights','target_goals','train_directive']
 
         self._copy_keys = [key for key in self._fields if key not in ['solver','config','collision_graph']]
@@ -81,7 +81,7 @@ class ConfigManager(object):
         # Initial creation
         new_config = {}
         updates = self.get_needed_updates(self._front_boundary)
-        self.log(f'Initial Updates: {updates}')
+        # self.log(f'Initial Updates: {updates}')
         for update in updates:
             if update in DEFAULT_CONFIG:
                 new_config[update] = DEFAULT_CONFIG[update]
@@ -101,7 +101,7 @@ class ConfigManager(object):
             self.history = self.history[0:20]
 
     def get_needed_updates(self,updated:set):
-        self.log('getting needed updates')
+        # self.log('getting needed updates')
         update_sequence = []
         immediate_updates = updated.copy()
 
@@ -135,7 +135,7 @@ class ConfigManager(object):
         if len(graph) > 0:
             self.log(f'\033[93mmissing : {graph}\033[0m')
 
-        self.log('finished getting needed updates')
+        # self.log('finished getting needed updates')
         return update_sequence
 
     def update(self,data,meta={},realtime_feedback=False):

@@ -1,4 +1,7 @@
 import React from 'react';
+import {
+  COLORS_HEX
+} from './Colors';
 
 const getObjectivePreview = (objectiveData, fixedFrame, eeFixedJoints, jointOrdering, jointNames) => {
   let jointName1 = '';
@@ -9,7 +12,11 @@ const getObjectivePreview = (objectiveData, fixedFrame, eeFixedJoints, jointOrde
     case 'joint_limits':
       return 'Ensure joints remain within their limits'
     case 'nn_collision':
-      return 'Ensure robot doesn\'t collide with the static environment'
+      return <span>{"Ensure robot doesn't collide with the "}
+              <span style={{backgroundColor:COLORS_HEX.COLLISION_OBJECT, color:'white', padding:4,borderRadius:5}}>
+                {'static environment'}
+              </span>
+            </span>
     case 'env_collision':
       return 'Ensure robot doesn\'t collide with the dynamic environment'
     case 'min_velocity':
@@ -26,7 +33,7 @@ const getObjectivePreview = (objectiveData, fixedFrame, eeFixedJoints, jointOrde
       }
       return <span>
               <span>Make the </span>
-              <span style={{backgroundColor:'#1890ff',color:'white',padding:4,borderRadius:5}}>
+              <span style={{backgroundColor:COLORS_HEX.PRIMARY_POINT,color:'white',padding:4,borderRadius:5}}>
                 {jointName1}
               </span>
               <span> have a given position</span>
@@ -39,7 +46,7 @@ const getObjectivePreview = (objectiveData, fixedFrame, eeFixedJoints, jointOrde
       }
       return <span>
               <span>Make the </span>
-              <span style={{backgroundColor:'#1890ff',color:'white',padding:4,borderRadius:5}}>
+              <span style={{backgroundColor:COLORS_HEX.PRIMARY_POINT,color:'white',padding:4,borderRadius:5}}>
                 {jointName1}
               </span>
               <span> have a given rotation</span>
@@ -47,7 +54,7 @@ const getObjectivePreview = (objectiveData, fixedFrame, eeFixedJoints, jointOrde
     case 'joint_match':
       return <span>
               <span>Make the </span>
-              <span style={{backgroundColor:'#BE33FF',color:'white',padding:4,borderRadius:5}}>
+              <span style={{backgroundColor:COLORS_HEX.PRIMARY_JOINT,color:'white',padding:4,borderRadius:5}}>
                {jointOrdering[objectiveData.indices[0]]}
               </span>
               <span> have a given value</span>
@@ -65,11 +72,11 @@ const getObjectivePreview = (objectiveData, fixedFrame, eeFixedJoints, jointOrde
       }
       return <span>
               <span>Match the positions of </span>
-              <span style={{backgroundColor:'#1890ff',color:'white',padding:4,borderRadius:5}}>
+              <span style={{backgroundColor:COLORS_HEX.PRIMARY_POINT,color:'white',padding:4,borderRadius:5}}>
                 {jointName1}
               </span>
               <span> and </span>
-              <span style={{backgroundColor:'#1890ff',color:'white',padding:4,borderRadius:5}}>
+              <span style={{backgroundColor:COLORS_HEX.SECONDARY_POINT,color:'white',padding:4,borderRadius:5}}>
                 {jointName2}
               </span>
              </span>
@@ -86,11 +93,11 @@ const getObjectivePreview = (objectiveData, fixedFrame, eeFixedJoints, jointOrde
       }
       return <span>
               <span>Match the rotations of </span>
-              <span style={{backgroundColor:'#1890ff',color:'white',padding:4,borderRadius:5}}>
+              <span style={{backgroundColor:COLORS_HEX.PRIMARY_POINT,color:'white',padding:4,borderRadius:5}}>
                 {jointName1}
               </span>
               <span> and </span>
-              <span style={{backgroundColor:'#1890ff',color:'white',padding:4,borderRadius:5}}>
+              <span style={{backgroundColor:COLORS_HEX.SECONDARY_POINT,color:'white',padding:4,borderRadius:5}}>
                 {jointName2}
               </span>
              </span>
@@ -102,7 +109,7 @@ const getObjectivePreview = (objectiveData, fixedFrame, eeFixedJoints, jointOrde
       }
       return <span>
               <span>Make the position of</span>
-              <span style={{backgroundColor:'#1890ff',color:'white',padding:4,borderRadius:5}}>
+              <span style={{backgroundColor:COLORS_HEX.PRIMARY_POINT,color:'white',padding:4,borderRadius:5}}>
                 {jointName1}
               </span>
               <span> stay within a certain range</span>
@@ -115,7 +122,7 @@ const getObjectivePreview = (objectiveData, fixedFrame, eeFixedJoints, jointOrde
       }
       return <span>
               <span>Make the orientation of</span>
-              <span style={{backgroundColor:'#1890ff',color:'white',padding:4,borderRadius:5}}>
+              <span style={{backgroundColor:COLORS_HEX.PRIMARY_POINT,color:'white',padding:4,borderRadius:5}}>
                 {jointName1}
               </span>
               <span> stay within a certain range</span>
@@ -123,11 +130,11 @@ const getObjectivePreview = (objectiveData, fixedFrame, eeFixedJoints, jointOrde
     case 'joint_mirroring':
       return <span>
               <span>Match the values of </span>
-              <span style={{backgroundColor:'#BE33FF',color:'white',padding:4,borderRadius:5}}>
+              <span style={{backgroundColor:COLORS_HEX.PRIMARY_JOINT,color:'white',padding:4,borderRadius:5}}>
                 {jointOrdering[objectiveData.indices[0]]}
               </span>
               <span> and </span>
-              <span style={{backgroundColor:'#BE33FF',color:'white',padding:4,borderRadius:5}}>
+              <span style={{backgroundColor:COLORS_HEX.SECONDARY_JOINT,color:'white',padding:4,borderRadius:5}}>
                 {jointOrdering[objectiveData.indices[1]]}
               </span>
              </span>
@@ -139,7 +146,7 @@ const getObjectivePreview = (objectiveData, fixedFrame, eeFixedJoints, jointOrde
       }
       return <span>
               <span>Make the position of </span>
-              <span style={{backgroundColor:'#1890ff',color:'white',padding:4,borderRadius:5}}>
+              <span style={{backgroundColor:COLORS_HEX.PRIMARY_POINT,color:'white',padding:4,borderRadius:5}}>
                 {jointName1}
               </span>
               <span> have lifelike motion</span>
@@ -152,7 +159,7 @@ const getObjectivePreview = (objectiveData, fixedFrame, eeFixedJoints, jointOrde
       }
       return <span>
               <span>Make the rotation of </span>
-              <span style={{backgroundColor:'#1890ff',color:'white',padding:4,borderRadius:5}}>
+              <span style={{backgroundColor:COLORS_HEX.PRIMARY_POINT,color:'white',padding:4,borderRadius:5}}>
                 {jointName1}
               </span>
               <span> have lifelike motion</span>
@@ -160,7 +167,7 @@ const getObjectivePreview = (objectiveData, fixedFrame, eeFixedJoints, jointOrde
     case 'joint_liveliness':
       return <span>
               <span>Make the value of </span>
-              <span style={{backgroundColor:'#BE33FF',color:'white',padding:4,borderRadius:5}}>
+              <span style={{backgroundColor:COLORS_HEX.PRIMARY_JOINT,color:'white',padding:4,borderRadius:5}}>
                 {jointOrdering[objectiveData.indices[0]]}
               </span>
               <span> have lifelike motion</span>
@@ -178,18 +185,18 @@ const getObjectivePreview = (objectiveData, fixedFrame, eeFixedJoints, jointOrde
       }
       return <span>
               <span>Move position of </span>
-              <span style={{backgroundColor:'#1890ff',color:'white',padding:4,borderRadius:5}}>
+              <span style={{backgroundColor:COLORS_HEX.PRIMARY_POINT,color:'white',padding:4,borderRadius:5}}>
                 {jointName1}
               </span>
               <span> towards and away from </span>
-              <span style={{backgroundColor:'#1890ff',color:'white',padding:4,borderRadius:5}}>
+              <span style={{backgroundColor:COLORS_HEX.SECONDARY_POINT,color:'white',padding:4,borderRadius:5}}>
                 {jointName2}
               </span>
              </span>
     case 'base_link_position_liveliness':
       return <span>
             <span>Make the robot root </span>
-            <span style={{backgroundColor:'#E73091',color:'white',padding:4,borderRadius:5}}>
+            <span style={{backgroundColor:COLORS_HEX.PRIMARY_POINT,color:'white',padding:4,borderRadius:5}}>
               {fixedFrame}
             </span>
             <span> have lifelike motion</span>
@@ -202,7 +209,7 @@ const getObjectivePreview = (objectiveData, fixedFrame, eeFixedJoints, jointOrde
       }
       return <span>
               <span>Make the position of </span>
-              <span style={{backgroundColor:'#1890ff',color:'white',padding:4,borderRadius:5}}>
+              <span style={{backgroundColor:COLORS_HEX.PRIMARY_POINT,color:'white',padding:4,borderRadius:5}}>
                 {jointName1}
               </span>
               <span> be subject to gravity.</span>

@@ -5,12 +5,10 @@ import { defaultObjectives, defaultGoals, defaultWeights, defaultObjectiveNames 
 import { getObjectivePreview } from '../../util/Englishify';
 import { BEHAVIOR_ATTRIBUTE_GROUPS,
          BEHAVIOR_ATTRIBUTE_GROUP_NAMES,
-         BASE_OBJECTIVES,
-         DIRECTION_OBJECTIVES,
-         LIVELINESS_OBJECTIVES,
          PAIRED_OBJECTIVES,
          JOINT_OBJECTIVES,
          CARTESIAN_OBJECTIVES } from '../../util/Categories';
+import {getObjectiveMarkers} from '../../util/Markers';
 const { TabPane } = Tabs;
 
 
@@ -76,11 +74,6 @@ class Behavior extends React.Component {
     let weight = defaultWeights[variant];
     let values = {...defaultGoals[variant]};
 
-    console.log(variant);
-    console.log(objective);
-    console.log(weight);
-    console.log(values)
-
     const isJointObjective = (JOINT_OBJECTIVES.indexOf(variant) >= 0);
     const isCartesianObjective = (CARTESIAN_OBJECTIVES.indexOf(variant) >= 0);
     const isPairedObjective = (PAIRED_OBJECTIVES.indexOf(variant) >= 0);
@@ -118,11 +111,17 @@ class Behavior extends React.Component {
       goal.values.push(values)
     })
 
-    console.log(objective);
-    console.log(weight);
-    console.log(values);
+    let markers = getObjectiveMarkers({objective:objective,
+                                       goal:values,
+                                       tree:this.props.meta.robot_tree,
+                                       poses:this.props.meta.joint_poses,
+                                       jointNames:this.props.config.joint_names,
+                                       jointOrdering:this.props.config.joint_ordering,
+                                       eeFixedJoints:this.props.config.ee_fixed_joints,
+                                       fixedFrame:this.props.config.fixed_frame
+                                      });
 
-    this.props.onUpdate({objectives:objectives,modes:modes,goals:goals},{selected:{idx:objectives.length-1,type:'objective'}})
+    this.props.onUpdate({objectives:objectives,modes:modes,goals:goals},{selected:{idx:objectives.length-1,type:'objective'},gui_markers:markers})
 
   }
 
@@ -137,11 +136,21 @@ class Behavior extends React.Component {
     goals.forEach((goalSpec)=>{
       goalSpec.values.splice(idx,1);
     })
-    this.props.onUpdate({objectives:objectives,modes:modes,goals:goals},{selected:null})
+    this.props.onUpdate({objectives:objectives,modes:modes,goals:goals},{selected:null,gui_markers:{}})
   }
 
   selectObjective = (idx) => {
-    this.props.onUpdate({},{selected:{idx:idx,type:'objective'}})
+    let markers = getObjectiveMarkers({objective:this.props.config.objectives[idx],
+                                       goal:this.props.meta.target_goals[idx],
+                                       tree:this.props.meta.robot_tree,
+                                       poses:this.props.meta.joint_poses,
+                                       jointNames:this.props.config.joint_names,
+                                       jointOrdering:this.props.config.joint_ordering,
+                                       eeFixedJoints:this.props.config.ee_fixed_joints,
+                                       fixedFrame:this.props.config.fixed_frame
+                                      });
+    this.props.onUpdate({},{selected:{idx:idx,type:'objective'},
+                            gui_markers:markers})
   }
 
   copyObjective = (idx) => {
@@ -187,7 +196,6 @@ class Behavior extends React.Component {
       }
     });
     let goal = {name:this.getUnusedGoalName(),values:newGoalValues};
-    console.log(goal);
     goals.push(goal)
     this.props.onUpdate({goals:goals},{selected:{idx:goals.length-1,type:'goal'}})
   }
@@ -255,7 +263,20 @@ class Behavior extends React.Component {
               <Button shape="circle" style={{marginLeft:5}} icon={<DeleteOutlined/>} danger onClick={()=>this.deleteObjective(idx)}/>
             </Tooltip>
           </Space>
-        }>
+        }
+        onMouseEnter={()=>{
+          let markers = getObjectiveMarkers({objective:objectiveData,
+                                             goal:this.props.meta.target_goals[idx],
+                                             poses:this.props.meta.joint_poses,
+                                             tree:this.props.meta.robot_tree,
+                                             jointNames:jointNames,
+                                             jointOrdering:jointOrdering,
+                                             eeFixedJoints:eeFixedJoints,
+                                             fixedFrame:fixedFrame
+                                            });
+          this.props.onUpdate({},{gui_markers:markers})
+        }}
+        >
         <List.Item.Meta title={this.props.config.objectives[idx].tag}
                         description={getObjectivePreview(objectiveData,
                                                          fixedFrame,

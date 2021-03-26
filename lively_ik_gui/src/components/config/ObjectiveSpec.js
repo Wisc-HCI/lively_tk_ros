@@ -1,26 +1,13 @@
 import React, { useState } from 'react';
 import _ from 'lodash';
-import { List, Slider, Select, Input, InputNumber, Button,
-         Row, Col, Cascader, Drawer, Space, Radio } from 'antd';
-import { defaultObjectives, defaultWeights, defaultObjectiveNames } from '../../util/Default';
+import { List, Select, Input, Button,
+         Row, Cascader, Drawer, Space } from 'antd';
 import { getObjectivePreview } from '../../util/Englishify';
+import { getObjectiveMarkers } from '../../util/Markers';
 import ScalarInput from '../../util/ScalarInput';
-import LogSlider from '../../util/LogSlider';
-import { BASE_OBJECTIVES,
-         DIRECTION_OBJECTIVES,
-         LIVELINESS_OBJECTIVES,
-         PAIRED_OBJECTIVES,
+import { PAIRED_OBJECTIVES,
          CARTESIAN_OBJECTIVES,
          JOINT_OBJECTIVES } from '../../util/Categories';
-const { Option } = Select;
-
-const debounce = (func, timeout = 200) => {
-  let timer;
-  return (...args) => {
-    clearTimeout(timer);
-    timer = setTimeout(() => { func.apply(this, args); }, timeout);
-  };
-}
 
 export default function ObjectiveSpec(props) {
 
@@ -56,15 +43,25 @@ export default function ObjectiveSpec(props) {
             <Button size="small" type="primary" onClick={()=>{
               let objectives = [...props.config.objectives];
               objectives[props.meta.selected.idx] = cachedObjective;
-              console.log(cachedObjective);
-              console.log(objectives)
-              props.onUpdate({directive:'update',config:{objectives:objectives,modes:props.config.modes,goals:props.config.goals}})
+              let markers = getObjectiveMarkers({objective:cachedObjective,
+                                                 goal:props.meta.target_goals[props.meta.selected.idx],
+                                                 tree:props.meta.robot_tree,
+                                                 poses:props.meta.joint_poses,
+                                                 jointNames:props.config.joint_names,
+                                                 jointOrdering:props.config.joint_ordering,
+                                                 eeFixedJoints:props.config.ee_fixed_joints,
+                                                 fixedFrame:props.config.fixed_frame
+                                                });
+              props.onUpdate({directive:'update',config:{objectives:objectives,
+                                                         modes:props.config.modes,
+                                                         goals:props.config.goals},
+                                                 meta:{gui_markers:markers}})
             }}>
               Save
             </Button>}
           {!matches &&
             <Button size="small" danger type="ghost" onClick={()=>{
-              props.onUpdate({directive:'update',meta:{selected:null}})
+              props.onUpdate({directive:'update',meta:{selected:null,gui_markers:{}}})
               setCachedObjective(onFile)
             }}>
               Discard
@@ -96,9 +93,9 @@ export default function ObjectiveSpec(props) {
         <Input placeholder='Name this Behavior'
              value={cachedObjective.tag}
              onChange={(e)=>{
-               let editedCache = {...cachedObjective};
-               editedCache.tag = e.target.value
-               setCachedObjective(editedCache)
+               let editedObjective = {...cachedObjective};
+               editedObjective.tag = e.target.value
+               setCachedObjective(editedObjective)
              }}/>
 
         {(isCartesianObjective) && (
@@ -115,6 +112,16 @@ export default function ObjectiveSpec(props) {
                         indices[1] = v[1]
                         editedObjective.indices = indices
                         setCachedObjective(editedObjective)
+                        let markers = getObjectiveMarkers({objective:editedObjective,
+                                                           goal:props.meta.target_goals[props.meta.selected.idx],
+                                                           tree:props.meta.robot_tree,
+                                                           poses:props.meta.joint_poses,
+                                                           jointNames:props.config.joint_names,
+                                                           jointOrdering:props.config.joint_ordering,
+                                                           eeFixedJoints:props.config.ee_fixed_joints,
+                                                           fixedFrame:props.config.fixed_frame
+                                                          });
+                        props.onUpdate({directive:'update',meta:{gui_markers:markers}})
                       }}
             />
             {(isPairedObjective) && (
@@ -131,6 +138,16 @@ export default function ObjectiveSpec(props) {
                             indices[3] = v[1]
                             editedObjective.indices = indices
                             setCachedObjective(editedObjective)
+                            let markers = getObjectiveMarkers({objective:editedObjective,
+                                                               goal:props.meta.target_goals[props.meta.selected.idx],
+                                                               tree:props.meta.robot_tree,
+                                                               poses:props.meta.joint_poses,
+                                                               jointNames:props.config.joint_names,
+                                                               jointOrdering:props.config.joint_ordering,
+                                                               eeFixedJoints:props.config.ee_fixed_joints,
+                                                               fixedFrame:props.config.fixed_frame
+                                                              });
+                            props.onUpdate({directive:'update',meta:{gui_markers:markers}})
                           }}/>
               </>
             )}
@@ -151,6 +168,16 @@ export default function ObjectiveSpec(props) {
                 indices[0] = v
                 editedObjective.indices = indices
                 setCachedObjective(editedObjective)
+                let markers = getObjectiveMarkers({objective:editedObjective,
+                                                   goal:props.meta.target_goals[props.meta.selected.idx],
+                                                   tree:props.meta.robot_tree,
+                                                   poses:props.meta.joint_poses,
+                                                   jointNames:props.config.joint_names,
+                                                   jointOrdering:props.config.joint_ordering,
+                                                   eeFixedJoints:props.config.ee_fixed_joints,
+                                                   fixedFrame:props.config.fixed_frame
+                                                  });
+                props.onUpdate({directive:'update',meta:{gui_markers:markers}})
               }}
               style={{ width:'100%'}}/>
             {(isPairedObjective) && (
@@ -163,9 +190,19 @@ export default function ObjectiveSpec(props) {
                   onChange={(v)=>{
                     let editedObjective = {...cachedObjective};
                     let indices = [...editedObjective.indices];
-                    indices[0] = v
+                    indices[1] = v
                     editedObjective.indices = indices
                     setCachedObjective(editedObjective)
+                    let markers = getObjectiveMarkers({objective:editedObjective,
+                                                       goal:props.meta.target_goals[props.meta.selected.idx],
+                                                       tree:props.meta.robot_tree,
+                                                       poses:props.meta.joint_poses,
+                                                       jointNames:props.config.joint_names,
+                                                       jointOrdering:props.config.joint_ordering,
+                                                       eeFixedJoints:props.config.ee_fixed_joints,
+                                                       fixedFrame:props.config.fixed_frame
+                                                      });
+                    props.onUpdate({directive:'update',meta:{gui_markers:markers}})
                   }}
                   style={{ width:'100%'}}/>
               </>
@@ -184,9 +221,19 @@ export default function ObjectiveSpec(props) {
             max={5}
             value={cachedObjective.scale}
             onChange={(v)=>{
-              let editedCache = {...cachedObjective};
-              editedCache.scale = v;
-              setCachedObjective(editedCache);
+              let editedObjective = {...cachedObjective};
+              editedObjective.scale = v;
+              setCachedObjective(editedObjective);
+              let markers = getObjectiveMarkers({objective:editedObjective,
+                                                 goal:props.meta.target_goals[props.meta.selected.idx],
+                                                 tree:props.meta.robot_tree,
+                                                 poses:props.meta.joint_poses,
+                                                 jointNames:props.config.joint_names,
+                                                 jointOrdering:props.config.joint_ordering,
+                                                 eeFixedJoints:props.config.ee_fixed_joints,
+                                                 fixedFrame:props.config.fixed_frame
+                                                });
+              props.onUpdate({directive:'update',meta:{gui_markers:markers}})
             }}
             showInput={true}/>
           </Row>
@@ -207,15 +254,25 @@ export default function ObjectiveSpec(props) {
                         max={2}
                         value={cachedObjective.shape[idx]}
                         onChange={(v)=>{
-                          let editedCache = {...cachedObjective};
-                          let shape = {...editedCache.shape}
+                          let editedObjective = {...cachedObjective};
+                          let shape = {...editedObjective.shape}
                           shape[idx] = v;
-                          editedCache.shape = shape;
-                          setCachedObjective(editedCache);
+                          editedObjective.shape = shape;
+                          setCachedObjective(editedObjective);
+                          let markers = getObjectiveMarkers({objective:editedObjective,
+                                                             goal:props.meta.target_goals[props.meta.selected.idx],
+                                                             tree:props.meta.robot_tree,
+                                                             poses:props.meta.joint_poses,
+                                                             jointNames:props.config.joint_names,
+                                                             jointOrdering:props.config.joint_ordering,
+                                                             eeFixedJoints:props.config.ee_fixed_joints,
+                                                             fixedFrame:props.config.fixed_frame
+                                                            });
+                          props.onUpdate({directive:'update',meta:{gui_markers:markers}})
                         }}
                         showInput={true}/>
                       }>
-                      <List.Item.Meta title={`${['X','Y','Z'][idx]} Dimension`}/>
+                      <List.Item.Meta title={cachedObjective.variant === 'orientation_liveliness' ? `${['Roll','Pitch','Yaw'][idx]}` : `${['X','Y','Z'][idx]} Dimension`}/>
                     </List.Item>
                   )}
             />
@@ -230,9 +287,9 @@ export default function ObjectiveSpec(props) {
             <Button
               type={val === cachedObjective.frequency ? 'primary' : 'ghost'}
               onClick={()=>{
-                let editedCache = {...cachedObjective};
-                editedCache.frequency = val;
-                setCachedObjective(editedCache);
+                let editedObjective = {...cachedObjective};
+                editedObjective.frequency = val;
+                setCachedObjective(editedObjective);
                 setAdvancedFreq(false)
               }}>
               {['Slow','Medium','Fast'][idx]}
@@ -256,9 +313,9 @@ export default function ObjectiveSpec(props) {
               max={30}
               value={20-cachedObjective.frequency}
               onChange={(v)=>{
-                let editedCache = {...cachedObjective};
-                editedCache.frequency = 20-v;
-                setCachedObjective(editedCache);
+                let editedObjective = {...cachedObjective};
+                editedObjective.frequency = 20-v;
+                setCachedObjective(editedObjective);
               }}
               showInput={true}/>
             </Row>

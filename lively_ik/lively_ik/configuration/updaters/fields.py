@@ -241,12 +241,12 @@ FIELDS = {
     },
     'goal_markers':{
         'derivation':derive_goal_markers,
-        'dependencies':{'valid_config','target_goals','selected',
+        'dependencies':{'valid_config','target_goals','selected','robot_tree',
                         'objectives','fixed_frame','joint_poses'}
     },
     'gui_markers':{
         'derivation':lambda config: {},
-        'dependencies':{'robot_tree'}
+        'dependencies':{}
     },
     # This can be enabled or disabled from the front-end, and should
     # cause cylinder markers to show up in the visualizer window.

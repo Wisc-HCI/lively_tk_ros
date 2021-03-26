@@ -82,6 +82,7 @@ class ConfigCreator extends React.Component {
   }
 
   updateMeta = (meta) => {
+    console.log(meta);
     this.props.onUpdate({directive:'update',meta:meta})
   }
 
@@ -157,6 +158,7 @@ class ConfigCreator extends React.Component {
                      updateStates={(e)=>this.updateStates(e)}
                      updateStaticEnvironment={(e)=>this.updateStaticEnvironment(e)}
                      updateRobotLinkRadius={(e)=>this.updateRobotLinkRadius(e)}
+                     updateShowLinkCollision={(b)=>this.updateMeta({show_link_collision:b})}
                      updateMeta={(e)=>this.updateMeta(e)}
                      beginTraining={()=>this.beginTraining()}
                      style={{height:'100%'}}

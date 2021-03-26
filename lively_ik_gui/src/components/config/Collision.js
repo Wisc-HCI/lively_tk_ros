@@ -85,7 +85,10 @@ class Collision extends React.Component {
           <h3>Robot Link Radius</h3>
           <Space style={{display:'flex',paddingBottom:10}}>
             <InputNumber min={0} max={10} value={this.props.config.robot_link_radius} step={0.01} onChange={(value)=>this.props.updateRobotLinkRadius(value)} />
-            <Checkbox>Show Link Collision</Checkbox>
+            <Checkbox
+              checked={this.props.meta.show_link_collision}
+              onChange={(e)=>this.props.updateShowLinkCollision(e.target.checked)}
+              >Show Link Collision</Checkbox>
           </Space>
         </TabPane>
         <TabPane tab='Environment' key='2'>

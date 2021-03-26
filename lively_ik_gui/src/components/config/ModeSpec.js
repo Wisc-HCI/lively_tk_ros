@@ -1,10 +1,7 @@
 import React, { useState } from 'react';
 import _ from 'lodash';
 import { List, Input, Alert, Drawer, Space, Button, Tabs } from 'antd';
-import TranslationInput from '../../util/TranslationInput';
-import RotationInput from '../../util/RotationInput';
 import ScalarInput from '../../util/ScalarInput';
-import LogSlider from '../../util/LogSlider';
 import { BEHAVIOR_ATTRIBUTE_GROUPS,
          BEHAVIOR_ATTRIBUTE_GROUP_NAMES } from '../../util/Categories';
 const { TabPane } = Tabs;
@@ -110,8 +107,8 @@ export default function ModeSpec(props) {
                     renderItem={(idx)=>(
                       <List.Item key={idx} label={props.config.objectives[idx].tag}>
                         <List.Item.Meta title={props.config.objectives[idx].tag}
-                                        description={<LogSlider
-                                                        min={0} max={100}
+                                        description={<ScalarInput
+                                                        min={0} max={500}
                                                         step={0.01}
                                                         showInput={true}
                                                         value={cachedMode.weights[idx]}

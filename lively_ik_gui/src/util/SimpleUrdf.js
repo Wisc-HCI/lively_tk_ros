@@ -106,6 +106,8 @@ class SimpleUrdf extends THREE.Object3D {
         var sphere = new THREE.SphereGeometry(visual.geometry.radius, 16);
         shapeMesh = new THREE.Mesh(sphere, colorMaterial);
         break;
+      default:
+        break;
     }
 
     return shapeMesh;

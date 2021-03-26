@@ -21,7 +21,7 @@ function ScalarInput(props) {
         <Button shape="circle"
                 onClick={()=>props.onChange(clamped(props.value-props.step,props.min,props.max))}
                 icon={<ArrowLeftOutlined/>}/>
-        <span>{+props.value.toFixed(2)}</span>
+        <span>{props.value ? +props.value.toFixed(2) : props.min}</span>
         <Button shape="circle"
                 onClick={()=>props.onChange(clamped(props.value+props.step,props.min,props.max))}
                 icon={<ArrowRightOutlined/>}/>
@@ -35,7 +35,7 @@ function ScalarInput(props) {
                   max={props.max}
                   step={props.step}
                   style={{ margin: '0 16px' }}
-                  value={+props.value.toFixed(2)}
+                  value={props.value ? +props.value.toFixed(2) : props.min}
                   onChange={(v)=>props.onChange(typeof v === 'number' ? v : props.value)}
                 />
             }

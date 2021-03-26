@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button, Space, Popover, InputNumber } from 'antd';
-import {RedoOutlined, UndoOutlined, EditOutlined, ArrowLeftOutlined, ArrowRightOutlined, ArrowUpOutlined, ArrowDownOutlined} from '@ant-design/icons';
+import { RedoOutlined, UndoOutlined, EditOutlined } from '@ant-design/icons';
 import {eulerFromQuaternion, quaternionFromEuler} from './Geometry';
 
 function RotationInput(props) {

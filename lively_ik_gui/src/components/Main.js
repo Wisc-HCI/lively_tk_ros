@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import ConfigCreator from './ConfigCreator';
 import JointSpec from './config/JointSpec';
 import ModeSpec from './config/ModeSpec';

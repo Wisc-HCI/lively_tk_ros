@@ -60,6 +60,7 @@ class InterfaceNode(Node):
         self.create_timer(.05,self.standard_loop)
 
         self.displayed_state = [[0,0,0],[]]
+        self.update_count = 0
 
     def on_feedback(self):
         self.get_logger().info('Reporting Feedback')
@@ -78,6 +79,13 @@ class InterfaceNode(Node):
     def handle_result_update(self,msg):
         data = json.loads(msg.data)
         self.displayed_state = [data['base_transform'],data['joint_states']]
+        if self.update_count > 5:
+            changes = self.config_manager.update({},{'displayed_state':self.displayed_state},realtime_feedback=False)
+            self.pub_to_gui({'directive':'update','meta':self.config_manager.meta})
+            self.update_count = 0
+        else:
+            self.update_count += 1
+
 
     def handle_update(self,data):
         self.get_logger().info('Async update request')
@@ -130,6 +138,7 @@ class InterfaceNode(Node):
 
     def update_markers(self):
         current_markers = self.config_manager.current['markers']
+        self.get_logger().info(str(current_markers.keys()))
         new_markers = {}
         idx = 0
         # First handle the existing markers
@@ -141,18 +150,15 @@ class InterfaceNode(Node):
             else:
                 # Update the marker, in case it changed
                 current_marker = current_markers[name]
-                quat = quaternion_from_euler(current_marker['pose']['rotation']['r'],
-                                             current_marker['pose']['rotation']['p'],
-                                             current_marker['pose']['rotation']['y'],'szxy')
                 marker.header.frame_id = current_marker['frame_id']
                 marker.id = idx
                 marker.pose.position.x = float(current_marker['pose']['position']['x'])
                 marker.pose.position.y = float(current_marker['pose']['position']['y'])
                 marker.pose.position.z = float(current_marker['pose']['position']['z'])
-                marker.pose.orientation.w = float(quat[0])
-                marker.pose.orientation.x = float(quat[1])
-                marker.pose.orientation.y = float(quat[2])
-                marker.pose.orientation.z = float(quat[3])
+                marker.pose.orientation.w = float(current_marker['pose']['orientation']['w'])
+                marker.pose.orientation.x = float(current_marker['pose']['orientation']['x'])
+                marker.pose.orientation.y = float(current_marker['pose']['orientation']['y'])
+                marker.pose.orientation.z = float(current_marker['pose']['orientation']['z'])
                 marker.scale.x = float(current_marker['scale']['x'])
                 marker.scale.y = float(current_marker['scale']['y'])
                 marker.scale.z = float(current_marker['scale']['z'])
@@ -160,7 +166,9 @@ class InterfaceNode(Node):
                 marker.color.r = float(current_marker['color']['r'])
                 marker.color.g = float(current_marker['color']['g'])
                 marker.color.b = float(current_marker['color']['b'])
-                if current_marker['type'] == 'sphere':
+                if current_marker['type'] == 'arrow':
+                    marker.type = marker.ARROW
+                elif current_marker['type'] == 'sphere':
                     marker.type = marker.SPHERE
                 elif current_marker['type'] == 'cube':
                     marker.type = marker.CUBE
@@ -168,7 +176,10 @@ class InterfaceNode(Node):
                     marker.type = marker.CYLINDER
                 elif current_marker['type'] == 'points':
                     marker.type = marker.POINTS
-                    marker.points = [Point(x=point['x'],y=point['y'],z=point['z']) for point in current_marker['points']]
+                    marker.points = [Point(x=point['x'],y=point['y'],z=point['z']) for point in current_marker['data']]
+                elif current_marker['type'] == 'text':
+                    marker.type = marker.TEXT_VIEW_FACING
+                    marker.text = current_marker['data']
                 else:
                     marker.type = marker.MESH_RESOURCE
                     marker.mesh_resource = current_marker['type']
@@ -180,18 +191,15 @@ class InterfaceNode(Node):
         for name,current_marker in current_markers.items():
             if name not in self.marker_msgs:
                 marker = Marker()
-                quat = quaternion_from_euler(current_marker['pose']['rotation']['r'],
-                                             current_marker['pose']['rotation']['p'],
-                                             current_marker['pose']['rotation']['y'],'szxy')
                 marker.header.frame_id = current_marker['frame_id']
                 marker.id = idx
                 marker.pose.position.x = float(current_marker['pose']['position']['x'])
                 marker.pose.position.y = float(current_marker['pose']['position']['y'])
                 marker.pose.position.z = float(current_marker['pose']['position']['z'])
-                marker.pose.orientation.w = float(quat[0])
-                marker.pose.orientation.x = float(quat[1])
-                marker.pose.orientation.y = float(quat[2])
-                marker.pose.orientation.z = float(quat[3])
+                marker.pose.orientation.w = float(current_marker['pose']['orientation']['w'])
+                marker.pose.orientation.x = float(current_marker['pose']['orientation']['x'])
+                marker.pose.orientation.y = float(current_marker['pose']['orientation']['y'])
+                marker.pose.orientation.z = float(current_marker['pose']['orientation']['z'])
                 marker.scale.x = float(current_marker['scale']['x'])
                 marker.scale.y = float(current_marker['scale']['y'])
                 marker.scale.z = float(current_marker['scale']['z'])
@@ -199,7 +207,9 @@ class InterfaceNode(Node):
                 marker.color.r = float(current_marker['color']['r'])
                 marker.color.g = float(current_marker['color']['g'])
                 marker.color.b = float(current_marker['color']['b'])
-                if current_marker['type'] == 'sphere':
+                if current_marker['type'] == 'arrow':
+                    marker.type = marker.ARROW
+                elif current_marker['type'] == 'sphere':
                     marker.type = marker.SPHERE
                 elif current_marker['type'] == 'cube':
                     marker.type = marker.CUBE
@@ -207,7 +217,10 @@ class InterfaceNode(Node):
                     marker.type = marker.CYLINDER
                 elif current_marker['type'] == 'points':
                     marker.type = marker.POINTS
-                    marker.points = [Point(x=point['x'],y=point['y'],z=point['z']) for point in current_marker['points']]
+                    marker.points = [Point(x=point['x'],y=point['y'],z=point['z']) for point in current_marker['data']]
+                elif current_marker['type'] == 'text':
+                    marker.type = marker.TEXT_VIEW_FACING
+                    marker.text = current_marker['data']
                 else:
                     marker.type = marker.MESH_RESOURCE
                     marker.mesh_resource = current_marker['type']
