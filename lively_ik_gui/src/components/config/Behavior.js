@@ -189,7 +189,7 @@ class Behavior extends React.Component {
           let ori = this.props.meta.joint_poses[objective.indices[0]][objective.indices[1]].quaternion;
           return {quaternion:[ori.w,ori.x,ori.y,ori.z]}
         case 'joint_match':
-          let jointValue = this.props.meta.displayed_state[objective.indices[0]]
+          let jointValue = this.props.meta.displayed_state[1][objective.indices[0]]
           return {scalar:jointValue}
         default:
           return {}
@@ -337,7 +337,7 @@ class Behavior extends React.Component {
             style={{height: '100%', width:'100%' }}
             onChange={(key)=>this.setOverallTab(key)}
             centered>
-        <TabPane tab='Attributes' style={{height: '100%', width:'100%' }} key='attributes'>
+        <TabPane tab='Attributes' style={{height: '100%', width:'100%'}} key='attributes'>
           <Tabs activeKey={this.state.objectiveTab}
                 style={{height: '100%', width:'100%' }}
                 onChange={(key)=>this.setObjectiveTab(key)}
@@ -345,7 +345,7 @@ class Behavior extends React.Component {
             {BEHAVIOR_ATTRIBUTE_GROUPS.map((group,groupIdx)=>(
               <TabPane tab={BEHAVIOR_ATTRIBUTE_GROUP_NAMES[groupIdx]}
                        key={BEHAVIOR_ATTRIBUTE_GROUP_NAMES[groupIdx]}
-                       style={{ height: '100%', width:'100%' }}>
+                       style={{ height: '100%', width:'100%', overflowY:'scroll' }}>
                 <List header={null}
                       footer={
                         <Dropdown trigger='click' overlay={
@@ -357,7 +357,11 @@ class Behavior extends React.Component {
                         </Dropdown>
                       }
                       bordered
-                      style={{ maxHeight: '100%', width:'100%', overflow:'scroll'}}
+                      pagination={{
+                        onChange: page => {},
+                        pageSize: 7,
+                      }}
+                      style={{ maxHeight: '100%', width:'100%'}}
                       dataSource={this.props.config.objectives.map((objective,idx)=>idx).filter((idx)=>group.indexOf(this.props.config.objectives[idx].variant)>=0)}
                       renderItem={this.getObjectiveListItem}
                 />
@@ -370,6 +374,11 @@ class Behavior extends React.Component {
                 style={{ maxHeight: '100%', width:'100%', overflow:'scroll'}}
                 dataSource={this.props.config.modes.map((mode,idx)=>idx)}
                 renderItem={this.getModeListItem}
+                pagination={{
+                  onChange: page => {},
+                  pageSize: 7,
+                }}
+
           />
         </TabPane>
         <TabPane tab='Goals' style={{height: '100%', width:'100%' }} key='goals'>
@@ -377,6 +386,11 @@ class Behavior extends React.Component {
                 style={{ maxHeight: '100%', width:'100%', overflow:'scroll'}}
                 dataSource={this.props.config.goals.map((goal,idx)=>idx)}
                 renderItem={this.getGoalListItem}
+                pagination={{
+                  onChange: page => {},
+                  pageSize: 7,
+                }}
+
           />
         </TabPane>
       </Tabs>

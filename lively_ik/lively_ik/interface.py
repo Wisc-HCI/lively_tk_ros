@@ -96,6 +96,12 @@ class InterfaceNode(Node):
         if 'urdf' in changes and self.config_manager.meta['valid_urdf']:
             self.get_logger().info('Updating robot description!')
             self.update_robot_description(self.config_manager.data['urdf'])
+            self.watched_transforms = []
+            for link in self.config_manager.meta['links']:
+                transform_pair = {'target':self.clean_tf_frame('world'),
+                                  'source':self.clean_tf_frame(link)}
+                if transform_pair not in self.watched_transforms:
+                    self.watched_transforms.append(transform_pair)
             self.get_logger().info('Updated robot description!')
         if 'objectives' in changes and self.config_manager.meta['valid_config']:
             self.config_pub.publish(String(data=json.dumps(self.config_manager.data)))

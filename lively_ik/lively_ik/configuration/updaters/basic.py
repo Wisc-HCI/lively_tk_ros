@@ -61,6 +61,9 @@ def derive_robot_tree(config):
     for child in config['parsed_urdf']:
         if child.tag == 'link':
             mesh = None
+            collision = None
+            scale = {'x':1,'y':1,'z':1}
+            collision_scale = {'x':1,'y':1,'z':1}
             for link_child in child:
                 if link_child.tag == 'visual':
                     for visual_child in link_child:
@@ -71,10 +74,37 @@ def derive_robot_tree(config):
                                         mesh = geometry_child.attrib['filename']
                                     except:
                                         print("could not find mesh for {0}".format(child.attrib['name']))
-            tree['links'][child.attrib['name']] = {'model':mesh}
+                                    try:
+                                        vec = geometry_child.attrib['scale'].split(' ')
+                                        scale['x'] = float(vec[0])
+                                        scale['y'] = float(vec[1])
+                                        scale['z'] = float(vec[2])
+                                    except:
+                                        pass
+                elif link_child.tag == 'collision':
+                    for visual_child in link_child:
+                        if visual_child.tag == 'geometry':
+                            for geometry_child in visual_child:
+                                if geometry_child.tag == 'mesh':
+                                    try:
+                                        collision = geometry_child.attrib['filename']
+                                    except:
+                                        print("could not find mesh for {0}".format(child.attrib['name']))
+                                    try:
+                                        vec = geometry_child.attrib['scale'].split(' ')
+                                        collision_scale['x'] = float(vec[0])
+                                        collision_scale['y'] = float(vec[1])
+                                        collision_scale['z'] = float(vec[2])
+                                    except:
+                                        pass
+            tree['links'][child.attrib['name']] = {'model':mesh,'collision_model':collision,
+                                                   'scale':scale,'collision_scale':collision_scale}
+
         elif child.tag == 'joint':
             parent_link = None
             child_link = None
+            position = {'x':0,'y':0,'z':0}
+            rotation = {'r':0,'p':0,'y':0}
             joint_limits = [0,0]
             velocity_limit = 0
             multiplier = 1
@@ -90,12 +120,30 @@ def derive_robot_tree(config):
                     joint_limits = [float(prop.attrib.get('lower',0)),float(prop.attrib.get('upper',0))]
                     velocity_limit = float(prop.attrib.get('velocity',0))
                     multiplier = float(prop.attrib.get('multiplier',1.0))
+                elif prop.tag == 'origin':
+                    try:
+                        vec = prop.attrib['xyz'].split(' ')
+                        position['x'] = float(vec[0])
+                        position['y'] = float(vec[1])
+                        position['z'] = float(vec[2])
+                    except:
+                        pass
+                    try:
+                        vec = prop.attrib['rpy'].split(' ')
+                        rotation['r'] = float(vec[0])
+                        rotation['p'] = float(vec[1])
+                        rotation['y'] = float(vec[2])
+                    except:
+                        pass
             tree['joints'][child.attrib['name']] = {'parent':parent_link,
                                                     'child':child_link,
+                                                    'type':child.attrib['type'],
                                                     'dynamic': child.attrib['type'] != 'fixed',
                                                     'mimic':mimic,
                                                     'multiplier':multiplier,
                                                     'joint_limits':joint_limits,
+                                                    'position':position,
+                                                    'rotation':rotation,
                                                     'velocity_limit':velocity_limit}
     # Run through the tree and apply any limits of mimic joints
     for joint in tree['joints']:

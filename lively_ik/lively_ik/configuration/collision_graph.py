@@ -6,7 +6,7 @@ import math
 
 class CollisionGraph:
     def __init__(self, config, robot, link_exclusion_list = [], sample_states=[]):
-        self.c = CollisionObjectContainer(config['static_environment'],config['joint_names'],config['robot_link_radius'])
+        self.c = CollisionObjectContainer(config)
         self.c.add_collision_objects_from_robot(robot, link_exclusion_list)
         self.robot = robot
         self.sample_states = sample_states
@@ -24,11 +24,11 @@ class CollisionGraph:
 
     def get_collision_score_of_state(self, transform, state):
         frames = self.robot.getFrames(transform, state)
-        return self.get_collision_score(frames)
+        return self.get_collision_score(transform, frames)
 
-    def get_collision_score(self, frames):
+    def get_collision_score(self, transform, frames):
         sum = 0.0
-        self.c.update_all_transforms(frames)
+        self.c.update_all_transforms(transform, frames)
         c_values = self.c_values
         for i, pair in enumerate(self.combinations):
             l1 = pair[0]

@@ -1,5 +1,5 @@
 import React from 'react';
-import {SettingFilled, ArrowUpOutlined, ArrowDownOutlined} from '@ant-design/icons';
+import {SettingFilled, ArrowUpOutlined, ArrowDownOutlined, UndoOutlined} from '@ant-design/icons';
 import './App.css';
 import 'antd/dist/antd.css';
 import Connection from './components/Connection';
@@ -22,6 +22,7 @@ class App extends React.Component {
                   sidebarCollapsed: true,
                   showUploader:false,
                   cameraPosition:{x:0,y:0,z:0},
+                  shouldRefresh:false,
                   config:JSON.parse(JSON.stringify(defaultConfig)),
                   meta:JSON.parse(JSON.stringify(defaultMeta))
                  };
@@ -136,7 +137,9 @@ class App extends React.Component {
                    urdf={this.state.config.urdf}
                    connected={this.state.connected}
                    cameraPosition={this.state.cameraPosition}
-                   defaultUrdf={defaultConfig.urdf}/>
+                   defaultUrdf={defaultConfig.urdf}
+                   shouldRefresh={this.state.shouldRefresh}
+                   onRefresh={()=>this.setState({shouldRefresh:false})}/>
           </>
           <Main meta={this.state.meta} config={this.state.config} onUpdate={(data)=>this.updateToServer(data)}/>
         </SplitPane>
@@ -182,6 +185,7 @@ class App extends React.Component {
         )}
         <Button type="primary" shape="circle" icon={<ArrowUpOutlined />} onClick={()=>this.moveSceneCamera(0.05,'z')}/>
         <Button type="primary" shape="circle" icon={<ArrowDownOutlined />} onClick={()=>this.moveSceneCamera(-0.05,'z')}/>
+        <Button type="primary" shape="circle" enabled={!this.state.shouldRefresh} icon={<UndoOutlined />} onClick={()=>this.setState({shouldRefresh:true})}/>
       </Space>
     )
   }

@@ -17,7 +17,7 @@ class Scene extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    const { width, height, fixedFrame, cameraPosition, defaultUrdf } = this.props;
+    const { width, height, fixedFrame, cameraPosition, defaultUrdf, shouldRefresh } = this.props;
 
     if (width !== prevProps.width || height !== prevProps.height) {
       this.viewer.resize(width,height)
@@ -35,6 +35,10 @@ class Scene extends Component {
       this.viewer.cameraControls.center.x = cameraPosition.x;
       this.viewer.cameraControls.center.y = cameraPosition.y;
       this.viewer.cameraControls.center.z = cameraPosition.z;
+    }
+    if (shouldRefresh) {
+      this.setupViewer(urdf,this.props.fixedFrame)
+      this.props.onRefresh()
     }
 
   }
@@ -90,7 +94,7 @@ class Scene extends Component {
       string:this.props.urdf.replace(/package:\/\//g, process.env.PUBLIC_URL + 'assets/')
     });
     //console.log(this.robotModel);
-    this.robot = new SimpleUrdf({
+    this.robot = new ROS3D.Urdf({
       urdfModel: this.robotModel,
       path: '/',
       tfClient: this.tfClient,

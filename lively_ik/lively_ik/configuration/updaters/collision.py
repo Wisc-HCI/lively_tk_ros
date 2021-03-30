@@ -69,7 +69,7 @@ def derive_training_scores(config):
     scores = []
     for sample in config['training_samples']:
         frames = config['robot'].getFrames(sample[0:3],sample[3:])
-        scores.append(config['collision_graph'].get_collision_score(frames))
+        scores.append(config['collision_graph'].get_collision_score(sample[0:3],frames))
     return scores
 
 def derive_collision_graph(config):

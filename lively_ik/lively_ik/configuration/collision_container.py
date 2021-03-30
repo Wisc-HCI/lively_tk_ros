@@ -3,15 +3,16 @@ import numpy as np
 import lively_ik.configuration.transformations as T
 
 class CollisionObjectContainer:
-    def __init__(self, environment_spec, joint_names, robot_link_radius=0.05):
+    def __init__(self,config):
         self.collision_objects = []
-        self.robot_link_radius = robot_link_radius
-        self.joint_names = joint_names
+        self.robot_link_radius = config['robot_link_radius']
+        self.joint_names = config['joint_names']
+        self.tree = config['robot_tree']
 
-        for sphere in environment_spec['spheres']:
-            self.collision_objects.append(Collision_Sphere(sphere))
-        for cuboid in environment_spec['cuboids']:
-            self.collision_objects.append(Collision_Box(cuboid))
+        for sphere in config['static_environment']['spheres']:
+            self.collision_objects.append(CollisionSphere(sphere))
+        for cuboid in config['static_environment']['cuboids']:
+            self.collision_objects.append(CollisionBox(cuboid))
 
     def get_min_distance(self, a, b):
         obja = self.collision_objects[a].obj
@@ -41,16 +42,16 @@ class CollisionObjectContainer:
                     dis = np.linalg.norm(ptA - ptB)
                     if dis < 0.02:
                         continue
-                    cylinder = Collision_Cylinder({'name':'robotLink_' + str(arm_idx) + '_' + str(l),
-                                                   'coordinate_frame':curr_idx,
-                                                   'rx':0,'ry':0,'rz':0,
-                                                   'tx':midPt[0],'ty':midPt[1],'tz':midPt[2],
-                                                   'radius':self.robot_link_radius,
-                                                   'lz':dis})
+                    cylinder = CollisionCylinder({'name':'robotLink_' + str(arm_idx) + '_' + str(l),
+                                                  'coordinate_frame':curr_idx,
+                                                  'rx':0,'ry':0,'rz':0,
+                                                  'tx':midPt[0],'ty':midPt[1],'tz':midPt[2],
+                                                  'radius':self.robot_link_radius,
+                                                  'lz':dis})
                     cylinder.type = 'robot_link'
                     self.collision_objects.append(cylinder)
 
-    def update_all_transforms(self, all_frames):
+    def update_all_transforms(self, transform, all_frames):
 
         # positions = frames[0]
         # rotations = frames[1]
@@ -90,15 +91,12 @@ class CollisionObjectContainer:
                 arm_idx = 0
                 joint_idx = 0
 
-                final_pos = np.array([0,0,0])
+                final_pos = np.array(transform)
                 final_quat = np.array([1,0,0,0])
                 rot_mat = np.identity(3)
-
-                for i,arm in enumerate(self.joint_names):
-                    for j,joint in enumerate(arm):
-                        if joint == coordinate_frame:
-                            arm_idx = i
-                            joint_idx = j
+                for arm_idx,arm in enumerate(self.joint_names):
+                    for joint_idx,joint in enumerate(arm):
+                        if self.tree['joints'][joint]['child'] == coordinate_frame:
                             final_pos = all_frames[arm_idx][0][joint_idx]
                             rot_mat = all_frames[arm_idx][1][joint_idx]
                             final_quat = T.quaternion_from_matrix(rot_mat)
@@ -117,15 +115,13 @@ class CollisionObjectContainer:
     def __str__(self): return str([str(c.name) for c in self.collision_objects])
 
 
-class Collision_Object:
-    def __init__(self, collision_dict):
-        self.name = collision_dict['name']
-        self.coordinate_frame = collision_dict['coordinate_frame']
-        self.rotation = [collision_dict['rx'], collision_dict['ry'], collision_dict['rz']]
-        self.quaternion = T.quaternion_from_euler(collision_dict['rx'], collision_dict['ry'], collision_dict['rz'])
-        self.translation = [collision_dict['tx'], collision_dict['ty'], collision_dict['tz']]
-        self.id = 0
-        self.type = ''
+class CollisionObject:
+    def __init__(self, name, coordinate_frame, tx, ty, tz):
+        self.name = name
+        self.coordinate_frame = coordinate_frame
+        self.translation = [tx, ty, tz]
+        self.quaternion = T.quaternion_from_euler(0, 0, 0)
+        self.type = None
 
     def update_transform(self, translation, rotation):
         if len(translation) == 1:
@@ -134,10 +130,11 @@ class Collision_Object:
         self.obj.setTransform(self.t)
 
 
-class Collision_Box(Collision_Object):
+class CollisionBox(CollisionObject):
     def __init__(self, collision_dict):
-        Collision_Object.__init__(self, collision_dict)
-
+        CollisionObject.__init__(self, collision_dict['name'],collision_dict['coordinate_frame'],
+                                 collision_dict['tx'],collision_dict['ty'],collision_dict['tz'])
+        self.quaternion = T.quaternion_from_euler(collision_dict['rx'], collision_dict['ry'], collision_dict['rz'])
         self.x = collision_dict['x_halflength']*2
         self.y = collision_dict['y_halflength']*2
         self.z = collision_dict['z_halflength']*2
@@ -145,16 +142,19 @@ class Collision_Box(Collision_Object):
         self.t = fcl.Transform()
         self.obj = fcl.CollisionObject(self.g, self.t)
 
-class Collision_Sphere(Collision_Object):
+class CollisionSphere(CollisionObject):
     def __init__(self, collision_dict):
-        Collision_Object.__init__(self, collision_dict)
+        CollisionObject.__init__(self, collision_dict['name'],collision_dict['coordinate_frame'],
+                                 collision_dict['tx'],collision_dict['ty'],collision_dict['tz'])
         self.g = fcl.Sphere(collision_dict['radius'])
         self.t = fcl.Transform()
         self.obj = fcl.CollisionObject(self.g, self.t)
 
-class Collision_Cylinder(Collision_Object):
+class CollisionCylinder(CollisionObject):
     def __init__(self, collision_dict):
-        Collision_Object.__init__(self, collision_dict)
+        CollisionObject.__init__(self, collision_dict['name'],collision_dict['coordinate_frame'],
+                                 collision_dict['tx'],collision_dict['ty'],collision_dict['tz'])
+        self.quaternion = T.quaternion_from_euler(collision_dict['rx'], collision_dict['ry'], collision_dict['rz'])
         self.r = collision_dict['radius']
         self.lz = collision_dict['lz']
         self.g = fcl.Cylinder(self.r, self.lz)
