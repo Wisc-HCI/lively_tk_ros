@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import _ from 'lodash';
-import { List, Input, Alert, Drawer, Space, Button, Tabs } from 'antd';
+import { List, Input, Alert, Drawer, Space, Button, Tabs, Dropdown, Menu } from 'antd';
 import ScalarInput from '../../util/ScalarInput';
 import { BEHAVIOR_ATTRIBUTE_GROUPS,
          BEHAVIOR_ATTRIBUTE_GROUP_NAMES } from '../../util/Categories';
@@ -103,9 +103,40 @@ export default function ModeSpec(props) {
               <List header={null}
                     footer={null}
                     bordered
+                    pagination={{
+                      onChange: page => {},
+                      pageSize: 7,
+                    }}
                     dataSource={props.config.objectives.map((obj,idx)=>idx).filter((idx)=>BEHAVIOR_ATTRIBUTE_GROUPS[groupIdx].indexOf(props.config.objectives[idx].variant)>=0)}
                     renderItem={(idx)=>(
-                      <List.Item key={idx} label={props.config.objectives[idx].tag}>
+                      <List.Item
+                        key={idx}
+                        label={props.config.objectives[idx].tag}
+                        extra={
+                          <Dropdown
+                            overlay={
+                              <Menu onClick={({ key })=>{
+                                console.log(key);
+                                let editedCache = {...cachedMode};
+                                let weights = [...editedCache.weights];
+                                let otherModeWeight = props.config.modes[key].weights[idx];
+                                weights[idx] = otherModeWeight;
+                                editedCache.weights = weights;
+                                props.onUpdate({directive:'update',meta:{target_weights:editedCache.weights}});
+                                setCachedMode(editedCache);
+                              }}>
+                                {props.config.modes.map((mode,modeIdx)=>(
+                                  <Menu.Item key={modeIdx}>
+                                    {mode.name === 'default' ? 'Default' : mode.name}
+                                  </Menu.Item>
+                                ))}
+                              </Menu>
+                            }
+                            trigger='click'
+                            placement="bottomLeft">
+                            <Button>Copy From...</Button>
+                          </Dropdown>
+                        }>
                         <List.Item.Meta title={props.config.objectives[idx].tag}
                                         description={<ScalarInput
                                                         min={0} max={500}

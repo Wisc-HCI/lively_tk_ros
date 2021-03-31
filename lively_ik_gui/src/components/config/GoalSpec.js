@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import _ from 'lodash';
-import { List, Input, Alert, Drawer, Space, Button } from 'antd';
+import { List, Input, Alert, Drawer, Space, Button, Dropdown, Menu } from 'antd';
 import TranslationInput from '../../util/TranslationInput';
 import RotationInput from '../../util/RotationInput';
 import ScalarInput from '../../util/ScalarInput';
@@ -89,7 +89,32 @@ export default function GoalSpec(props) {
               renderItem={(idx)=>{
                 if (cachedGoal.values[idx].vector !== undefined) {
                   return (
-                    <List.Item key={idx} label={props.config.objectives[idx].tag}>
+                    <List.Item key={idx} label={props.config.objectives[idx].tag}
+                              extra={
+                                <Dropdown
+                                  overlay={
+                                    <Menu onClick={({ key })=>{
+                                      let editedCache = {...cachedGoal};
+                                      let values = [...editedCache.values];
+                                      let otherGoalValue = props.config.goals[key].values[idx];
+                                      values[idx] = otherGoalValue;
+                                      editedCache.values = values;
+                                      props.onUpdate({directive:'update',meta:{target_goals:editedCache.values}});
+                                      setCachedGoal(editedCache);
+                                    }}>
+                                      {props.config.goals.map((goal,goalIdx)=>(
+                                        <Menu.Item key={goalIdx}>
+                                          {goal.name === 'default' ? 'Default' : goal.name}
+                                        </Menu.Item>
+                                      ))}
+                                    </Menu>
+                                  }
+                                  trigger='click'
+                                  placement="bottomLeft">
+                                  <Button>Copy From...</Button>
+                                </Dropdown>
+                              }
+                    >
                       <List.Item.Meta title={props.config.objectives[idx].tag}
                                       description={<TranslationInput
                                                       step={0.01}
@@ -105,7 +130,32 @@ export default function GoalSpec(props) {
                   )
                 } else if (cachedGoal.values[idx].quaternion !== undefined) {
                   return (
-                    <List.Item key={idx} label={props.config.objectives[idx].tag}>
+                    <List.Item key={idx} label={props.config.objectives[idx].tag}
+                              extra={
+                                <Dropdown
+                                  overlay={
+                                    <Menu onClick={({ key })=>{
+                                      let editedCache = {...cachedGoal};
+                                      let values = [...editedCache.values];
+                                      let otherGoalValue = props.config.goals[key].values[idx];
+                                      values[idx] = otherGoalValue;
+                                      editedCache.values = values;
+                                      props.onUpdate({directive:'update',meta:{target_goals:editedCache.values}});
+                                      setCachedGoal(editedCache);
+                                    }}>
+                                      {props.config.goals.map((goal,goalIdx)=>(
+                                        <Menu.Item key={goalIdx}>
+                                          {goal.name === 'default' ? 'Default' : goal.name}
+                                        </Menu.Item>
+                                      ))}
+                                    </Menu>
+                                  }
+                                  trigger='click'
+                                  placement="bottomLeft">
+                                  <Button>Copy From...</Button>
+                                </Dropdown>
+                              }
+                    >
                       <List.Item.Meta title={props.config.objectives[idx].tag}
                                       description={<RotationInput
                                                       euler={true}
@@ -121,7 +171,32 @@ export default function GoalSpec(props) {
                     </List.Item>)
                 } else if (cachedGoal.values[idx].scalar !== undefined) {
                    return (
-                    <List.Item key={idx} label={props.config.objectives[idx].tag}>
+                    <List.Item key={idx} label={props.config.objectives[idx].tag}
+                              extra={
+                                <Dropdown
+                                  overlay={
+                                    <Menu onClick={({ key })=>{
+                                      let editedCache = {...cachedGoal};
+                                      let values = [...editedCache.values];
+                                      let otherGoalValue = props.config.goals[key].values[idx];
+                                      values[idx] = otherGoalValue;
+                                      editedCache.values = values;
+                                      props.onUpdate({directive:'update',meta:{target_goals:editedCache.values}});
+                                      setCachedGoal(editedCache);
+                                    }}>
+                                      {props.config.goals.map((goal,goalIdx)=>(
+                                        <Menu.Item key={goalIdx}>
+                                          {goal.name === 'default' ? 'Default' : goal.name}
+                                        </Menu.Item>
+                                      ))}
+                                    </Menu>
+                                  }
+                                  trigger='click'
+                                  placement="bottomLeft">
+                                  <Button>Copy From...</Button>
+                                </Dropdown>
+                              }
+                    >
                       <List.Item.Meta title={props.config.objectives[idx].tag}
                                       description={<ScalarInput
                                                     step={0.01}

@@ -4,6 +4,7 @@ import { List, Select, Input, Button,
          Row, Cascader, Drawer, Space } from 'antd';
 import { getObjectivePreview } from '../../util/Englishify';
 import { getObjectiveMarkers } from '../../util/Markers';
+import { defaultObjectiveNames} from '../../util/Default';
 import ScalarInput from '../../util/ScalarInput';
 import { PAIRED_OBJECTIVES,
          CARTESIAN_OBJECTIVES,
@@ -110,7 +111,13 @@ export default function ObjectiveSpec(props) {
                         let indices = [...editedObjective.indices];
                         indices[0] = v[0]
                         indices[1] = v[1]
-                        editedObjective.indices = indices
+                        let defaultName = defaultObjectiveNames[editedObjective.variant];
+                        let jointName = props.config.joint_names[v[0]][v[1]];
+                        if (jointName === undefined) {
+                          jointName = props.config.ee_fixed_joints[v[0]]
+                        }
+                        editedObjective.tag = `${defaultName} - ${jointName}`;
+                        editedObjective.indices = indices;
                         setCachedObjective(editedObjective)
                         let markers = getObjectiveMarkers({objective:editedObjective,
                                                            goal:props.meta.target_goals[props.meta.selected.idx],
@@ -136,6 +143,12 @@ export default function ObjectiveSpec(props) {
                             let indices = [...editedObjective.indices];
                             indices[2] = v[0]
                             indices[3] = v[1]
+                            let defaultName = defaultObjectiveNames[editedObjective.variant];
+                            let jointName = props.config.joint_names[v[0]][v[1]];
+                            if (jointName === undefined) {
+                              jointName = props.config.ee_fixed_joints[v[0]]
+                            }
+                            editedObjective.tag = `${defaultName} - ${jointName}`;
                             editedObjective.indices = indices
                             setCachedObjective(editedObjective)
                             let markers = getObjectiveMarkers({objective:editedObjective,
@@ -166,6 +179,8 @@ export default function ObjectiveSpec(props) {
                 let editedObjective = {...cachedObjective};
                 let indices = [...editedObjective.indices];
                 indices[0] = v
+                let defaultName = defaultObjectiveNames[editedObjective.variant];
+                editedObjective.tag = `${defaultName} - ${props.config.joint_ordering[indices[0]]}`;
                 editedObjective.indices = indices
                 setCachedObjective(editedObjective)
                 let markers = getObjectiveMarkers({objective:editedObjective,
@@ -191,6 +206,8 @@ export default function ObjectiveSpec(props) {
                     let editedObjective = {...cachedObjective};
                     let indices = [...editedObjective.indices];
                     indices[1] = v
+                    let defaultName = defaultObjectiveNames[editedObjective.variant];
+                    editedObjective.tag = `${defaultName} - ${props.config.joint_ordering[indices[1]]}`;
                     editedObjective.indices = indices
                     setCachedObjective(editedObjective)
                     let markers = getObjectiveMarkers({objective:editedObjective,
@@ -255,7 +272,7 @@ export default function ObjectiveSpec(props) {
                         value={cachedObjective.shape[idx]}
                         onChange={(v)=>{
                           let editedObjective = {...cachedObjective};
-                          let shape = {...editedObjective.shape}
+                          let shape = [...editedObjective.shape];
                           shape[idx] = v;
                           editedObjective.shape = shape;
                           setCachedObjective(editedObjective);

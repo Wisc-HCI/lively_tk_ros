@@ -34,6 +34,7 @@ class SolverNode(Node):
         self.weight_sub = self.create_subscription(String, '/lively_ik/weight_updates', self.handle_weight_update, 10)
         self.direct_sub = self.create_subscription(String, '/lively_ik/direct_updates', self.handle_direct_update, 10)
         self.enable_sub = self.create_subscription(Bool, '/lively_ik/enabled_updates', self.handle_enabled_update, 10)
+        self.refresh_sub = self.create_subscription(Bool, '/lively_ik/refresh_solver', self.handle_refresh_update, 10)
         self.result_pub = self.create_publisher(String, '/lively_ik/result',10)
 
         self.enabled = False
@@ -63,8 +64,8 @@ class SolverNode(Node):
                 for field in CONFIG_MATCH_FIELDS:
                     if self.config_data[field] != data[field]:
                         is_similar = False
-                if is_similar and data['mode_control'] == 'absolute':
-                    data['starting_config'] = [self.base_transform,self.displayed_state]
+                # if is_similar and data['mode_control'] == 'absolute':
+                #     data['starting_config'] = [self.base_transform,self.displayed_state]
                 self.config_data = data
                 self.iterations = 15*(3+len(self.config_data['starting_config'][1]))
 
@@ -73,25 +74,55 @@ class SolverNode(Node):
                 self.target_weights = self.current_weights
                 try:
                     self.solver = LivelyIK(self.config)
+                    # Parse the rust goal specs into a python dictionary
+                    current_directions = []
+                    for default_goal in self.config.default_goals:
+                        goal_data = {}
+                        for field in ['scalar','vector','quaternion']:
+                            value = getattr(default_goal,field)
+                            if value:
+                                goal_data[field] = value
+                        current_directions.append(goal_data)
+
+                    self.current_directions = current_directions
+                    self.target_directions = self.current_directions
+                    self.enabled = True
+                    self.get_logger().info('Updated config succesfully. Enabling...')
                 except:
                     self.solver = None
+                    self.enabled = False
+                    self.get_logger().warning('Error updating solver. Disabling...')
 
-                # Parse the rust goal specs into a python dictionary
-                current_directions = []
-                for default_goal in self.config.default_goals:
-                    goal_data = {}
-                    for field in ['scalar','vector','quaternion']:
-                        value = getattr(default_goal,field)
-                        if value:
-                            goal_data[field] = value
-                    current_directions.append(goal_data)
 
-                self.current_directions = current_directions
-                self.target_directions = self.current_directions
-                self.enabled = True
-                self.get_logger().info('Updated config succesfully. Enabling...')
         except Exception as e:
             self.get_logger().warning('Invalid config supplied: {0}'.format(e))
+
+    def handle_refresh_update(self,msg):
+        self.iterations = 15*(3+len(self.config_data['starting_config'][1]))
+
+        self.config = parse_config_data(self.config_data)
+        self.current_weights = self.config.default_weights
+        self.target_weights = self.current_weights
+        try:
+            self.solver = LivelyIK(self.config)
+            # Parse the rust goal specs into a python dictionary
+            current_directions = []
+            for default_goal in self.config.default_goals:
+                goal_data = {}
+                for field in ['scalar','vector','quaternion']:
+                    value = getattr(default_goal,field)
+                    if value:
+                        goal_data[field] = value
+                current_directions.append(goal_data)
+
+            self.current_directions = current_directions
+            self.target_directions = self.current_directions
+            self.enabled = True
+            self.get_logger().info('Updated config succesfully. Enabling...')
+        except:
+            self.solver = None
+            self.enabled = False
+            self.get_logger().warning('Error updating solver. Disabling...')
 
     def handle_enabled_update(self,msg):
         self.get_logger().debug('Received request to update enabled setting ({0}->{1})'.format(self.enabled,msg.data))

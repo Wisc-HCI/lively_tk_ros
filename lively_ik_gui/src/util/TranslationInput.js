@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Space, Popover, InputNumber } from 'antd';
+import { Button, Space, Popover, InputNumber, Row, Col } from 'antd';
 import {ArrowUpOutlined, ArrowDownOutlined, ArrowLeftOutlined, ArrowRightOutlined, EditOutlined} from '@ant-design/icons';
 
 const clamped = (vector, minVec, maxVec) => {
@@ -19,27 +19,28 @@ function TranslationInput(props) {
   const [popoverVisible, setPopoverVisible] = useState(false);
 
   return (
-      <Space wrap={true} align='center'>
+    <>
+      <Row wrap={true} align='left'>
+        <Col>
         <Button shape="circle"
+                style={{margin:3}}
                 onClick={()=>props.onChange(clamped([props.value[0]-props.step,props.value[1],props.value[2]],props.min,props.max))}
                 icon={<ArrowUpOutlined style={{color:'red'}} rotate={45}/>} />
+        </Col>
+        <Col>
         <Button shape="circle"
-                onClick={()=>props.onChange(clamped([props.value[0]+props.step,props.value[1],props.value[2]],props.min,props.max))}
-                icon={<ArrowDownOutlined style={{color:'red'}} rotate={45}/>} />
-        <Button shape="circle"
+                style={{margin:3}}
                 onClick={()=>props.onChange(clamped([props.value[0],props.value[1]-props.step,props.value[2]],props.min,props.max))}
                 icon={<ArrowLeftOutlined style={{color:'lime'}}  />} />
+        </Col>
+        <Col>
         <Button shape="circle"
-                onClick={()=>props.onChange(clamped([props.value[0],props.value[1]+props.step,props.value[2]],props.min,props.max))}
-                icon={<ArrowRightOutlined style={{color:'lime'}} />} />
-        <Button shape="circle"
+                style={{margin:3}}
                 onClick={()=>props.onChange(clamped([props.value[0],props.value[1],props.value[2]+props.step],props.min,props.max))}
                 icon={<ArrowUpOutlined style={{color:'blue'}} />} />
-        <Button shape="circle"
-                onClick={()=>props.onChange(clamped([props.value[0],props.value[1],props.value[2]-props.step],props.min,props.max))}
-                icon={<ArrowDownOutlined style={{color:'blue'}}  />} />
-
-        {props.showInput ?
+        </Col>
+        <Col>
+        {props.showInput &&
           <Popover
             placement='left'
             content={
@@ -78,10 +79,35 @@ function TranslationInput(props) {
             visible={popoverVisible}
             onVisibleChange={setPopoverVisible}
             >
-            <Button shape='circle' type="primary" icon={<EditOutlined/>} onClick={()=>setPopoverVisible(!popoverVisible)}/>
+            <Button style={{margin:3}} shape='circle' type="primary" icon={<EditOutlined/>} onClick={()=>setPopoverVisible(!popoverVisible)}/>
           </Popover>
-          : null}
-      </Space>
+        }
+        </Col>
+
+
+      </Row>
+      <Row>
+        <Col>
+        <Button shape="circle"
+                style={{margin:3}}
+                style={{margin:3}}
+                onClick={()=>props.onChange(clamped([props.value[0]+props.step,props.value[1],props.value[2]],props.min,props.max))}
+                icon={<ArrowDownOutlined style={{color:'red'}} rotate={45}/>} />
+        </Col>
+        <Col>
+        <Button shape="circle"
+                style={{margin:3}}
+                onClick={()=>props.onChange(clamped([props.value[0],props.value[1]+props.step,props.value[2]],props.min,props.max))}
+                icon={<ArrowRightOutlined style={{color:'lime'}} />} />
+        </Col>
+        <Col>
+        <Button shape="circle"
+                style={{margin:3}}
+                onClick={()=>props.onChange(clamped([props.value[0],props.value[1],props.value[2]-props.step],props.min,props.max))}
+                icon={<ArrowDownOutlined style={{color:'blue'}}  />} />
+        </Col>
+      </Row>
+    </>
   )
 }
 

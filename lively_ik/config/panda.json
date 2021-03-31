@@ -21,34 +21,25 @@
        "ty": 0.0,
        "tz": -0.01,
        "is_dynamic": false,
-       "coordinate_frame": "panda_link0"
-     },
-      {"name": "Gripper",
-       "x_halflength": 0.12,
-       "y_halflength": 0.03,
-       "z_halflength": 0.07,
-       "rx": 0.8,
-       "ry": 0.0,
-       "rz": 0.0,
-       "tx": 0.0,
-       "ty": 0.0,
-       "tz": 0.03,
-       "is_dynamic": false,
-       "coordinate_frame": "panda_link8"
-      }
+       "coordinate_frame": "panda_link0"}
      ],
-    "spheres": [],
+    "spheres": [
+    {"name": "Gripper",
+     "radius": 0.12,
+     "tx": 0.0,
+     "ty": 0.0,
+     "tz": 0.15,
+     "is_dynamic": true,
+     "coordinate_frame": "panda_link7"
+    }],
     "pcs": []
   },
   "fixed_frame": "panda_link0",
   "modes": [
     {
       "name": "default",
-      "weights": [1.0, 2, 5, 30, 10, 20, 50, 50]
-    },
-    {
-      "name": "Happy",
-      "weights": [1.0, 2, 5, 30, 10, 20, 50, 50]}
+      "weights": [1.0, 2, 0.01, 30, 10, 20, 50, 50]
+    }
   ],
   "goals": [{
     "name": "default",

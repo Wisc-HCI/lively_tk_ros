@@ -45,11 +45,14 @@ class InterfaceNode(Node):
         self.weight_pub = self.create_publisher(String, '/lively_ik/weight_updates', 10)
         self.direct_pub = self.create_publisher(String, '/lively_ik/direct_updates', 10)
         self.enable_pub = self.create_publisher(Bool, '/lively_ik/enabled_updates', 10)
+        self.refresh_pub = self.create_publisher(Bool, '/lively_ik/refresh_solver', 10)
         self.result_sub = self.create_subscription(String, '/lively_ik/result', self.handle_result_update, 10)
 
         self.tf_broadcaster = TransformBroadcaster(self)
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer,node=self)
+
+        self.file_writer = open('./p01/data_{0}.json'.format(datetime.now()),'a')
 
         self.watched_transforms = []
         self.marker_msgs = {}
@@ -92,6 +95,7 @@ class InterfaceNode(Node):
         self.pub_to_gui({'directive':'update','meta':{'updating':True}})
         self.get_logger().info('{0}'.format(data))
         changes = self.config_manager.update(data.get('config',{}),data.get('meta',{}),realtime_feedback=False)
+        self.file_writer.write(json.dumps({'time':str(datetime.now()),'config':data.get('config',{}),'meta':data.get('meta',{})})+',\n')
         self.pub_to_gui({'directive':'update','config':self.config_manager.data,'meta':self.config_manager.meta})
         if 'urdf' in changes and self.config_manager.meta['valid_urdf']:
             self.get_logger().info('Updating robot description!')
@@ -127,6 +131,9 @@ class InterfaceNode(Node):
         self.update_markers()
         self.get_logger().info('Handled clear request')
 
+    def handle_refresh(self,data):
+        self.refresh_pub.publish(Bool(data=True))
+
     def handle_gui_update(self,msg):
         self.get_logger().info('Received update request')
         data = json.loads(msg.data)
@@ -137,6 +144,8 @@ class InterfaceNode(Node):
             self.dispatch_async(self.handle_train_nn,data)
         elif data['directive'] == 'clear':
             self.dispatch_async(self.handle_clear,data)
+        elif data['directive'] == 'refresh':
+            self.dispatch_async(self.handle_refresh,data)
         else:
             self.dispatch_async(self.handle_default_update,data)
 
@@ -305,6 +314,11 @@ def main():
     rclpy.init(args=None)
     node = InterfaceNode()
     rclpy.spin(node)
+    try:
+        node.file_writer.write(']')
+        node.file_writer.close()
+    except:
+        pass
 
 if __name__ == '__main__':
     main()

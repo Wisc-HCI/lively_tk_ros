@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Space, Popover, InputNumber } from 'antd';
+import { Button, Space, Popover, InputNumber, Row, Col } from 'antd';
 import { RedoOutlined, UndoOutlined, EditOutlined } from '@ant-design/icons';
 import {eulerFromQuaternion, quaternionFromEuler} from './Geometry';
 
@@ -10,17 +10,19 @@ function RotationInput(props) {
   const eulerValues = eulerFromQuaternion(props.value);
 
   return (
-      <Space wrap={true} align='center'>
-
-        <Button shape="circle" onClick={()=>props.onChange(quaternionFromEuler([eulerValues[0]+props.step,eulerValues[1],eulerValues[2]]))} icon={<UndoOutlined style={{color:'red'}}/>} />
-        <Button shape="circle" onClick={()=>props.onChange(quaternionFromEuler([eulerValues[0]-props.step,eulerValues[1],eulerValues[2]]))} icon={<RedoOutlined style={{color:'red'}}/>} />
-        <Button shape="circle" onClick={()=>props.onChange(quaternionFromEuler([eulerValues[0],eulerValues[1]-props.step,eulerValues[2]]))} icon={<UndoOutlined style={{color:'lime'}}/>} />
-        <Button shape="circle" onClick={()=>props.onChange(quaternionFromEuler([eulerValues[0],eulerValues[1]+props.step,eulerValues[2]]))} icon={<RedoOutlined style={{color:'lime'}}/>} />
-        <Button shape="circle" onClick={()=>props.onChange(quaternionFromEuler([eulerValues[0],eulerValues[1],eulerValues[2]-props.step]))} icon={<UndoOutlined style={{color:'blue'}}/>} />
-        <Button shape="circle" onClick={()=>props.onChange(quaternionFromEuler([eulerValues[0],eulerValues[1],eulerValues[2]+props.step]))} icon={<RedoOutlined style={{color:'blue'}}/>} />
-
-
-        {props.showInput ?
+    <>
+      <Row align='left'>
+        <Col>
+          <Button shape="circle" style={{margin:3}} onClick={()=>props.onChange(quaternionFromEuler([eulerValues[0]+props.step,eulerValues[1],eulerValues[2]]))} icon={<UndoOutlined style={{color:'red'}}/>} />
+        </Col>
+        <Col>
+        <Button shape="circle" style={{margin:3}} onClick={()=>props.onChange(quaternionFromEuler([eulerValues[0],eulerValues[1]-props.step,eulerValues[2]]))} icon={<UndoOutlined style={{color:'lime'}}/>} />
+        </Col>
+        <Col>
+        <Button shape="circle" style={{margin:3}} onClick={()=>props.onChange(quaternionFromEuler([eulerValues[0],eulerValues[1],eulerValues[2]-props.step]))} icon={<UndoOutlined style={{color:'blue'}}/>} />
+        </Col>
+        <Col>
+        {props.showInput &&
           <Popover
             placement='left'
             content={
@@ -59,10 +61,26 @@ function RotationInput(props) {
             visible={popoverVisible}
             onVisibleChange={setPopoverVisible}
             >
-            <Button shape='circle' type="primary" icon={<EditOutlined/>} onClick={()=>setPopoverVisible(!popoverVisible)}/>
+            <Button style={{margin:3}} shape='circle' type="primary" icon={<EditOutlined/>} onClick={()=>setPopoverVisible(!popoverVisible)}/>
           </Popover>
-          : null}
-      </Space>
+        }
+        </Col>
+      </Row>
+      <Row align='left'>
+        <Col>
+        <Button shape="circle" style={{margin:3}} onClick={()=>props.onChange(quaternionFromEuler([eulerValues[0]-props.step,eulerValues[1],eulerValues[2]]))} icon={<RedoOutlined style={{color:'red'}}/>} />
+        </Col>
+        <Col>
+        <Button shape="circle" style={{margin:3}} onClick={()=>props.onChange(quaternionFromEuler([eulerValues[0],eulerValues[1]+props.step,eulerValues[2]]))} icon={<RedoOutlined style={{color:'lime'}}/>} />
+        </Col>
+        <Col>
+        <Button shape="circle" style={{margin:3}} onClick={()=>props.onChange(quaternionFromEuler([eulerValues[0],eulerValues[1],eulerValues[2]+props.step]))} icon={<RedoOutlined style={{color:'blue'}}/>} />
+        </Col>
+        <Col>
+        </Col>
+      </Row>
+
+    </>
   )
 }
 

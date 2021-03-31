@@ -70,6 +70,7 @@ def derive_training_scores(config):
     for sample in config['training_samples']:
         frames = config['robot'].getFrames(sample[0:3],sample[3:])
         scores.append(config['collision_graph'].get_collision_score(sample[0:3],frames))
+        # print(f'State: {sample[0:3]+sample[3:]} ({len(sample)}) Score: {scores[-1]}')
     return scores
 
 def derive_collision_graph(config):

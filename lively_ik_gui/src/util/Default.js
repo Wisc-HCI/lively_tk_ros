@@ -65,8 +65,8 @@ const defaultObjectives = {
   min_velocity:{tag: 'Minimize Velocity', variant: 'min_velocity', indices: []},
   min_acceleration:{tag: 'Minimize Acceleration', variant: 'min_acceleration', indices: []},
   min_jerk:{tag: 'Minimize Jerk', variant: 'min_jerk', indices: []},
-  position_match:{tag: 'EE Position Control', variant: 'position_match', indices: [0,0]},
-  orientation_match:{tag: 'EE Rotation Control', variant: 'orientation_match', indices: [0,0]},
+  position_match:{tag: 'Position Control', variant: 'position_match', indices: [0,0]},
+  orientation_match:{tag: 'Rotation Control', variant: 'orientation_match', indices: [0,0]},
   position_mirroring:{tag: 'Mirror Arm Positions', variant: 'position_mirroring', indices: [0,0,0,0]},
   orientation_mirroring:{tag: 'Mirror Arm Orientations', variant: 'orientation_mirroring', indices: [0,0,0,0]},
   position_bounding:{tag: 'Arm Position Bounding', variant: 'position_bounding', indices: [0,0]},
@@ -100,15 +100,16 @@ const defaultGoals = {
   position_liveliness:{},
   orientation_liveliness:{},
   joint_liveliness:{},
-  relative_motion_liveliness:{},
-  base_link_position_liveliness:{},
+  relative_motion_liveliness:{scalar: 0.1},
+  base_link_position_liveliness:{vector: [0.0,0.0,0.0]},
+  base_link_position_match:{},
   gravity:{},
   macro_smoothness:{}
 }
 
 const defaultWeights = {
   joint_limits:2.0,
-  nn_collision:5.0,
+  nn_collision:0.01,
   env_collision:5.0,
   min_velocity:1.0,
   min_acceleration:1.0,
@@ -126,6 +127,7 @@ const defaultWeights = {
   joint_liveliness:10.0,
   relative_motion_liveliness:10.0,
   base_link_position_liveliness:10.0,
+  base_link_position_match:10.0,
   gravity:1.0,
   macro_smoothness:1.0
 }
@@ -150,6 +152,7 @@ const defaultObjectiveNames = {
   joint_liveliness:'Joint Liveliness',
   relative_motion_liveliness:'Relative Motion Liveliness',
   base_link_position_liveliness:'Root Liveliness',
+  base_link_position_match:'Root Position Control',
   gravity: 'Gravity',
   macro_smoothness:'Smoothness Macro'
 }

@@ -73,7 +73,7 @@ class App extends React.Component {
 
   updateFromServer(data) {
     let update = JSON.parse(data);
-    console.log(update);
+    // console.log(update);
     if (update.directive === 'update') {
       this.setState((currentState)=>{
         let {config, meta} = update;
@@ -104,7 +104,6 @@ class App extends React.Component {
   }
 
   handleUploadCancel = () => {
-    this.updateToServer({directive:'clear'})
     this.setState({showUploader:false})
   }
 
@@ -185,7 +184,11 @@ class App extends React.Component {
         )}
         <Button type="primary" shape="circle" icon={<ArrowUpOutlined />} onClick={()=>this.moveSceneCamera(0.05,'z')}/>
         <Button type="primary" shape="circle" icon={<ArrowDownOutlined />} onClick={()=>this.moveSceneCamera(-0.05,'z')}/>
-        <Button type="primary" shape="circle" enabled={!this.state.shouldRefresh} icon={<UndoOutlined />} onClick={()=>this.setState({shouldRefresh:true})}/>
+        <Button type="primary" shape="circle" enabled={!this.state.shouldRefresh} icon={<UndoOutlined />} onClick={()=>{
+          this.setState({shouldRefresh:true})
+          this.updateToServer({directive:'refresh'})
+        }
+        }/>
       </Space>
     )
   }

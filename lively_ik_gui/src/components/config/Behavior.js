@@ -98,6 +98,8 @@ class Behavior extends React.Component {
       values.quaternion = [quaternion.w,quaternion.x,quaternion.y,quaternion.z];
     } else if (variant === 'joint_match') {
       values.scalar = this.props.config.starting_config[1][objective.indices[0]]
+    } else if (variant === 'base_link_position_match') {
+      values.vector = this.props.config.starting_config[0];
     } else if (variant === 'position_boundng') {
       let position = this.props.meta.joint_poses[objective.indices[0]][objective.indices[1]]['position']
       values.pose = [[position.x,position.y,position.z],[1,0,0,0]]
@@ -191,6 +193,9 @@ class Behavior extends React.Component {
         case 'joint_match':
           let jointValue = this.props.meta.displayed_state[1][objective.indices[0]]
           return {scalar:jointValue}
+        case 'base_link_position_match':
+          let vec = this.props.meta.displayed_state[0];
+          return {vector:vec}
         default:
           return {}
       }

@@ -12,7 +12,7 @@ class CollisionGraph:
         self.sample_states = sample_states
         self.num_objects = len(self.c.collision_objects)
         # self.b_value = 1.0/self.num_objects
-        self.b_value = 5.0
+        self.b_value = 3.0
         self.original_distances = 10000*np.ones((self.num_objects, self.num_objects))
         self.combinations = list(itertools.combinations(range(self.num_objects),r=2))
         self.collision_color_array = self.num_objects*[0]
@@ -37,18 +37,19 @@ class CollisionGraph:
             dis = self.c.get_min_distance(l1,l2)
             if dis == -1:
                 dis = 0.0
-            # print dis
-
-            c = c_values[l1,l2]
-            if not c == 0.0:
-                sum += self.b_value * (math.e ** ((-(dis) ** 4.0) / (2.0 * c ** 2)))
+            # # print dis
+            #
+            # c = c_values[l1,l2]
+            # if not c == 0.0:
+            #     sum += self.b_value * (math.e ** ((-(dis) ** 4.0) / (2.0 * c ** 2)))
+            sum += self.b_value * (math.e ** (-(dis) ** 4.0))
 
         return sum
 
     def initialize_table(self):
         for (t,s) in self.sample_states:
             frames = self.robot.getFrames(t,s)
-            self.c.update_all_transforms(frames)
+            self.c.update_all_transforms(t,frames)
             for pair in self.combinations:
                 a = pair[0]
                 b = pair[1]
@@ -81,3 +82,23 @@ class CollisionGraph:
 
     def get_c_value_from_dis(self, dis, b, v=1.0e-15):
         return math.sqrt(-(dis) ** 4 / (2.0 * math.log(v / b)))
+
+    def get_collision_table(self, transform, frames, score=False):
+        import pandas
+        self.c.update_all_transforms(transform, frames)
+        table = np.zeros([self.num_objects,self.num_objects])
+        for combination in self.combinations:
+            dis = self.c.get_min_distance(combination[0],combination[1])
+            if dis == -1:
+                dis = 0.0
+            if score:
+                c = self.c_values[combination[0],combination[1]]
+                table[combination[0],combination[1]] = self.b_value * (math.e ** (-(dis) ** 4.0))
+            else:
+                table[combination[0],combination[1]] = dis
+        df = pandas.DataFrame(table, columns=[o.name for o in self.c.collision_objects], index=[o.name for o in self.c.collision_objects])
+        return df
+
+    def get_collision_table_from_state(self, transform, state, score=False):
+        frames = self.robot.getFrames(transform, state)
+        return self.get_collision_table(transform, frames, score)

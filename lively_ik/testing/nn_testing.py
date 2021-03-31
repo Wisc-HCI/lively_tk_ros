@@ -6,29 +6,29 @@ import math
 from datetime import datetime
 from pprint import PrettyPrinter
 import os
+import json
 
 pprinter = PrettyPrinter()
 pprint = lambda content: pprinter.pprint(content)
 
 script_dir = os.path.dirname(__file__)
-config_file = os.path.join(script_dir,'../config/panda.json')
+config_file = os.path.join(script_dir,'../config/nao_nice.json')
 
 with open(config_file) as handle:
     data = yaml.safe_load(handle)
 
-# parsed = parse_config_data(data)
-# print(parsed)
-#
-# lik = LivelyIK(parsed)
-# print(lik.solve(parsed.default_inputs,9.0,max_retries=5))
-
-# print(data['objectives'])
 cm = ConfigManager(lambda: print(f'\033[93mProgress: {cm.meta["nn_progress"]}\033[0m'))
 print('Updating to config')
 cm.update(data)
 pprint(cm.meta)
 print('Beginning Training')
 cm.train_nn()
+
+cm.update({field:data[field] for field in ['objectives','goals','modes']})
+
+config_file = os.path.join(script_dir,'../config/nao_nice_nn2.json')
+with open(config_file, 'w') as handle:
+    json.dump(cm.data,handle)
 
 exit()
 

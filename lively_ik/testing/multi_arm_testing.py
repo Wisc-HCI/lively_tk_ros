@@ -11,7 +11,7 @@ pprinter = PrettyPrinter()
 pprint = lambda content: pprinter.pprint(content)
 
 script_dir = os.path.dirname(__file__)
-config_file = os.path.join(script_dir,'../config/nao_stripped.json')
+config_file = os.path.join(script_dir,'../config/nao_nice_nn.json')
 
 with open(config_file) as handle:
     data = yaml.safe_load(handle)

@@ -3,7 +3,7 @@ import * as ROS3D from 'ros3d';
 import * as ROSLIB from 'roslib';
 import * as THREE from 'three-full';
 import SimpleTFClient from '../util/SimpleTFClient';
-import SimpleUrdf from '../util/SimpleUrdf';
+// import SimpleUrdf from '../util/SimpleUrdf';
 
 // import sizeMe from 'react-sizeme';
 import { withResizeDetector } from 'react-resize-detector';

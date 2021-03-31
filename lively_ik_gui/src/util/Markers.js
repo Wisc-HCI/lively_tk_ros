@@ -113,7 +113,7 @@ export function getObjectiveMarkers(props) {
       ];
       let orientation = quaternionFromEuler(rotation);
       markers[`active_objective_visualizer_${idx}`] = {
-        frame_id:`/${fixedFrame}`,
+        frame_id:`/world`,
         pose:{position:position,
               orientation:{w:orientation[0],x:orientation[1],y:orientation[2],z:orientation[3]}
              },
