@@ -23,7 +23,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+# lib/
 lib64/
 parts/
 sdist/
@@ -111,3 +111,36 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+*.pyc
+
+test*.*
+# *.xml
+*.iml
+*.rviz
+
+src/RelaxedIK/Config/collision_files/*
+!src/RelaxedIK/Config/collision_files/collision_example.yaml
+!src/RelaxedIK/Config/collision_files/README
+src/RelaxedIK/Config/collision_nn/*
+!src/RelaxedIK/Config/collision_nn/README
+src/RelaxedIK/Config/collision_nn_python/*
+!src/RelaxedIK/Config/collision_nn_python/README
+src/RelaxedIK/Config/info_files/*
+!src/RelaxedIK/Config/info_files/README
+src/RelaxedIK/Config/joint_state_define_functions/*
+!src/RelaxedIK/Config/joint_state_define_functions/README
+planner_keyboard.py
+planner_tester*.jl
+src/RelaxedIK/relaxedMP.jl
+src/RelaxedIK/MP/*
+.DS_Store
+src/RelaxedIK/MP2/*
+src/RelaxedIK/MP3/*
+src/RelaxedIK/MP4/*
+point_cloud_pub.py
+install.out
+
+lively_studio/node_modules/*
+**/archive/*
+lively_studio/.eslintcache
