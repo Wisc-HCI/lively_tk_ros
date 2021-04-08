@@ -1,6 +1,6 @@
-# LivelyIK
+# LivelyStudio + LivelyTK ROS
 
-*LivelyIK Front-End and Configurator for ROS2*
+*LivelyStudio and LivelyTK ROS2 Wrapper*
 
 ## Installation:
 
@@ -25,7 +25,7 @@ If you don't already have it, you will also need to [Install Node.js](https://no
 
 After running `colcon build` on the workspace and sourcing, you will be able to launch the backend by executing:
 
-`ros2 launch lively_ik lively_ik.py`
+`ros2 launch lively_tk_ros lively_studio_backend.py`
 
 You will also need to launch the front-end application, which you can do by navigating to the gui directory of lively_ik:
 
