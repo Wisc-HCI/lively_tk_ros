@@ -194,7 +194,7 @@ class Basics extends React.Component {
                 <Button shape="circle" style={{marginLeft:5}} icon={<EditOutlined/>} onClick={this.selectState}/>
               </Tooltip>
             }>
-                {this.props.config.starting_config[1].map((value)=><Tag>{value.toFixed(2)}</Tag>)}
+                {this.props.config.starting_config[1] && this.props.config.starting_config[1].map((value)=><Tag>{value.toFixed(2)}</Tag>)}
             </Card>
           </TabPane>
         </Tabs>

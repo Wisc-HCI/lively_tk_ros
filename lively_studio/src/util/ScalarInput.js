@@ -23,7 +23,7 @@ function ScalarInput(props) {
   const min = props.radians ? RAD_2_DEG * props.min : props.min;
   const max = props.radians ? RAD_2_DEG * props.max : props.max;
   const down = props.radians ? props.value - DEG_2_RAD : props.value - props.step;
-  const up = props.radians ? props.value + DEG_2_RAD : props.value - props.step;
+  const up = props.radians ? props.value + DEG_2_RAD : props.value + props.step;
 
   return (
       <Space wrap={true} align='center'>
