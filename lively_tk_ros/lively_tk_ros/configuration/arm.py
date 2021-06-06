@@ -1,15 +1,16 @@
 __author__ = 'gleicher'
 
 # stuff for doing articulated figures
-from lively_tk_ros.configuration.robot_function import RobotFunction
+try:
+    from lively_tk_ros.configuration.robot_function import RobotFunction
+except:
+    from .robot_function import RobotFunction
 
 import math
 # import adInterface as AD
 import numpy as N
 from numbers import Number
 import copy
-# from numba import jitclass
-import time
 
 
 # sin = AD.MATH.sin

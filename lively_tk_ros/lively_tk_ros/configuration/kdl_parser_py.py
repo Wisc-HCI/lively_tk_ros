@@ -28,7 +28,7 @@ def treeFromString(xml):
     Construct a PyKDL.Tree from an URDF xml string.
     :param xml: URDF xml string, ``str``
     """
-
+    
     return treeFromUrdfModel(urdf.URDF.from_xml_string(xml))
 
 def _toKdlPose(pose):
@@ -115,7 +115,7 @@ def treeFromUrdfModel(robot_model, quiet=False):
     :param robot_model: URDF xml string, ``str``
     :param quiet: If true suppress messages to stdout, ``bool``
     """
-
+    
     root = robot_model.link_map[robot_model.get_root()]
 
     if root.inertial and not quiet:
@@ -123,7 +123,7 @@ def treeFromUrdfModel(robot_model, quiet=False):
 
     ok = True
     tree = kdl.Tree(root.name)
-
+    
     #  add all children
     for (joint,child) in robot_model.child_map[root.name]:
         if not _add_children_to_tree(robot_model, robot_model.link_map[child], tree):

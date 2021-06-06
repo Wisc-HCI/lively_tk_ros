@@ -1,0 +1,12 @@
+<launch>
+
+  <param name="robot_description" textfile="$(find lively_tk_ros)/launch/ur3e.xml"/>
+
+  <node name="lively_ik_interface" pkg="lively_tk_ros" type="interface_ros1.py" output="screen"/>
+  <node name="lively_ik_solver" pkg="lively_tk_ros" type="solver_ros1.py" output="screen"/>
+  
+  <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch"/>
+
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="true" output="screen" />
+
+</launch>

@@ -1,5 +1,9 @@
-from lively_tk_ros.configuration.arm import *
-from lively_tk_ros.configuration.transformations import quaternion_from_matrix
+try:
+    from lively_tk_ros.configuration.arm import *
+    from lively_tk_ros.configuration.transformations import quaternion_from_matrix
+except:
+    from .arm import *
+    from .transformations import quaternion_from_matrix
 
 class Robot:
     def __init__(self, arms, full_joint_lists, joint_order, extra_joints={}):

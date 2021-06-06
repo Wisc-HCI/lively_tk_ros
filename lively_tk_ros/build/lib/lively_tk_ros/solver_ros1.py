@@ -1,8 +1,9 @@
-import rclpy
-from rclpy.node import Node
+#!/usr/bin/env python3
+
+import rospy
 import json
 from std_msgs.msg import String, Bool
-from lively_tk_ros.configuration.default import DEFAULT_CONFIG
+from configuration.default import DEFAULT_CONFIG
 from lively_tk import ObjectiveInput, Solver, parse_config_data
 from datetime import datetime
 
@@ -19,9 +20,8 @@ class Time(object):
         self.sec = sec
         self.nanosec = nanosec
 
-class SolverNode(Node):
+class SolverNode(object):
     def __init__(self):
-        super(SolverNode,self).__init__('lively_ik_solver')
         self.config_data = DEFAULT_CONFIG
         self.config = parse_config_data(self.config_data)
         try:
@@ -30,12 +30,12 @@ class SolverNode(Node):
             self.solver = None
 
         # Services and Topics
-        self.config_sub = self.create_subscription(String, '/lively_ik/config_updates', self.handle_config_update, 10)
-        self.weight_sub = self.create_subscription(String, '/lively_ik/weight_updates', self.handle_weight_update, 10)
-        self.direct_sub = self.create_subscription(String, '/lively_ik/direct_updates', self.handle_direct_update, 10)
-        self.enable_sub = self.create_subscription(Bool, '/lively_ik/enabled_updates', self.handle_enabled_update, 10)
-        self.refresh_sub = self.create_subscription(String, '/lively_ik/refresh_solver', self.handle_refresh_update, 10)
-        self.result_pub = self.create_publisher(String, '/lively_ik/result',10)
+        self.config_sub = rospy.Subscriber('/lively_ik/config_updates', String, self.handle_config_update, queue_size=10)
+        self.weight_sub = rospy.Subscriber('/lively_ik/weight_updates', String, self.handle_weight_update, queue_size=10)
+        self.direct_sub = rospy.Subscriber('/lively_ik/direct_updates', String, self.handle_direct_update, queue_size=10)
+        self.enable_sub = rospy.Subscriber('/lively_ik/enabled_updates', Bool, self.handle_enabled_update, queue_size=10)
+        self.refresh_sub = rospy.Subscriber('/lively_ik/refresh_solver', String, self.handle_refresh_update, queue_size=10)
+        self.result_pub = rospy.Publisher('/lively_ik/result', String, queue_size=10)
 
         self.enabled = False
 
@@ -49,17 +49,17 @@ class SolverNode(Node):
         self.target_directions = []
         self.current_directions = []
 
-        self.get_logger().info('Initialized!')
+        rospy.loginfo('Initialized!')
 
 
     def handle_config_update(self,msg):
-        self.get_logger().debug('Received request to update config')
+        rospy.logdebug('Received request to update config')
         data = json.loads(msg.data)
         try:
             if self.config_data == data:
                 pass
             else:
-                self.get_logger().info('Changing config')
+                rospy.loginfo('Changing config')
                 # is_similar = True
                 # for field in CONFIG_MATCH_FIELDS:
                 #     if self.config_data[field] != data[field]:
@@ -87,15 +87,15 @@ class SolverNode(Node):
                     self.current_directions = current_directions
                     self.target_directions = self.current_directions
                     self.enabled = True
-                    self.get_logger().info('Updated config succesfully. Enabling...')
+                    rospy.loginfo('Updated config succesfully. Enabling...')
                 except:
                     self.solver = None
                     self.enabled = False
-                    self.get_logger().warning('Error updating solver. Disabling...')
+                    rospy.logwarn('Error updating solver. Disabling...')
 
 
         except Exception as e:
-            self.get_logger().warning('Invalid config supplied: {0}'.format(e))
+            rospy.logwarn('Invalid config supplied: {0}'.format(e))
 
     def handle_refresh_update(self,msg):
         self.config_data = json.loads(msg.data)
@@ -119,26 +119,26 @@ class SolverNode(Node):
             self.current_directions = current_directions
             self.target_directions = self.current_directions
             self.enabled = True
-            self.get_logger().info('Updated config succesfully. Enabling...')
+            rospy.loginfo('Updated config succesfully. Enabling...')
         except:
             self.solver = None
             self.enabled = False
-            self.get_logger().warning('Error updating solver. Disabling...')
+            rospy.logwarn('Error updating solver. Disabling...')
 
     def handle_enabled_update(self,msg):
-        self.get_logger().debug('Received request to update enabled setting ({0}->{1})'.format(self.enabled,msg.data))
+        rospy.logdebug('Received request to update enabled setting ({0}->{1})'.format(self.enabled,msg.data))
         if msg.data != self.enabled:
-            self.get_logger().warning('Changing enabled to {0}'.format(msg.data))
+            rospy.logwarn('Changing enabled to {0}'.format(msg.data))
             self.enabled = msg.data
 
     def handle_weight_update(self,msg):
-        self.get_logger().debug('Received request to update weights')
+        rospy.logdebug('Received request to update weights')
         data = json.loads(msg.data)
         if len(data) == len(self.target_weights):
             self.target_weights = data
 
     def handle_direct_update(self,msg):
-        self.get_logger().debug('Received request to update directions')
+        rospy.logdebug('Received request to update directions')
         data = json.loads(msg.data)
         if len(data) == len(self.target_directions):
             self.target_directions = data
@@ -175,7 +175,7 @@ class SolverNode(Node):
             self.update_current_directions()
             self.base_transform, self.displayed_state, _ = self.solve_with_current_goals()
             data = {'base_transform':self.base_transform,'joint_states':self.displayed_state}
-            self.get_logger().debug('{0}'.format(data))
+            rospy.logdebug('{0}'.format(data))
             self.result_pub.publish(String(data=json.dumps(data)))
 
 
@@ -190,16 +190,10 @@ class SolverNode(Node):
 
 
 def main():
-    rclpy.init(args=None)
+    rospy.init_node('lively_ik_solver')
     node = SolverNode()
-    while True:
-        try:
-            node.standard_loop()
-            rclpy.spin_once(node)
-        except (KeyboardInterrupt, SystemExit):
-            break
-
-    # rclpy.spin(node)
+    while not rospy.is_shutdown():
+        node.standard_loop()
 
 if __name__ == '__main__':
     main()

@@ -1,14 +1,10 @@
-from lively_tk_ros.configuration.robot import Robot as PythonRobot
-from lively_tk_ros.configuration.collision_graph import CollisionGraph
-from lively_tk_ros.configuration.urdf_load import urdf_load_from_string
-from lively_tk_ros.configuration.transformations import euler_from_matrix, quaternion_from_euler
-from lively_tk_ros.configuration.default import DEFAULT_CONFIG, DEFAULT_WEIGHTS
-from lively_tk_ros.configuration.updaters.fields import FIELDS
-import xml.etree.ElementTree as et
-from enum import Enum
-import numpy.random as nprandom
-import numpy as np
-from sklearn.neural_network import MLPClassifier, MLPRegressor
+try:
+    from lively_tk_ros.configuration.default import DEFAULT_CONFIG
+    from lively_tk_ros.configuration.updaters.fields import FIELDS
+except:
+    from .default import DEFAULT_CONFIG
+    from .updaters.fields import FIELDS
+
 from copy import deepcopy
 
 class ConfigManager(object):
@@ -139,6 +135,7 @@ class ConfigManager(object):
         return update_sequence
 
     def update(self,data,meta={},realtime_feedback=False):
+        print('in_update')
         data.update(meta)
         self.future = []
         current = self.current
@@ -154,8 +151,10 @@ class ConfigManager(object):
             new_config[change_field] = data[change_field]
             changes.add(change_field)
         needed_updates = self.get_needed_updates(changes)
+        print('got_needed_updates')
         # self.log(f'needed_updates: {needed_updates}')
         for needed_update in needed_updates:
+            print(needed_update)
             if needed_update in data:
                 new_config[needed_update] = data[needed_update]
             else:
@@ -166,7 +165,7 @@ class ConfigManager(object):
                 self.on_feedback()
 
         self.__update_config__(new_config)
-
+        print('updated_config')
         return changes
 
     def train_nn(self):

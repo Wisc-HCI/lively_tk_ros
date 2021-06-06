@@ -1,6 +1,9 @@
 import fcl
 import numpy as np
-import lively_tk_ros.configuration.transformations as T
+try:
+    from lively_tk_ros.configuration.transformations import *
+except:
+    from .transformations import *
 
 class CollisionObjectContainer:
     def __init__(self,config):
@@ -84,7 +87,7 @@ class CollisionObjectContainer:
                 rot_mat[:,0] = x
                 rot_mat[:,1] = y
                 rot_mat[:,2] = z
-                final_quat = T.quaternion_from_matrix(rot_mat)
+                final_quat = quaternion_from_matrix(rot_mat)
             else:
                 coordinate_frame = c.coordinate_frame
                 # first, do local transforms
@@ -99,7 +102,7 @@ class CollisionObjectContainer:
                         if self.tree['joints'][joint]['child'] == coordinate_frame:
                             final_pos = all_frames[arm_idx][0][joint_idx]
                             rot_mat = all_frames[arm_idx][1][joint_idx]
-                            final_quat = T.quaternion_from_matrix(rot_mat)
+                            final_quat = quaternion_from_matrix(rot_mat)
                             break
 
                 local_translation = np.array(c.translation)
@@ -107,7 +110,7 @@ class CollisionObjectContainer:
                 final_pos = final_pos + rotated_local_translation
 
                 local_rotation = c.quaternion
-                final_quat = T.quaternion_multiply(local_rotation, final_quat)
+                final_quat = quaternion_multiply(local_rotation, final_quat)
 
             c.update_transform(final_pos, final_quat)
 
@@ -120,7 +123,7 @@ class CollisionObject:
         self.name = name
         self.coordinate_frame = coordinate_frame
         self.translation = [tx, ty, tz]
-        self.quaternion = T.quaternion_from_euler(0, 0, 0)
+        self.quaternion = quaternion_from_euler(0, 0, 0)
         self.type = None
 
     def update_transform(self, translation, rotation):
@@ -134,7 +137,7 @@ class CollisionBox(CollisionObject):
     def __init__(self, collision_dict):
         CollisionObject.__init__(self, collision_dict['name'],collision_dict['coordinate_frame'],
                                  collision_dict['tx'],collision_dict['ty'],collision_dict['tz'])
-        self.quaternion = T.quaternion_from_euler(collision_dict['rx'], collision_dict['ry'], collision_dict['rz'])
+        self.quaternion = quaternion_from_euler(collision_dict['rx'], collision_dict['ry'], collision_dict['rz'])
         self.x = collision_dict['x_halflength']*2
         self.y = collision_dict['y_halflength']*2
         self.z = collision_dict['z_halflength']*2
@@ -154,7 +157,7 @@ class CollisionCylinder(CollisionObject):
     def __init__(self, collision_dict):
         CollisionObject.__init__(self, collision_dict['name'],collision_dict['coordinate_frame'],
                                  collision_dict['tx'],collision_dict['ty'],collision_dict['tz'])
-        self.quaternion = T.quaternion_from_euler(collision_dict['rx'], collision_dict['ry'], collision_dict['rz'])
+        self.quaternion = quaternion_from_euler(collision_dict['rx'], collision_dict['ry'], collision_dict['rz'])
         self.r = collision_dict['radius']
         self.lz = collision_dict['lz']
         self.g = fcl.Cylinder(self.r, self.lz)

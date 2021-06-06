@@ -1,8 +1,13 @@
 import xml.etree.ElementTree as et
 import numpy as np
-from lively_tk_ros.configuration.robot import Robot as PythonRobot
-from lively_tk_ros.configuration.urdf_load import urdf_load_from_string
-from lively_tk_ros.configuration.transformations import euler_from_matrix, quaternion_from_euler
+try:
+    from lively_tk_ros.configuration.robot import Robot as PythonRobot
+    from lively_tk_ros.configuration.urdf_load import urdf_load_from_string
+    from lively_tk_ros.configuration.transformations import euler_from_matrix, quaternion_from_euler
+except:
+    from ..robot import Robot as PythonRobot
+    from ..urdf_load import urdf_load_from_string
+    from ..transformations import euler_from_matrix, quaternion_from_euler
 
 def search_for_joints_in_chain(root,tree,start=[]):
     children = []
@@ -177,10 +182,13 @@ def derive_parsed_urdf(config):
     return result
 
 def derive_robot(config):
+    print('deriving robot')
     if not config['valid_arms']:
         return None
     arms = []
+    print('loading robot from urdf')
     for i in range(len(config['joint_names'])):
+        print(config['joint_names'][i])
         urdf_robot, arm, arm_c, tree = urdf_load_from_string(config['urdf'], '', '', config['joint_names'][i], config['ee_fixed_joints'][i])
         arms.append(arm)
 

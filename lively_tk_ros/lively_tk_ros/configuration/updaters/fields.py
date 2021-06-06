@@ -1,8 +1,15 @@
-from lively_tk_ros.configuration.updaters.basic import *
-from lively_tk_ros.configuration.updaters.collision import *
-from lively_tk_ros.configuration.updaters.behaviors import *
-from lively_tk_ros.configuration.updaters.meta import *
-from lively_tk_ros.configuration.updaters.validity import *
+try:
+    from lively_tk_ros.configuration.updaters.basic import *
+    from lively_tk_ros.configuration.updaters.collision import *
+    from lively_tk_ros.configuration.updaters.behaviors import *
+    from lively_tk_ros.configuration.updaters.meta import *
+    from lively_tk_ros.configuration.updaters.validity import *
+except:
+    from .basic import *
+    from .collision import *
+    from .behaviors import *
+    from .meta import *
+    from .validity import *
 from lively_tk import CONFIG_FIELDS
 from datetime import datetime
 

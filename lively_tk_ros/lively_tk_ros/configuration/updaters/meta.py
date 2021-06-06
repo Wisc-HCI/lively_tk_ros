@@ -1,6 +1,9 @@
 import math
 import numpy as np
-from lively_tk_ros.configuration.transformations import quaternion_from_euler, quaternion_from_matrix, quaternion_multiply, quaternion_matrix
+try:
+    from lively_tk_ros.configuration.transformations import quaternion_from_euler, quaternion_from_matrix, quaternion_multiply, quaternion_matrix
+except:
+    from ..transformations import quaternion_from_euler, quaternion_from_matrix, quaternion_multiply, quaternion_matrix
 
 COLLISION_OBJECT_COLOR = {'r':1.0, 'g':0.55, 'b':0.24, 'a':0.5}; #FF8C3C
 PRIMARY_POINT_COLOR = {'r':0.0, 'g':0.88, 'b':0.64, 'a':0.5}; #00E2A3

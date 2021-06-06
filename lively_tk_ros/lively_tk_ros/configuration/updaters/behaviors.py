@@ -1,6 +1,10 @@
 from lively_tk import *
-from lively_tk_ros.configuration.transformations import quaternion_from_euler
-from lively_tk_ros.configuration.default import DEFAULT_WEIGHTS
+try:
+    from lively_tk_ros.configuration.transformations import quaternion_from_euler
+    from lively_tk_ros.configuration.default import DEFAULT_WEIGHTS
+except:
+    from ..transformations import quaternion_from_euler
+    from ..default import DEFAULT_WEIGHTS
 
 def derive_config(config):
     if not config['valid_nn']:

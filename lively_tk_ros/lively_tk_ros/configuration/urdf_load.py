@@ -2,8 +2,12 @@ __author__ = 'drakita'
 
 
 from urdf_parser_py.urdf import URDF
-from lively_tk_ros.configuration.arm import *
-
+try:
+    from lively_tk_ros.configuration.arm import *
+    from lively_tk_ros.configuration.kdl_parser_py import treeFromFile, treeFromString
+except:
+    from .arm import *
+    from .kdl_parser_py import treeFromFile, treeFromString
 
 # try:
 #     from ..Spacetime.boost import Arm_ext
@@ -12,8 +16,6 @@ from lively_tk_ros.configuration.arm import *
 #           'To get speed boost, please install and configure the boost python library: ' \
 #           'https://www.boost.org/doc/libs/1_67_0/more/getting_started/unix-variants.html'
 #     arm_c = False
-
-from lively_tk_ros.configuration.kdl_parser_py import treeFromFile, treeFromString
 
 '''
 NOTE:
@@ -68,7 +70,6 @@ def urdf_load_from_string(urdfString, startJoint, endJoint, full_joint_list, fix
         displacement on the chain, i.e. usually just to add in an extra displacement offset for the end effector
     :return: returns the robot parsed object from urdf_parser, Mike's "arm" version of the robot arm, as well as the kdl tree
     '''
-
     urdf_robot = URDF.from_xml_string(urdfString)
     (ok, kdl_tree) = treeFromString(urdfString)
 

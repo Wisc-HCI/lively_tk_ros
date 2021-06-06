@@ -1,4 +1,7 @@
-from lively_tk_ros.configuration.collision_container import CollisionObjectContainer
+try:
+    from lively_tk_ros.configuration.collision_container import CollisionObjectContainer
+except:
+    from .collision_container import CollisionObjectContainer
 import numpy as np
 import itertools
 import math

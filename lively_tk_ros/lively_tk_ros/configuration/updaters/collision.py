@@ -1,5 +1,8 @@
-from lively_tk_ros.configuration.collision_graph import CollisionGraph
-from sklearn.neural_network import MLPClassifier, MLPRegressor
+try:
+    from lively_tk_ros.configuration.collision_graph import CollisionGraph
+except:
+    from ..collision_graph import CollisionGraph
+from sklearn.neural_network import MLPRegressor
 import numpy.random as nprandom
 import numpy as np
 
